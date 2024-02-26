@@ -67,10 +67,10 @@ const Key = ({ roundResolution = 32, width = 8 / 10, lateral = 7 / 10, depth = 1
 }
 
 Key.propTypes = {
-  depth: PropTypes.any,
-  keyId: PropTypes.any,
-  lateral: PropTypes.any,
-  round: PropTypes.any,
+  depth: PropTypes.number,
+  keyId: PropTypes.string,
+  lateral: PropTypes.number,
+  round: PropTypes.bool,
   roundResolution: PropTypes.number,
   width: PropTypes.number
 }

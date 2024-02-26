@@ -16,12 +16,10 @@ const KeyGroup = ({ keys, name, position, round, ...props }) => {
 }
 
 KeyGroup.propTypes = {
-  keys: PropTypes.shape({
-    length: PropTypes.any
-  }),
-  name: PropTypes.any,
-  position: PropTypes.any,
-  round: PropTypes.any
+  keys: PropTypes.arrayOf(PropTypes.string),
+  name: PropTypes.string,
+  position: PropTypes.arrayOf(PropTypes.number),
+  round: PropTypes.bool
 }
 
 export default KeyGroup
