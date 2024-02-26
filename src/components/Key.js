@@ -4,10 +4,11 @@ import * as THREE from 'three'
 
 const Key = ({ roundResolution = 32, width = 8 / 10, lateral = 7 / 10, depth = 1 / 20, keyId, round, ...props }) => {
   const groupRef = useRef()
-  const radius = width / 2
+  const widthOnTwo = width / 2
 
   let pts
   if (round) {
+    const radius = widthOnTwo
     const underSemiCircumference = [...Array(roundResolution / 2 + 1).keys()].map(i => {
       const a = Math.PI + 2 * Math.PI * i / roundResolution
       return [Math.cos(a) * radius, Math.sin(a) * radius]
@@ -18,7 +19,7 @@ const Key = ({ roundResolution = 32, width = 8 / 10, lateral = 7 / 10, depth = 1
 
     pts = [pre, ...underSemiCircumference, pos]
   } else {
-    pts = [[-radius, 0], [-radius, lateral], [radius, lateral], [radius, 0]]
+    pts = [[-widthOnTwo, 0], [-widthOnTwo, lateral], [widthOnTwo, lateral], [widthOnTwo, 0]]
   }
 
   const shape = new THREE.Shape(pts.map(points => new THREE.Vector2(...points)))
@@ -38,7 +39,7 @@ const Key = ({ roundResolution = 32, width = 8 / 10, lateral = 7 / 10, depth = 1
 
   const onPointerDown = (event) => {
     console.log(`On pointer down event for key ${keyId}: `, event)
-    groupRef.current.rotation.x = Math.PI / 32 * (4 / 10 + 7 / 10) / (lateral + radius)
+    groupRef.current.rotation.x = Math.PI / 32 * (4 / 10 + 7 / 10) / (lateral + widthOnTwo)
     groupRef.current.position.z = -0.1
   }
   const onPointerUp = (event) => {
