@@ -12,22 +12,38 @@
     "@react-three/drei": "9.76.0",
     "@react-three/fiber": "8.13.3",
     "@types/three": "0.152.1",
+    "lint-staged": "^15.2.2",
     "react": "18.2.0",
     "react-dom": "18.2.0",
     "react-scripts": "5.0.1",
     "three": "0.153.0"
   },
-  "devDependencies": {},
+  "devDependencies": {
+    "@craco/craco": "^7.1.0",
+    "eslint": "^8.0.1",
+    "eslint-config-standard": "^17.1.0",
+    "eslint-plugin-import": "^2.25.2",
+    "eslint-plugin-n": "^15.0.0 || ^16.0.0 ",
+    "eslint-plugin-promise": "^6.0.0",
+    "eslint-plugin-react": "^7.33.2",
+    "husky": "^8.0.0",
+    "react-proptypes-generate": "^1.7.6"
+  },
   "scripts": {
-    "start": "react-scripts start",
-    "build": "react-scripts build",
-    "test": "react-scripts test --env=jsdom",
-    "eject": "react-scripts eject"
+    "start": "craco start",
+    "build": "craco build",
+    "test": "craco test --env=jsdom",
+    "prepare": "husky install"
   },
   "browserslist": [
     ">0.2%",
     "not dead",
     "not ie <= 11",
     "not op_mini all"
-  ]
+  ],
+  "lint-staged": {
+    "{src,test}/**/*.{js,ts,jsx,tsx}": [
+      "eslint --fix"
+    ]
+  }
 }
