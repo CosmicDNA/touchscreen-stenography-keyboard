@@ -1,8 +1,14 @@
 import PropTypes from 'prop-types'
 import React, { useRef } from 'react'
 import * as THREE from 'three'
+import { RenderTexture, Text } from '@react-three/drei'
+import { suspend } from 'suspend-react'
+import { useFrame } from '@react-three/fiber'
+const inter = import('@pmndrs/assets/fonts/inter_regular.woff')
 
 const Key = ({ roundResolution = 32, width = 8 / 10, lateral = 7 / 10, depth = 1 / 20, keyId, round, ...props }) => {
+  const textRef = useRef()
+  useFrame((state) => (textRef.current.position.x = Math.sin(state.clock.elapsedTime) * 2))
   const groupRef = useRef()
   const widthOnTwo = width / 2
 
@@ -22,7 +28,7 @@ const Key = ({ roundResolution = 32, width = 8 / 10, lateral = 7 / 10, depth = 1
     pts = [[-widthOnTwo, 0], [-widthOnTwo, lateral], [widthOnTwo, lateral], [widthOnTwo, 0]]
   }
 
-  const shape = new THREE.Shape(pts.map(points => new THREE.Vector2(...points)))
+  const shapes = new THREE.Shape(pts.map(points => new THREE.Vector2(...points)))
 
   const extrudeSettings = {
     depth,
@@ -32,10 +38,6 @@ const Key = ({ roundResolution = 32, width = 8 / 10, lateral = 7 / 10, depth = 1
     bevelSize: 0.4 * 8 / 40,
     bevelSegments: 1
   }
-
-  const material1 = new THREE.MeshLambertMaterial({ color: THREE.Color.NAMES.antiquewhite, wireframe: false })
-  const material2 = new THREE.MeshLambertMaterial({ color: THREE.Color.NAMES.gray, wireframe: false })
-  const materials = [material1, material2]
 
   const onPointerDown = (event) => {
     console.log(`On pointer down event for key ${keyId}: `, event)
@@ -54,14 +56,24 @@ const Key = ({ roundResolution = 32, width = 8 / 10, lateral = 7 / 10, depth = 1
       ref={groupRef} >
       <mesh
         // eslint-disable-next-line react/no-unknown-property
-        material={materials}
-        // eslint-disable-next-line react/no-unknown-property
         position={[0, -lateral, 0]}
         onPointerDown={onPointerDown}
         onPointerUp={onPointerUp}
       >
         {/* eslint-disable-next-line react/no-unknown-property */}
-        <extrudeGeometry args={[shape, extrudeSettings]}/>
+        <meshLambertMaterial attach="material-0">
+          <RenderTexture attach="map" anisotropy={16}>
+            {/* eslint-disable-next-line react/no-unknown-property */}
+            <color attach="background" args={[THREE.Color.NAMES.antiquewhite]} />
+            <Text font={suspend(inter).default} ref={textRef} fontSize={1} color="#555" position={[0, 0, 0]}>
+              {`Hello, my keyId is ${keyId}!`}
+            </Text>
+          </RenderTexture>
+        </meshLambertMaterial>
+        {/* eslint-disable-next-line react/no-unknown-property */}
+        <meshLambertMaterial attach="material-1" args={[{ color: THREE.Color.NAMES.gray, wireframe: false }]}/>
+        {/* eslint-disable-next-line react/no-unknown-property */}
+        <extrudeGeometry args={[shapes, extrudeSettings]} />
       </mesh>
     </group>
   )

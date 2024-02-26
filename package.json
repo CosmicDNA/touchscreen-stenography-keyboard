@@ -9,7 +9,7 @@
   "main": "src/index.js",
   "license": "MIT",
   "dependencies": {
-    "@pmndrs/assets": "1.6.0",
+    "@pmndrs/assets": "^1.6.0",
     "@react-three/drei": "9.76.0",
     "@react-three/fiber": "8.13.3",
     "@types/three": "0.152.1",
