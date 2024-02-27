@@ -1,9 +1,13 @@
 import PropTypes from 'prop-types'
-import React, { useState } from 'react'
+import React, { useState, useRef } from 'react'
 import * as THREE from 'three'
+import { useDrag } from '@use-gesture/react'
+import { useCycleRaycastContext } from '../hooks/useCycleRaycast'
 
 const Key = ({ roundResolution = 32, width = 8 / 10, lateral = 7 / 10, depth = 1 / 20, keyId, round, ...props }) => {
+  const meshRef = useRef()
   const [pressed, setPressed] = useState(false)
+  const { cycleRayCastState } = useCycleRaycastContext()
   const widthOnTwo = width / 2
 
   let pts
@@ -40,8 +44,18 @@ const Key = ({ roundResolution = 32, width = 8 / 10, lateral = 7 / 10, depth = 1
     setPressed(false)
   }
 
+  const bind = useDrag(({ down }) => {
+    if (down && pressed) {
+      // If the pressed key is no longer found in list of pierced through objects, release it.
+      if (!cycleRayCastState.find(obj => obj?.object?.uuid === meshRef.current.uuid)) {
+        onPointerUp()
+      }
+    }
+  })
+
   return (
     <group
+      {...bind()}
       {...props}
       // eslint-disable-next-line react/no-unknown-property
       rotation-x={pressed ? Math.PI / 32 * (4 / 10 + 7 / 10) / (lateral + widthOnTwo) : 0}
@@ -49,6 +63,7 @@ const Key = ({ roundResolution = 32, width = 8 / 10, lateral = 7 / 10, depth = 1
       position-z={pressed ? -0.1 : 0}
        >
         <mesh
+          ref={meshRef}
           // eslint-disable-next-line react/no-unknown-property
           position-y={-lateral}
           onPointerDown={onPointerDown}
