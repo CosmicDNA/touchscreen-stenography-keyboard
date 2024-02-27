@@ -15,7 +15,7 @@ const KeyGroup = ({ keys, name, position, round, ...props }) => {
 KeyGroup.propTypes = {
   keys: PropTypes.arrayOf(PropTypes.string),
   name: PropTypes.string,
-  position: PropTypes.arrayOf(PropTypes.number),
+  position: PropTypes.object,
   round: PropTypes.bool
 }
 

@@ -45,18 +45,19 @@ const Key = ({ roundResolution = 32, width = 8 / 10, lateral = 7 / 10, depth = 1
   }
 
   const bind = useDrag(({ event, down }) => {
-    // const { down } = event
-    const { clientX, clientY } = event
-    if (down && pressed) {
-      // Assuming you have clientX and clientY from the event
-      const coords = new THREE.Vector2()
-      coords.x = (clientX / window.innerWidth) * 2 - 1
-      coords.y = -(clientY / window.innerHeight) * 2 + 1
+    if (down) {
+      const { clientX, clientY } = event
+      const coords = new THREE.Vector2(
+        (clientX / window.innerWidth) * 2 - 1,
+        -(clientY / window.innerHeight) * 2 + 1
+      )
       raycaster.setFromCamera(coords, camera)
-      const intersects = raycaster.intersectObject(meshRef.current)
-      // If the pressed key is no longer found in list of pierced through objects, release it.
-      if (!intersects.find(obj => obj?.object?.uuid === meshRef.current.uuid)) {
-        onPointerUp()
+      if (pressed) {
+        if (!raycaster.intersectObject(meshRef.current).length) {
+          onPointerUp()
+        }
+      } else {
+        // raycaster.intersectObjects()
       }
     }
   })

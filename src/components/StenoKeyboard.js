@@ -41,15 +41,15 @@ const StenoKeyboard = (props) => {
     // eslint-disable-next-line react/no-unknown-property
     <group {...props} rotation-x={-Math.PI / 2}>
       {
-        config.map((item, index) => {
+        config.map((item, key) => {
           let rowIndex
           switch (item.type) {
             case 'Key':
-              return <Key {...item} />
+              return <Key {...{ ...item, key }} />
             case 'Row':
               rowIndex = rowItems
                 .findIndex(o => JSON.stringify(o) === JSON.stringify(item))
-              return <KeyGroup {...{ ...item, name: `g${rowIndex}` }} />
+              return <KeyGroup {...{ ...item, key, name: `g${rowIndex}` }} />
             default:
               return null
           }
