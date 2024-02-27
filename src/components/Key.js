@@ -1,9 +1,9 @@
 import PropTypes from 'prop-types'
-import React, { useRef } from 'react'
+import React, { useState } from 'react'
 import * as THREE from 'three'
 
 const Key = ({ roundResolution = 32, width = 8 / 10, lateral = 7 / 10, depth = 1 / 20, keyId, round, ...props }) => {
-  const groupRef = useRef()
+  const [pressed, setPressed] = useState(false)
   const widthOnTwo = width / 2
 
   let pts
@@ -22,8 +22,6 @@ const Key = ({ roundResolution = 32, width = 8 / 10, lateral = 7 / 10, depth = 1
     pts = [[-widthOnTwo, 0], [-widthOnTwo, lateral], [widthOnTwo, lateral], [widthOnTwo, 0]]
   }
 
-  const shape = new THREE.Shape(pts.map(points => new THREE.Vector2(...points)))
-
   const extrudeSettings = {
     depth,
     steps: 1,
@@ -33,36 +31,36 @@ const Key = ({ roundResolution = 32, width = 8 / 10, lateral = 7 / 10, depth = 1
     bevelSegments: 1
   }
 
-  const material1 = new THREE.MeshLambertMaterial({ color: THREE.Color.NAMES.antiquewhite, wireframe: false })
-  const material2 = new THREE.MeshLambertMaterial({ color: THREE.Color.NAMES.gray, wireframe: false })
-  const materials = [material1, material2]
-
   const onPointerDown = (event) => {
     console.log(`On pointer down event for key ${keyId}: `, event)
-    groupRef.current.rotation.x = Math.PI / 32 * (4 / 10 + 7 / 10) / (lateral + widthOnTwo)
-    groupRef.current.position.z = -0.1
+    setPressed(true)
   }
   const onPointerUp = (event) => {
     console.log(`On pointer up event for key ${keyId}: `, event)
-    groupRef.current.rotation.x = 0
-    groupRef.current.position.z = 0
+    setPressed(false)
   }
 
   return (
     <group
       {...props}
-      ref={groupRef} >
-      <mesh
-        // eslint-disable-next-line react/no-unknown-property
-        material={materials}
-        // eslint-disable-next-line react/no-unknown-property
-        position={[0, -lateral, 0]}
-        onPointerDown={onPointerDown}
-        onPointerUp={onPointerUp}
-      >
-        {/* eslint-disable-next-line react/no-unknown-property */}
-        <extrudeGeometry args={[shape, extrudeSettings]}/>
-      </mesh>
+      // eslint-disable-next-line react/no-unknown-property
+      rotation-x={pressed ? Math.PI / 32 * (4 / 10 + 7 / 10) / (lateral + widthOnTwo) : 0}
+      // eslint-disable-next-line react/no-unknown-property
+      position-z={pressed ? -0.1 : 0}
+       >
+        <mesh
+          // eslint-disable-next-line react/no-unknown-property
+          position-y={-lateral}
+          onPointerDown={onPointerDown}
+          onPointerUp={onPointerUp}
+        >
+          {[THREE.Color.NAMES.antiquewhite, THREE.Color.NAMES.gray].map((color, i) =>
+            // eslint-disable-next-line react/no-unknown-property
+            <meshLambertMaterial key={i} attach={`material-${i}`} args={[{ color, wireframe: false }]} />
+          )}
+          {/* eslint-disable-next-line react/no-unknown-property */}
+          <extrudeGeometry args={[new THREE.Shape(pts.map(points => new THREE.Vector2(...points))), extrudeSettings]} />
+        </mesh>
     </group>
   )
 }

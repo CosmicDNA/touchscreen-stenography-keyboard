@@ -8,7 +8,7 @@ const StenoKeyboard = (props) => {
 
   return (
     // eslint-disable-next-line react/no-unknown-property
-    <group {...props} rotation={ [-Math.PI / 2, 0, 0]}>
+    <group {...props} rotation-x={-Math.PI / 2}>
       <Key keyId={'#'} width={9.8} position={[-0.5, 4.8, 0]}/>
       <Key keyId={'*'} round={true} lateral={2} position={[-1, 3 * p, 0]}/>
       <Key keyId={'S-'} round={true} lateral={2} position={[-5, 3 * p, 0]}/>
