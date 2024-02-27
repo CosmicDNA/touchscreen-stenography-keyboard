@@ -54,7 +54,7 @@ const Key = ({ roundResolution = 32, width = 8 / 10, lateral = 7 / 10, depth = 1
       raycaster.setFromCamera(coords, camera)
       if (pressed) {
         if (!raycaster.intersectObject(meshRef.current).length) {
-          onPointerUp()
+          onPointerUp(event)
         }
       } else {
         // raycaster.intersectObjects()
