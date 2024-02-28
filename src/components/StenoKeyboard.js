@@ -7,7 +7,7 @@ import keySets from './steno-script'
 
 const enter = 0.2
 const rowSpacing = 1.3
-const animate = true
+const animate = false
 
 const referencePosition = new THREE.Vector3(0.5, -2.4, 0)
 const position = [
@@ -46,6 +46,7 @@ const StenoKeyboard = (props) => {
   // Animate the keys
   useFrame(({ clock }) => {
     if (animate) {
+      const keySetsWithRest = [...keySets, [], []]
       const elapsedTime = clock.getElapsedTime()
       const speed = 1 // Adjust the typing speed
       const ratio = 0.6 // chord/blank ratio
@@ -56,7 +57,7 @@ const StenoKeyboard = (props) => {
       const wordIndex = Math.floor(referenceTime) // Change word every second
 
       // Get the current key set for the word
-      const currentKeySet = keySets[wordIndex % keySets.length]
+      const currentKeySet = keySetsWithRest[wordIndex % keySetsWithRest.length]
 
       const delta = referenceTime - wordIndex
 
