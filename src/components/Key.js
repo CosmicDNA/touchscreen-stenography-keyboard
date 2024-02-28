@@ -4,6 +4,10 @@ import * as THREE from 'three'
 import { useDrag } from '@use-gesture/react'
 import { useThree } from '@react-three/fiber'
 
+const getSet = (array) => {
+  return new Set(array)
+}
+
 const eqSet = (xs, ys) =>
   xs?.size === ys?.size &&
   [...xs].every((x) => ys.has(x))
@@ -18,7 +22,8 @@ const eqSet = (xs, ys) =>
  * @property {string} keyId - The unique identifier for the key.
  * @property {number} round - The current round.
  * @property {function} setPressedKeys - A function to set pressed keys.
- * @property {Map<string, any>} pressedKeys - A Map where keys are strings and values can be of any type.
+ * @property {Map<string, Set<string>>} pressedKeys - A Map where keys are strings and values can be of any type.
+ * @property {Set<string>} allKeys - Set of pressed keys.
  * @property {...any} props - Additional props.
  */
 
@@ -26,17 +31,23 @@ const eqSet = (xs, ys) =>
  * Key component.
  * @param {KeyProps} props - The props object.
  */
-const Key = ({ roundResolution = 32, width = 8 / 10, lateral = 7 / 10, depth = 1 / 20, keyId, round, setPressedKeys, pressedKeys, ...props }) => {
+const Key = ({ roundResolution = 32, width = 8 / 10, lateral = 7 / 10, depth = 1 / 20, keyId, round, setPressedKeys, pressedKeys, allKeys, ...props }) => {
   const groupRef = useRef()
   const { raycaster, camera } = useThree()
   const widthOnTwo = width / 2
 
-  const setMyPressedKeys = (newSet) => {
-    setPressedKeys(prevPressedKeys => new Map(prevPressedKeys).set(keyId, newSet))
+  const pressed = allKeys.has(keyId)
+
+  const updateMyPressedKeys = (callback) => {
+    setPressedKeys(prevPressedKeys => {
+      const newMap = new Map(prevPressedKeys)
+      callback(newMap)
+      return newMap
+    })
   }
 
-  const allKeys = new Set([...pressedKeys.values()].flatMap((set) => [...set]))
-  const pressed = allKeys.has(keyId)
+  const setMyPressedKeys = (newSet) => updateMyPressedKeys((map) => map.set(keyId, newSet))
+  const clearMyPressedKeys = () => updateMyPressedKeys((map) => map.delete(keyId))
 
   let pts
   if (round) {
@@ -63,10 +74,6 @@ const Key = ({ roundResolution = 32, width = 8 / 10, lateral = 7 / 10, depth = 1
     bevelSegments: 1
   }
 
-  const getSet = (array) => {
-    return new Set(array)
-  }
-
   const bind = useDrag(({ event, down }) => {
     if (down) {
       const { clientX, clientY } = event
@@ -87,7 +94,7 @@ const Key = ({ roundResolution = 32, width = 8 / 10, lateral = 7 / 10, depth = 1
       }
     } else {
       // Movemen has just ended
-      setMyPressedKeys(new Set())
+      clearMyPressedKeys()
     }
   })
 
@@ -126,7 +133,8 @@ Key.propTypes = {
   roundResolution: PropTypes.number,
   width: PropTypes.number,
   pressedKeys: PropTypes.instanceOf(Map).isRequired,
-  setPressedKeys: PropTypes.func.isRequired
+  setPressedKeys: PropTypes.func.isRequired,
+  allKeys: PropTypes.instanceOf(Set).isRequired
 }
 
 export default Key

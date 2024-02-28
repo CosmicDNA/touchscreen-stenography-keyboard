@@ -40,6 +40,7 @@ const StenoKeyboard = (props) => {
   const ref = useRef()
   const [pressedKeys, setPressedKeys] = useState(new Map())
 
+  const allKeys = new Set([...pressedKeys.values()].flatMap((set) => [...set]))
   return (
     <group
       {...props}
@@ -52,11 +53,11 @@ const StenoKeyboard = (props) => {
           let rowIndex
           switch (item.type) {
             case 'Key':
-              return <Key {...{ ...item, key, setPressedKeys, pressedKeys }} />
+              return <Key {...{ ...item, key, setPressedKeys, pressedKeys, allKeys }} />
             case 'Row':
               rowIndex = rowItems
                 .findIndex(o => JSON.stringify(o) === JSON.stringify(item))
-              return <KeyGroup {...{ ...item, key, name: `g${rowIndex}`, setPressedKeys, pressedKeys }} />
+              return <KeyGroup {...{ ...item, key, name: `g${rowIndex}`, setPressedKeys, pressedKeys, allKeys }} />
             default:
               return null
           }
