@@ -1,4 +1,4 @@
-import React from 'react'
+import React, { useState, useRef } from 'react'
 import KeyGroup from './KeyGroup'
 import Key from './Key'
 import * as THREE from 'three'
@@ -37,19 +37,26 @@ const config = [
 const rowItems = config.filter(o => o.type === 'Row')
 
 const StenoKeyboard = (props) => {
+  const ref = useRef()
+  const [pressedKeys, setPressedKeys] = useState(new Map())
+
   return (
-    // eslint-disable-next-line react/no-unknown-property
-    <group {...props} rotation-x={-Math.PI / 2}>
+    <group
+      {...props}
+      ref={ref}
+      // eslint-disable-next-line react/no-unknown-property
+      rotation-x={-Math.PI / 2}
+    >
       {
         config.map((item, key) => {
           let rowIndex
           switch (item.type) {
             case 'Key':
-              return <Key {...{ ...item, key }} />
+              return <Key {...{ ...item, key, setPressedKeys, pressedKeys }} />
             case 'Row':
               rowIndex = rowItems
                 .findIndex(o => JSON.stringify(o) === JSON.stringify(item))
-              return <KeyGroup {...{ ...item, key, name: `g${rowIndex}` }} />
+              return <KeyGroup {...{ ...item, key, name: `g${rowIndex}`, setPressedKeys, pressedKeys }} />
             default:
               return null
           }

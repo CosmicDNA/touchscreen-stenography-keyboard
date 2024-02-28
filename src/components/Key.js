@@ -1,14 +1,42 @@
 import PropTypes from 'prop-types'
-import React, { useState, useRef } from 'react'
+import React, { useRef } from 'react'
 import * as THREE from 'three'
 import { useDrag } from '@use-gesture/react'
 import { useThree } from '@react-three/fiber'
 
-const Key = ({ roundResolution = 32, width = 8 / 10, lateral = 7 / 10, depth = 1 / 20, keyId, round, ...props }) => {
-  const meshRef = useRef()
-  const [pressed, setPressed] = useState(false)
+const eqSet = (xs, ys) =>
+  xs?.size === ys?.size &&
+  [...xs].every((x) => ys.has(x))
+
+/**
+ * Represents a Key component.
+ * @typedef {Object} KeyProps
+ * @property {number} roundResolution - The resolution for rounding.
+ * @property {number} width - The width of the key.
+ * @property {number} lateral - The lateral dimension of the key.
+ * @property {number} depth - The depth of the key.
+ * @property {string} keyId - The unique identifier for the key.
+ * @property {number} round - The current round.
+ * @property {function} setPressedKeys - A function to set pressed keys.
+ * @property {Map<string, any>} pressedKeys - A Map where keys are strings and values can be of any type.
+ * @property {...any} props - Additional props.
+ */
+
+/**
+ * Key component.
+ * @param {KeyProps} props - The props object.
+ */
+const Key = ({ roundResolution = 32, width = 8 / 10, lateral = 7 / 10, depth = 1 / 20, keyId, round, setPressedKeys, pressedKeys, ...props }) => {
+  const groupRef = useRef()
   const { raycaster, camera } = useThree()
   const widthOnTwo = width / 2
+
+  const setMyPressedKeys = (newSet) => {
+    setPressedKeys(prevPressedKeys => new Map(prevPressedKeys).set(keyId, newSet))
+  }
+
+  const allKeys = new Set([...pressedKeys.values()].flatMap((set) => [...set]))
+  const pressed = allKeys.has(keyId)
 
   let pts
   if (round) {
@@ -35,13 +63,8 @@ const Key = ({ roundResolution = 32, width = 8 / 10, lateral = 7 / 10, depth = 1
     bevelSegments: 1
   }
 
-  const onPointerDown = (event) => {
-    console.log(`On pointer down event for key ${keyId}: `, event)
-    setPressed(true)
-  }
-  const onPointerUp = (event) => {
-    console.log(`On pointer up event for key ${keyId}: `, event)
-    setPressed(false)
+  const getSet = (array) => {
+    return new Set(array)
   }
 
   const bind = useDrag(({ event, down }) => {
@@ -52,18 +75,25 @@ const Key = ({ roundResolution = 32, width = 8 / 10, lateral = 7 / 10, depth = 1
         -(clientY / window.innerHeight) * 2 + 1
       )
       raycaster.setFromCamera(coords, camera)
-      if (pressed) {
-        if (!raycaster.intersectObject(meshRef.current).length) {
-          onPointerUp(event)
-        }
-      } else {
-        // raycaster.intersectObjects()
+      // Retrieve all key meshes
+      const keyMeshes = groupRef.current.parent.children.map(c => c.children[0])
+      // Check for intersections with keys
+      const intersects = raycaster.intersectObjects(keyMeshes)
+
+      const previousSet = pressedKeys?.get(keyId)
+      const newSet = getSet(intersects.map(intersect => intersect.object.userData.keyId))
+      if (!eqSet(previousSet, newSet)) {
+        setMyPressedKeys(newSet)
       }
+    } else {
+      // Movemen has just ended
+      setMyPressedKeys(new Set())
     }
   })
 
   return (
     <group
+      ref={groupRef}
       {...bind()}
       {...props}
       // eslint-disable-next-line react/no-unknown-property
@@ -72,11 +102,10 @@ const Key = ({ roundResolution = 32, width = 8 / 10, lateral = 7 / 10, depth = 1
       position-z={pressed ? -0.1 : 0}
     >
       <mesh
-        ref={meshRef}
         // eslint-disable-next-line react/no-unknown-property
         position-y={-lateral}
-        onPointerDown={onPointerDown}
-        onPointerUp={onPointerUp}
+        // eslint-disable-next-line react/no-unknown-property
+        userData={{ keyId }}
       >
         {[THREE.Color.NAMES.antiquewhite, THREE.Color.NAMES.gray].map((color, i) =>
           // eslint-disable-next-line react/no-unknown-property
@@ -91,11 +120,13 @@ const Key = ({ roundResolution = 32, width = 8 / 10, lateral = 7 / 10, depth = 1
 
 Key.propTypes = {
   depth: PropTypes.number,
-  keyId: PropTypes.string,
+  keyId: PropTypes.string.isRequired,
   lateral: PropTypes.number,
   round: PropTypes.bool,
   roundResolution: PropTypes.number,
-  width: PropTypes.number
+  width: PropTypes.number,
+  pressedKeys: PropTypes.instanceOf(Map).isRequired,
+  setPressedKeys: PropTypes.func.isRequired
 }
 
 export default Key
