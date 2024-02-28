@@ -2,9 +2,12 @@ import React, { useState, useRef } from 'react'
 import KeyGroup from './KeyGroup'
 import Key from './Key'
 import * as THREE from 'three'
+import { useFrame } from '@react-three/fiber'
+import keySets from './steno-script'
 
 const enter = 0.2
 const rowSpacing = 1.3
+const animate = true
 
 const referencePosition = new THREE.Vector3(0.5, -2.4, 0)
 const position = [
@@ -39,6 +42,34 @@ const rowItems = config.filter(o => o.type === 'Row')
 const StenoKeyboard = (props) => {
   const ref = useRef()
   const [pressedKeys, setPressedKeys] = useState(new Map())
+
+  // Animate the keys
+  useFrame(({ clock }) => {
+    if (animate) {
+      const elapsedTime = clock.getElapsedTime()
+      const speed = 1 // Adjust the typing speed
+      const ratio = 0.6 // chord/blank ratio
+
+      const referenceTime = elapsedTime * speed
+
+      // Calculate the current word index based on elapsed time
+      const wordIndex = Math.floor(referenceTime) // Change word every second
+
+      // Get the current key set for the word
+      const currentKeySet = keySets[wordIndex % keySets.length]
+
+      const delta = referenceTime - wordIndex
+
+      // Combine the current key set and the empty set
+      const combinedKeySet = delta < ratio ? currentKeySet : []
+
+      setPressedKeys(prevPressedKeys => {
+        const newMap = new Map(prevPressedKeys)
+        newMap.set('#', combinedKeySet)
+        return newMap
+      })
+    }
+  })
 
   const allKeys = new Set([...pressedKeys.values()].flatMap((set) => [...set]))
   return (

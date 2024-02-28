@@ -14,7 +14,6 @@
     "@react-three/fiber": "8.15.16",
     "@types/three": "0.161.2",
     "@use-gesture/react": "^10.3.0",
-    "lint-staged": "^15.2.2",
     "react": "18.2.0",
     "react-dom": "18.2.0",
     "react-scripts": "5.0.1",
@@ -28,6 +27,7 @@
     "@babel/plugin-transform-react-jsx": "^7.23.4",
     "@craco/craco": "^7.1.0",
     "@types/node": "*",
+    "lint-staged": "^15.2.2",
     "eslint": "^8.57.0",
     "eslint-config-standard": "^17.1.0",
     "eslint-plugin-import": "^2.29.1",
@@ -43,7 +43,7 @@
     "start": "craco start",
     "build": "craco build",
     "test": "craco test --env=jsdom",
-    "prepare": "husky install"
+    "prepare": "husky"
   },
   "browserslist": [
     ">0.2%",
