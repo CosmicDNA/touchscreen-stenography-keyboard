@@ -1,5 +1,5 @@
 import PropTypes from 'prop-types'
-import React, { useRef } from 'react'
+import React, { useRef, useEffect } from 'react'
 import * as THREE from 'three'
 import { useDrag } from '@use-gesture/react'
 import { useThree } from '@react-three/fiber'
@@ -46,6 +46,25 @@ const Key = ({ roundResolution = 32, fingerResolution = 5, width = 8 / 10, later
   )
 
   const pressed = allKeys.has(keyId)
+
+  const onKeyPress = () => {
+    console.log(`Key ${keyId} was pressed.`)
+  }
+
+  const onKeyRelease = () => {
+    console.log(`Key ${keyId} was released.`)
+  }
+
+  // Watch for changes in the 'pressed' variable
+  useEffect(() => {
+    if (pressed) {
+      // Trigger onKeyPress event here when 'pressed' becomes true
+      onKeyPress()
+    } else {
+      // Trigger onKeyRelease event here when 'pressed' becomes false
+      onKeyRelease()
+    }
+  }, [pressed])
 
   const updateMyPressedKeys = (callback) => {
     setPressedKeys(prevPressedKeys => {
