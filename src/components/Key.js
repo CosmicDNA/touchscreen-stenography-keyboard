@@ -5,6 +5,8 @@ import { useDrag } from '@use-gesture/react'
 import { useThree } from '@react-three/fiber'
 // import useAudio from './hooks/useAudio'
 import useSound from 'use-sound'
+import keypressAudioFile from '../sounds/keypress.flac'
+import keyreleaseAudioFile from '../sounds/keyrelease.flac'
 
 const eqSet = (xs, ys) =>
   xs?.size === ys?.size &&
@@ -40,8 +42,8 @@ const Key = ({ roundResolution = 32, fingerResolution = 5, width = 8 / 10, later
   const groupRef = useRef()
   const { camera } = useThree()
   const widthOnTwo = width / 2
-  const [playKeyPress] = useSound('/keypress.flac')
-  const [playKeyRelease] = useSound('/keyrelease.flac', { volume: 0.7 })
+  const [playKeyPress] = useSound(keypressAudioFile)
+  const [playKeyRelease] = useSound(keyreleaseAudioFile, { volume: 0.7 })
 
   const rawFingerModel = getCircularPoints(
     fingerResolution,
@@ -50,8 +52,6 @@ const Key = ({ roundResolution = 32, fingerResolution = 5, width = 8 / 10, later
   )
 
   const pressed = allKeys.has(keyId)
-
-  // console.log(playingKeypress, playingKeyRelease)
 
   const onKeyPress = () => {
     playKeyPress()
