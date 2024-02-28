@@ -4,13 +4,16 @@ import * as THREE from 'three'
 import { useDrag } from '@use-gesture/react'
 import { useThree } from '@react-three/fiber'
 
-const getSet = (array) => {
-  return new Set(array)
-}
-
 const eqSet = (xs, ys) =>
   xs?.size === ys?.size &&
   [...xs].every((x) => ys.has(x))
+
+const getCircularPoints = (segments, resolution, radius, theta0 = 0) => {
+  return [...Array(segments).keys()].map(i => {
+    const theta = theta0 + 2 * Math.PI * i / resolution
+    return [Math.cos(theta) * radius, Math.sin(theta) * radius]
+  })
+}
 
 /**
  * Represents a Key component.
@@ -31,10 +34,16 @@ const eqSet = (xs, ys) =>
  * Key component.
  * @param {KeyProps} props - The props object.
  */
-const Key = ({ roundResolution = 32, width = 8 / 10, lateral = 7 / 10, depth = 1 / 20, keyId, round, setPressedKeys, pressedKeys, allKeys, ...props }) => {
+const Key = ({ roundResolution = 32, fingerResolution = 5, width = 8 / 10, lateral = 7 / 10, depth = 1 / 20, keyId, round, setPressedKeys, pressedKeys, allKeys, ...props }) => {
   const groupRef = useRef()
-  const { raycaster, camera } = useThree()
+  const { camera } = useThree()
   const widthOnTwo = width / 2
+
+  const rawFingerModel = getCircularPoints(
+    fingerResolution,
+    fingerResolution,
+    0.05
+  )
 
   const pressed = allKeys.has(keyId)
 
@@ -52,10 +61,12 @@ const Key = ({ roundResolution = 32, width = 8 / 10, lateral = 7 / 10, depth = 1
   let pts
   if (round) {
     const radius = widthOnTwo
-    const underSemiCircumference = [...Array(roundResolution / 2 + 1).keys()].map(i => {
-      const a = Math.PI + 2 * Math.PI * i / roundResolution
-      return [Math.cos(a) * radius, Math.sin(a) * radius]
-    })
+    const underSemiCircumference = getCircularPoints(
+      roundResolution / 2 + 1,
+      roundResolution,
+      radius,
+      Math.PI
+    )
 
     const pre = [underSemiCircumference[0][0], underSemiCircumference[0][1] + lateral]
     const pos = [underSemiCircumference[underSemiCircumference.length - 1][0], underSemiCircumference[underSemiCircumference.length - 1][1] + lateral]
@@ -81,14 +92,20 @@ const Key = ({ roundResolution = 32, width = 8 / 10, lateral = 7 / 10, depth = 1
         (clientX / window.innerWidth) * 2 - 1,
         -(clientY / window.innerHeight) * 2 + 1
       )
-      raycaster.setFromCamera(coords, camera)
-      // Retrieve all key meshes
-      const keyMeshes = groupRef.current.parent.children.map(c => c.children[0])
-      // Check for intersections with keys
-      const intersects = raycaster.intersectObjects(keyMeshes)
+      const fingerVectors = rawFingerModel.map(v => new THREE.Vector2(...v).add(coords))
+
+      const intersects = new Set([...fingerVectors.map(v => {
+        const raycaster = new THREE.Raycaster()
+        raycaster.setFromCamera(v, camera)
+        // Retrieve all key meshes
+        const keyMeshes = groupRef.current.parent.children.map(c => c.children[0])
+        // Check for intersections with keys
+        const intersects = raycaster.intersectObjects(keyMeshes)
+        return intersects
+      }).flat().map(o => o.object)])
 
       const previousSet = pressedKeys?.get(keyId)
-      const newSet = getSet(intersects.map(intersect => intersect.object.userData.keyId))
+      const newSet = new Set([...intersects].map(o => o.userData.keyId))
       if (!eqSet(previousSet, newSet)) {
         setMyPressedKeys(newSet)
       }
@@ -131,6 +148,7 @@ Key.propTypes = {
   lateral: PropTypes.number,
   round: PropTypes.bool,
   roundResolution: PropTypes.number,
+  fingerResolution: PropTypes.number,
   width: PropTypes.number,
   pressedKeys: PropTypes.instanceOf(Map).isRequired,
   setPressedKeys: PropTypes.func.isRequired,
