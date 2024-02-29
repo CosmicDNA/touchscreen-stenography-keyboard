@@ -4,6 +4,11 @@
 ![GitHub License](https://img.shields.io/github/license/CosmicDNA/touchscreen-stenography-keyboard)
 [![DeepScan grade](https://deepscan.io/api/teams/23301/projects/26581/branches/848067/badge/grade.svg)](https://deepscan.io/dashboard#view=project&tid=23301&pid=26581&bid=848067)
 
+## Repository
+
+This code repository hosted at https://github.com/CosmicDNA/touchscreen-stenography-keyboard
+
+## Purpose of The Project
 
 The aim of this project is to render with React Three Fiber a usefull stenography touchscreen keyboard.
 
@@ -14,27 +19,33 @@ The application was deployed to Netlify and is available at:
 
 https://touch-stenography-keyboard.netlify.app/
 
+## Usage Example
+
 In the following video, it is being typed upon:
 
 > This is an example of machine shorthand from a steno keyboard with paper.
 
 https://github.com/CosmicDNA/touchscreen-stenography-keyboard/assets/92752640/918194d6-0273-45d9-a68f-b56a64fe9726
 
-## Running
+## Development
+
+[![asciicast](https://asciinema.org/a/644164.svg)](https://asciinema.org/a/644164)
+
+### Running
 
 In your terminal run:
 ```shell
 yarn && yarn start
 ```
 
-## Building
+### Building
 
 ```shell
 yarn build
 yarn global add serve
 ```
 
-### Serving
+### Serving Production Build
 
 ```shell
 NODENV=production && serve -s build
