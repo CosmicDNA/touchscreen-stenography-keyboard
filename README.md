@@ -30,7 +30,7 @@ https://github.com/CosmicDNA/touchscreen-stenography-keyboard/assets/92752640/a0
 
 ## Development
 
-[![asciicast](https://asciinema.org/a/644164.svg)](https://asciinema.org/a/644164)
+![touchscreen-stenography-keyboard-build](https://github.com/CosmicDNA/touchscreen-stenography-keyboard/assets/92752640/1f1da328-26f4-4ca3-8055-f623a19b7edb)
 
 ### Running
 
