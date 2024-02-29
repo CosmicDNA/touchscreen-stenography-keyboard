@@ -25,7 +25,8 @@ In the following video, it is being typed upon:
 
 > This is an example of machine shorthand from a steno keyboard with paper.
 
-https://github.com/CosmicDNA/touchscreen-stenography-keyboard/assets/92752640/918194d6-0273-45d9-a68f-b56a64fe9726
+
+https://github.com/CosmicDNA/touchscreen-stenography-keyboard/assets/92752640/a0de77a5-2570-4504-a4d2-f5eeeea94b92
 
 ## Development
 
