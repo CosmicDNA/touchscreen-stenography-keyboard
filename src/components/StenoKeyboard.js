@@ -99,15 +99,19 @@ const StenoKeyboard = (props) => {
   const previousAllKeys = usePrevious(allKeys)
 
   useEffect(() => {
-    const addedItemsArray = [...allKeys].filter(item => !previousAllKeys.has(item))
-    // const addedItems = new Set(addedItemsArray)
-    // console.log('Added items:', addedItems)
-    sendJsonMessage({ stroke: addedItemsArray, secretkey })
+    if (!eqSet(allKeys, previousAllKeys)) {
+      const addedItemsArray = [...allKeys].filter(item => !previousAllKeys.has(item))
+      const addedItems = new Set(addedItemsArray)
+      console.log('Added items:', addedItems)
+      if (addedItemsArray.length) {
+        sendJsonMessage({ stroke: addedItemsArray, secretkey })
+      }
 
-    // const removedItemsArray = [...previousAllKeys].filter(item => !allKeys.has(item))
-    // const removedItems = new Set(removedItemsArray)
-    // console.log('Removed items:', removedItems)
-  }, [eqSet(allKeys, previousAllKeys)])
+      const removedItemsArray = [...previousAllKeys].filter(item => !allKeys.has(item))
+      const removedItems = new Set(removedItemsArray)
+      console.log('Removed items:', removedItems)
+    }
+  }, [allKeys, previousAllKeys])
 
   return (
     <group
