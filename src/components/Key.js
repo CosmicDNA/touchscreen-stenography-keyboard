@@ -3,10 +3,7 @@ import React, { useRef, useEffect } from 'react'
 import * as THREE from 'three'
 import { useDrag } from '@use-gesture/react'
 import { useThree } from '@react-three/fiber'
-
-const eqSet = (xs, ys) =>
-  xs?.size === ys?.size &&
-  [...xs].every((x) => ys.has(x))
+import { eqSet } from './utils/tools'
 
 const getCircularPoints = (segments, resolution, radius, theta0 = 0) => {
   return [...Array(segments).keys()].map(i => {

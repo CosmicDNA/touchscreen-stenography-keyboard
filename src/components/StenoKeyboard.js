@@ -1,4 +1,4 @@
-import React, { useState, useRef } from 'react'
+import React, { useState, useRef, useEffect } from 'react'
 import KeyGroup from './KeyGroup'
 import Key from './Key'
 import * as THREE from 'three'
@@ -8,6 +8,8 @@ import useSound from 'use-sound'
 import keypressAudioFile from '../sounds/keypress.flac'
 import keyreleaseAudioFile from '../sounds/keyrelease.flac'
 import { useWebSocketContext } from './hooks/useWebSocket'
+import usePrevious from './hooks/usePrevious'
+import { eqSet } from './utils/tools'
 
 const enter = 0.2
 const rowSpacing = 1.3
@@ -57,7 +59,6 @@ const StenoKeyboard = (props) => {
   const onKeyPress = (keyId) => {
     playKeyPress()
     console.log(`Key ${keyId} was pressed.`)
-    sendJsonMessage({ stroke: [keyId], secretkey })
   }
 
   const onKeyRelease = (keyId) => {
@@ -95,6 +96,19 @@ const StenoKeyboard = (props) => {
   })
 
   const allKeys = new Set([...pressedKeys.values()].flatMap((set) => [...set]))
+  const previousAllKeys = usePrevious(allKeys)
+
+  useEffect(() => {
+    const addedItemsArray = [...allKeys].filter(item => !previousAllKeys.has(item))
+    // const addedItems = new Set(addedItemsArray)
+    // console.log('Added items:', addedItems)
+    sendJsonMessage({ stroke: addedItemsArray, secretkey })
+
+    // const removedItemsArray = [...previousAllKeys].filter(item => !allKeys.has(item))
+    // const removedItems = new Set(removedItemsArray)
+    // console.log('Removed items:', removedItems)
+  }, [eqSet(allKeys, previousAllKeys)])
+
   return (
     <group
       {...props}
