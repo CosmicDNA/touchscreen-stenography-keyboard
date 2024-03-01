@@ -21,6 +21,9 @@ https://touch-stenography-keyboard.netlify.app/
 
 ## Usage Example
 
+Make sure to selecte the plugin `plover-engine-server-2` and configure Plover accordingly.
+Use default configuration from https://github.com/user202729/plover_websocket_server and it should work right out of the box. For the time being, do not customise `plover_engine_server_config.json`.
+
 In the following video, it is being typed upon:
 
 > This is an example of machine shorthand from a steno keyboard with paper.
