@@ -3,10 +3,6 @@ import React, { useRef, useEffect } from 'react'
 import * as THREE from 'three'
 import { useDrag } from '@use-gesture/react'
 import { useThree } from '@react-three/fiber'
-// import useAudio from './hooks/useAudio'
-import useSound from 'use-sound'
-import keypressAudioFile from '../sounds/keypress.flac'
-import keyreleaseAudioFile from '../sounds/keyrelease.flac'
 
 const eqSet = (xs, ys) =>
   xs?.size === ys?.size &&
@@ -39,11 +35,10 @@ const getCircularPoints = (segments, resolution, radius, theta0 = 0) => {
  * @param {KeyProps} props - The props object.
  */
 const Key = ({ roundResolution = 32, fingerResolution = 5, width = 8 / 10, lateral = 7 / 10, depth = 1 / 20, keyId, round, setPressedKeys, pressedKeys, allKeys, ...props }) => {
+  const { onKeyPress, onKeyRelease } = props
   const groupRef = useRef()
   const { camera } = useThree()
   const widthOnTwo = width / 2
-  const [playKeyPress] = useSound(keypressAudioFile)
-  const [playKeyRelease] = useSound(keyreleaseAudioFile, { volume: 0.7 })
 
   const rawFingerModel = getCircularPoints(
     fingerResolution,
@@ -53,24 +48,14 @@ const Key = ({ roundResolution = 32, fingerResolution = 5, width = 8 / 10, later
 
   const pressed = allKeys.has(keyId)
 
-  const onKeyPress = () => {
-    playKeyPress()
-    console.log(`Key ${keyId} was pressed.`)
-  }
-
-  const onKeyRelease = () => {
-    playKeyRelease()
-    console.log(`Key ${keyId} was released.`)
-  }
-
   // Watch for changes in the 'pressed' variable
   useEffect(() => {
     if (pressed) {
       // Trigger onKeyPress event here when 'pressed' becomes true
-      onKeyPress()
+      onKeyPress(keyId)
     } else {
       // Trigger onKeyRelease event here when 'pressed' becomes false
-      onKeyRelease()
+      onKeyRelease(keyId)
     }
   }, [pressed])
 
@@ -179,6 +164,8 @@ Key.propTypes = {
   width: PropTypes.number,
   pressedKeys: PropTypes.instanceOf(Map).isRequired,
   setPressedKeys: PropTypes.func.isRequired,
+  onKeyPress: PropTypes.func.isRequired,
+  onKeyRelease: PropTypes.func.isRequired,
   allKeys: PropTypes.instanceOf(Set).isRequired
 }
 

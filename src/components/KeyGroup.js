@@ -24,6 +24,8 @@ KeyGroup.propTypes = {
   round: PropTypes.bool,
   pressedKeys: PropTypes.objectOf(Map).isRequired,
   setPressedKeys: PropTypes.func.isRequired,
+  onKeyPress: PropTypes.func.isRequired,
+  onKeyRelease: PropTypes.func.isRequired,
   allKeys: PropTypes.objectOf(Set).isRequired
 }
 
