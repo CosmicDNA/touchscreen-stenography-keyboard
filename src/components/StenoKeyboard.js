@@ -9,7 +9,7 @@ import keypressAudioFile from '../sounds/keypress.flac'
 import keyreleaseAudioFile from '../sounds/keyrelease.flac'
 import { useWebSocketContext } from './hooks/useWebSocket'
 import usePrevious from './hooks/usePrevious'
-import { eqSet } from './utils/tools'
+import { getAddedAndRemovedItems } from './utils/tools'
 
 const enter = 0.2
 const rowSpacing = 1.3
@@ -98,20 +98,22 @@ const StenoKeyboard = (props) => {
   const allKeys = new Set([...pressedKeys.values()].flatMap((set) => [...set]))
   const previousAllKeys = usePrevious(allKeys)
 
-  useEffect(() => {
-    if (!eqSet(allKeys, previousAllKeys)) {
-      const addedItemsArray = [...allKeys].filter(item => !previousAllKeys.has(item))
-      const addedItems = new Set(addedItemsArray)
-      console.log('Added items:', addedItems)
-      if (addedItemsArray.length) {
-        sendJsonMessage({ stroke: addedItemsArray, secretkey })
-      }
+  const [addedItemsArray, removedItemsArray] = getAddedAndRemovedItems(allKeys, previousAllKeys)
 
-      const removedItemsArray = [...previousAllKeys].filter(item => !allKeys.has(item))
-      const removedItems = new Set(removedItemsArray)
+  useEffect(() => {
+    const addedItems = new Set(addedItemsArray)
+
+    if (addedItemsArray.length) {
+      console.log('Added items:', addedItems)
+      sendJsonMessage({ stroke: addedItemsArray, secretkey })
+    }
+
+    const removedItems = new Set(removedItemsArray)
+
+    if (removedItemsArray.length) {
       console.log('Removed items:', removedItems)
     }
-  }, [allKeys, previousAllKeys])
+  }, [addedItemsArray, removedItemsArray])
 
   return (
     <group

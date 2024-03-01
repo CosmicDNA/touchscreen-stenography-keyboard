@@ -3,14 +3,8 @@ import React, { useRef, useEffect } from 'react'
 import * as THREE from 'three'
 import { useDrag } from '@use-gesture/react'
 import { useThree } from '@react-three/fiber'
-import { eqSet } from './utils/tools'
-
-const getCircularPoints = (segments, resolution, radius, theta0 = 0) => {
-  return [...Array(segments).keys()].map(i => {
-    const theta = theta0 + 2 * Math.PI * i / resolution
-    return [Math.cos(theta) * radius, Math.sin(theta) * radius]
-  })
-}
+import { eqSet, getCircularPoints } from './utils/tools'
+import useMount from './hooks/useMount'
 
 /**
  * Represents a Key component.
@@ -35,6 +29,7 @@ const Key = ({ roundResolution = 32, fingerResolution = 5, width = 8 / 10, later
   const { onKeyPress, onKeyRelease } = props
   const groupRef = useRef()
   const { camera } = useThree()
+  const { isMounted } = useMount()
   const widthOnTwo = width / 2
 
   const rawFingerModel = getCircularPoints(
@@ -47,12 +42,14 @@ const Key = ({ roundResolution = 32, fingerResolution = 5, width = 8 / 10, later
 
   // Watch for changes in the 'pressed' variable
   useEffect(() => {
-    if (pressed) {
-      // Trigger onKeyPress event here when 'pressed' becomes true
-      onKeyPress(keyId)
-    } else {
-      // Trigger onKeyRelease event here when 'pressed' becomes false
-      onKeyRelease(keyId)
+    if (isMounted) {
+      if (pressed) {
+        // Trigger onKeyPress event here when 'pressed' becomes true
+        onKeyPress(keyId)
+      } else {
+        // Trigger onKeyRelease event here when 'pressed' becomes false
+        onKeyRelease(keyId)
+      }
     }
   }, [pressed])
 
@@ -119,7 +116,7 @@ const Key = ({ roundResolution = 32, fingerResolution = 5, width = 8 / 10, later
         setMyPressedKeys(newSet)
       }
     } else {
-      // Movemen has just ended
+      // Movement has just ended
       clearMyPressedKeys()
     }
   })
