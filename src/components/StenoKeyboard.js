@@ -46,8 +46,7 @@ const rowItems = config.filter(o => o.type === 'Row')
 const StenoKeyboard = (props) => {
   const ref = useRef()
   const [pressedKeys, setPressedKeys] = useState(new Map())
-  const websocket = 'ws://localhost:8086/websocket'
-  const { lastJsonMessage, sendJsonMessage, secretkey } = useWebSocketContext(websocket)
+  const { lastJsonMessage, sendJsonMessage, secretkey } = useWebSocketContext()
 
   // sendMessage('close')
   console.log(lastJsonMessage)
