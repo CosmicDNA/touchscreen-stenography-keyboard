@@ -34,9 +34,9 @@ const position = [
 
 const round = true
 const config = [
-  { type: 'Key', keyId: '#', width: 9.8, position: position[0] },
-  { type: 'Key', keyId: '*', lateral: 2, position: position[1], round },
-  { type: 'Key', keyId: 'S-', lateral: 2, position: position[2], round },
+  { type: 'Key', keyId: '#', width: 9.8, position: position[0], offsetY: 0.15 },
+  { type: 'Key', keyId: '*', lateral: 2, position: position[1], round, offsetX: -0.13, offsetY: -1.04, scale: 3 },
+  { type: 'Key', keyId: 'S-', lateral: 2, position: position[2], round, offsetY: -0.72 },
   { type: 'Row', keys: ['-F', '-P', '-L', '-T', '-D'], position: position[3], lateral: 1.1 },
   { type: 'Row', keys: ['-R', '-G', '-B', '-S', '-Z'], position: position[4], round },
   { type: 'Row', keys: ['A-', 'O-'], position: position[5], round },
@@ -107,14 +107,14 @@ const StenoKeyboard = ({ controls, ...props }) => {
 
   useEffect(() => {
     if (addedItems.size) {
-      console.log('Added items:', addedItems)
+      // console.log('Added items:', addedItems)
       if (controls.sendStroke === 'onKeyPress') {
         sendJsonMessage({ stroke: [...addedItems], secretkey })
       }
     }
 
     if (removedItems.size) {
-      console.log('Removed items:', removedItems)
+      // console.log('Removed items:', removedItems)
     }
   }, [addedItems, removedItems].map(s => dep(s)))
 

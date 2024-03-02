@@ -3,6 +3,7 @@ import React, { useEffect } from 'react'
 import * as THREE from 'three'
 import { getCircularPoints } from './utils/tools'
 import useMount from './hooks/useMount'
+import { Text3D } from '@react-three/drei'
 
 /**
  * Represents a Key component.
@@ -24,7 +25,7 @@ import useMount from './hooks/useMount'
  * Key component.
  * @param {KeyProps} props - The props object.
  */
-const Key = ({ roundResolution = 32, fingerResolution = 5, width = 8 / 10, lateral = 7 / 10, depth = 1 / 20, keyId, round, setPressedKeys, pressedKeys, allKeys, ...props }) => {
+const Key = ({ offsetX = 0, offsetY = 0, scale = 1, roundResolution = 32, fingerResolution = 5, width = 8 / 10, lateral = 7 / 10, depth = 1 / 20, keyId, round, setPressedKeys, pressedKeys, allKeys, ...props }) => {
   const { onKeyPress, onKeyRelease } = props
   const { isMounted } = useMount()
   const widthOnTwo = width / 2
@@ -95,11 +96,17 @@ const Key = ({ roundResolution = 32, fingerResolution = 5, width = 8 / 10, later
         {/* eslint-disable-next-line react/no-unknown-property */}
         <extrudeGeometry args={[new THREE.Shape(pts.map(points => new THREE.Vector2(...points))), extrudeSettings]} />
       </mesh>
+      <Text3D font='/Arial.json' size={0.2 * scale} height={0.01} position={[-0.07 + offsetX, -0.6 + offsetY, 0.1]}>
+        {keyId.replace('-', '')}
+      </Text3D>
     </group>
   )
 }
 
 Key.propTypes = {
+  scale: PropTypes.number,
+  offsetX: PropTypes.number,
+  offsetY: PropTypes.number,
   depth: PropTypes.number,
   keyId: PropTypes.string.isRequired,
   lateral: PropTypes.number,

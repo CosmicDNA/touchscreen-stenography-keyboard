@@ -5,6 +5,7 @@ import StenoKeyboard from './components/StenoKeyboard'
 import { WebSocketProvider } from './components/hooks/useWebSocket'
 import { useControls } from 'leva'
 import { TunnelProvider, useTunnelContext } from './components/hooks/useTunnel'
+import Grid from './components/Grid'
 
 const protocols = {
   ws: 'ws://',
@@ -47,9 +48,17 @@ const Tunneled = ({ ...props }) => {
           <StenoKeyboard controls={kControls}/>
         </WebSocketProvider>
         {/* </Suspense> */}
-        <ContactShadows frames={1} position-y={-0.5} blur={1} opacity={0.75} />
+        <ContactShadows frames={3} position-y={-0.5} blur={1} opacity={0.75} />
         {/* <ContactShadows frames={1} position-y={-0.5} blur={3} color="orange" /> */}
-        <OrbitControls minPolarAngle={0} maxPolarAngle={Math.PI / 2.1} touches={false} />
+        <OrbitControls
+          autoRotate={false}
+          autoRotateSpeed={-0.1}
+          zoomSpeed={0.25}
+          minPolarAngle={0}
+          dampingFactor={0.05}
+          maxPolarAngle={Math.PI / 2.1}
+          touches={false} />
+          <Grid position={[0, -0.5, 0]} />
       </Canvas>
     </>
   )
