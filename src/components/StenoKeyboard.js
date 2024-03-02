@@ -62,12 +62,12 @@ const StenoKeyboard = (props) => {
 
   const onKeyPress = (keyId) => {
     playKeyPress()
-    console.log(`Key ${keyId} was pressed.`)
+    // console.log(`Key ${keyId} was pressed.`)
   }
 
   const onKeyRelease = (keyId) => {
     playKeyRelease()
-    console.log(`Key ${keyId} was released.`)
+    // console.log(`Key ${keyId} was released.`)
   }
 
   // Animate the keys

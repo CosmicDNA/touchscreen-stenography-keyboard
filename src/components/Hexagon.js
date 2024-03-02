@@ -16,6 +16,9 @@ const Hexagon = ({ radius = 1, name, color, pressedKeys, setPressedKeys, ...prop
   const coordinatesList = underSemiCircumference
     .map(n => new THREE.Vector3(n[0], n[1], 0))
 
+  // const opacity = 0.05
+  const opacity = 0
+
   return (
     <group
       {...dragProps}
@@ -24,7 +27,7 @@ const Hexagon = ({ radius = 1, name, color, pressedKeys, setPressedKeys, ...prop
       {/* eslint-disable-next-line react/no-unknown-property */}
       <mesh userData={{ keyId }}>
         {/* eslint-disable-next-line react/no-unknown-property */}
-        <meshStandardMaterial attach='material' color={color} opacity={0.05} depthWrite={false} transparent={true}/>
+        <meshStandardMaterial attach='material' color={color} opacity={opacity} depthWrite={false} transparent={true}/>
         {/* eslint-disable-next-line react/no-unknown-property */}
         <shapeGeometry args={[new THREE.Shape(coordinatesList)]} {...props} />
       </mesh>

@@ -35,6 +35,7 @@ const useDragHook = ({ fingerResolution = 5, keyId, pressedKeys, setPressedKeys 
 
       const intersects = new Set([...fingerVectors.map(v => {
         const raycaster = new THREE.Raycaster()
+        raycaster.far = 50
         raycaster.setFromCamera(v, camera)
         // Retrieve all key meshes
         const keyMeshes = groupRef.current.parent.children.map(c => c.children[0])
