@@ -1,3 +1,4 @@
+import PropTypes from 'prop-types'
 import React, { useState, useRef, useEffect } from 'react'
 import KeyGroup from './KeyGroup'
 import Key from './Key'
@@ -9,8 +10,7 @@ import keypressAudioFile from '../sounds/keypress.flac'
 import keyreleaseAudioFile from '../sounds/keyrelease.flac'
 import { useWebSocketContext } from './hooks/useWebSocket'
 import usePrevious from './hooks/usePrevious'
-import { getAddedAndRemovedItems } from './utils/tools'
-// import Floor from './Floor'
+import { getAddedAndRemovedItems, dep } from './utils/tools'
 import HexagonFloor from './HexagonFloor'
 
 const enter = 0.2
@@ -47,8 +47,9 @@ const config = [
 
 const rowItems = config.filter(o => o.type === 'Row')
 
-const StenoKeyboard = (props) => {
+const StenoKeyboard = ({ controls, ...props }) => {
   const ref = useRef()
+  const [largestKeySet, setLargestKeySet] = useState(new Set())
   const [pressedKeys, setPressedKeys] = useState(new Map())
   const { lastJsonMessage, sendJsonMessage, secretkey } = useWebSocketContext()
 
@@ -102,22 +103,35 @@ const StenoKeyboard = (props) => {
   const allKeys = new Set([...pressedKeys.values()].flatMap((set) => [...set]))
   const previousAllKeys = usePrevious(allKeys)
 
-  const [addedItemsArray, removedItemsArray] = getAddedAndRemovedItems(allKeys, previousAllKeys)
+  const [addedItems, removedItems] = getAddedAndRemovedItems(allKeys, previousAllKeys)
 
   useEffect(() => {
-    const addedItems = new Set(addedItemsArray)
-
-    if (addedItemsArray.length) {
+    if (addedItems.size) {
       console.log('Added items:', addedItems)
-      sendJsonMessage({ stroke: addedItemsArray, secretkey })
+      if (controls.sendStroke === 'onKeyPress') {
+        sendJsonMessage({ stroke: [...addedItems], secretkey })
+      }
     }
 
-    const removedItems = new Set(removedItemsArray)
-
-    if (removedItemsArray.length) {
+    if (removedItems.size) {
       console.log('Removed items:', removedItems)
     }
-  }, [addedItemsArray, removedItemsArray])
+  }, [addedItems, removedItems].map(s => dep(s)))
+
+  useEffect(() => {
+    if (allKeys.size === 0) {
+      if (controls.sendStroke === 'onKeyRelease') {
+        const stroke = [...largestKeySet]
+        sendJsonMessage({ stroke, secretkey })
+        setLargestKeySet(new Set())
+      }
+    } else {
+      if (allKeys.size > largestKeySet.size) {
+        // Should record largest key set!
+        setLargestKeySet(allKeys)
+      }
+    }
+  }, [dep(allKeys)])
 
   return (
     <group
@@ -146,6 +160,10 @@ const StenoKeyboard = (props) => {
       <HexagonFloor {...{ setPressedKeys, pressedKeys }} position={[0, 0, -0.5]}/>
     </group>
   )
+}
+
+StenoKeyboard.propTypes = {
+  controls: PropTypes.object.isRequired
 }
 
 export default StenoKeyboard

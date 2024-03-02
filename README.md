@@ -21,8 +21,12 @@ https://touch-stenography-keyboard.netlify.app/
 
 ## Usage Example
 
-Make sure to selecte the plugin `plover-engine-server-2` and configure Plover accordingly.
-Use default configuration from https://github.com/user202729/plover_websocket_server and it should work right out of the box. For the time being, do not customise `plover_engine_server_config.json`.
+### Plover connection configuration
+
+Within Plover, make sure to select and enable the plugin `plover-engine-server-2`. More information can be found on [the web-socket server Plover plugin repository](https://github.com/user202729/plover_websocket_server). The following image shows the the default configuration for the connection. If you have created a custom `plover_engine_server_config.json`, make sure it is matching the configuration within this app.
+
+
+![Plover connection](<assets/Configure web-socket connection.png>)
 
 In the following video, it is being typed upon:
 

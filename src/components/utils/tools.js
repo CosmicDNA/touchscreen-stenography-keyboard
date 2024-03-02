@@ -35,58 +35,38 @@ const eqArr = (xs, ys) =>
 
 /**
  *
- * @param {Set} theSet
- * @returns {any[]}
+ * @param {Set} a
+ * @param {Set} b
+ * @returns {Set}
  */
-const uniqueArray = (theSet) => {
-  return [...theSet].sort((a, b) => a - b)
-}
-
-/**
- *
- * @param {Set} theSet
- * @returns {String}
- */
-const uniqueString = (theSet) => {
-  return JSON.stringify(uniqueArray(theSet))
-}
+const getUniqueItems = (a, b) => new Set([...a].filter(item => !b.has(item)))
 
 /**
  *
  * @param {Set} a
  * @param {Set} b
- * @returns {any[]}
- */
-const getUniqueItems = (a, b) => [...a].filter(item => !b.has(item))
-
-/**
- *
- * @param {Set} a
- * @param {Set} b
- * @returns {any[]}
- */
-const getSortedUniqueItems = (a, b) => getUniqueItems(a, b).sort((a, b) => a - b)
-
-/**
- *
- * @param {Set} a
- * @param {Set} b
- * @returns {[any[], any[]]}
+ * @returns {[Set, Set]}
  */
 const getAddedAndRemovedItems = (a, b) => {
   return [
     [a, b],
     [b, a]
-  ].map((arr) => getSortedUniqueItems(...arr))
+  ].map((arr) => getUniqueItems(...arr))
+}
+
+/**
+ *
+ * @param {Set} set
+ */
+const dep = (set) => {
+  return JSON.stringify([...set].sort())
 }
 
 export {
+  dep,
   eqSet,
   eqArr,
-  uniqueString,
-  uniqueArray,
   getUniqueItems,
-  getSortedUniqueItems,
   getAddedAndRemovedItems,
   getCircularPoints
 }
