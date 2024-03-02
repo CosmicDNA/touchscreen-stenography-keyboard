@@ -1,23 +1,23 @@
 import PropTypes from 'prop-types'
-import React, { useRef, useEffect } from 'react'
+import React, { useEffect } from 'react'
 import * as THREE from 'three'
-import { useDrag } from '@use-gesture/react'
-import { useThree } from '@react-three/fiber'
-import { eqSet, getCircularPoints } from './utils/tools'
+import useDrag from './hooks/useDrag'
+import { getCircularPoints } from './utils/tools'
 import useMount from './hooks/useMount'
 
 /**
  * Represents a Key component.
  * @typedef {Object} KeyProps
- * @property {number} roundResolution - The resolution for rounding.
- * @property {number} width - The width of the key.
- * @property {number} lateral - The lateral dimension of the key.
- * @property {number} depth - The depth of the key.
- * @property {string} keyId - The unique identifier for the key.
- * @property {number} round - The current round.
+ * @property {Number} roundResolution - The resolution for rounding.
+ * @property {Number} fingerResolution - The resolution of the finger for raycasting.
+ * @property {Number} width - The width of the key.
+ * @property {Number} lateral - The lateral dimension of the key.
+ * @property {Number} depth - The depth of the key.
+ * @property {String} keyId - The unique identifier for the key.
+ * @property {Number} round - The current round.
  * @property {function} setPressedKeys - A function to set pressed keys.
- * @property {Map<string, Set<string>>} pressedKeys - A Map where keys are strings and values can be of any type.
- * @property {Set<string>} allKeys - Set of pressed keys.
+ * @property {Map<String, Set<String>>} pressedKeys - A Map where keys are strings and values can be of any type.
+ * @property {Set<String>} allKeys - Set of pressed keys.
  * @property {...any} props - Additional props.
  */
 
@@ -27,16 +27,9 @@ import useMount from './hooks/useMount'
  */
 const Key = ({ roundResolution = 32, fingerResolution = 5, width = 8 / 10, lateral = 7 / 10, depth = 1 / 20, keyId, round, setPressedKeys, pressedKeys, allKeys, ...props }) => {
   const { onKeyPress, onKeyRelease } = props
-  const groupRef = useRef()
-  const { camera } = useThree()
+  const dragProps = useDrag({ fingerResolution, keyId, pressedKeys, setPressedKeys })
   const { isMounted } = useMount()
   const widthOnTwo = width / 2
-
-  const rawFingerModel = getCircularPoints(
-    fingerResolution,
-    fingerResolution,
-    0.05
-  )
 
   const pressed = allKeys.has(keyId)
 
@@ -52,17 +45,6 @@ const Key = ({ roundResolution = 32, fingerResolution = 5, width = 8 / 10, later
       }
     }
   }, [pressed])
-
-  const updateMyPressedKeys = (callback) => {
-    setPressedKeys(prevPressedKeys => {
-      const newMap = new Map(prevPressedKeys)
-      callback(newMap)
-      return newMap
-    })
-  }
-
-  const setMyPressedKeys = (newSet) => updateMyPressedKeys((map) => map.set(keyId, newSet))
-  const clearMyPressedKeys = () => updateMyPressedKeys((map) => map.delete(keyId))
 
   let pts
   if (round) {
@@ -91,40 +73,12 @@ const Key = ({ roundResolution = 32, fingerResolution = 5, width = 8 / 10, later
     bevelSegments: 1
   }
 
-  const bind = useDrag(({ event, down }) => {
-    if (down) {
-      const { clientX, clientY } = event
-      const coords = new THREE.Vector2(
-        (clientX / window.innerWidth) * 2 - 1,
-        -(clientY / window.innerHeight) * 2 + 1
-      )
-      const fingerVectors = rawFingerModel.map(v => new THREE.Vector2(...v).add(coords))
-
-      const intersects = new Set([...fingerVectors.map(v => {
-        const raycaster = new THREE.Raycaster()
-        raycaster.setFromCamera(v, camera)
-        // Retrieve all key meshes
-        const keyMeshes = groupRef.current.parent.children.map(c => c.children[0])
-        // Check for intersections with keys
-        const intersects = raycaster.intersectObjects(keyMeshes)
-        return intersects
-      }).flat().map(o => o.object)])
-
-      const previousSet = pressedKeys?.get(keyId)
-      const newSet = new Set([...intersects].map(o => o.userData.keyId))
-      if (!eqSet(previousSet, newSet)) {
-        setMyPressedKeys(newSet)
-      }
-    } else {
-      // Movement has just ended
-      clearMyPressedKeys()
-    }
-  })
+  const colorA = '#90B6AF'
+  const colorB = THREE.Color.NAMES.whitesmoke
 
   return (
     <group
-      ref={groupRef}
-      {...bind()}
+      {...dragProps}
       {...props}
       // eslint-disable-next-line react/no-unknown-property
       rotation-x={pressed ? Math.PI / 32 * (4 / 10 + 7 / 10) / (lateral + widthOnTwo) : 0}
@@ -137,7 +91,7 @@ const Key = ({ roundResolution = 32, fingerResolution = 5, width = 8 / 10, later
         // eslint-disable-next-line react/no-unknown-property
         userData={{ keyId }}
       >
-        {[THREE.Color.NAMES.antiquewhite, THREE.Color.NAMES.gray].map((color, i) =>
+        {[colorA, colorB].map((color, i) =>
           // eslint-disable-next-line react/no-unknown-property
           <meshLambertMaterial key={i} attach={`material-${i}`} args={[{ color, wireframe: false }]} />
         )}
