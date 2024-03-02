@@ -24,7 +24,7 @@ const Hexagon = ({ radius = 1, name, color, pressedKeys, setPressedKeys, ...prop
       {/* eslint-disable-next-line react/no-unknown-property */}
       <mesh userData={{ keyId }}>
         {/* eslint-disable-next-line react/no-unknown-property */}
-        <meshStandardMaterial attach='material' color={color} depthWrite={false} />
+        <meshStandardMaterial attach='material' color={color} opacity={0.05} depthWrite={false} transparent={true}/>
         {/* eslint-disable-next-line react/no-unknown-property */}
         <shapeGeometry args={[new THREE.Shape(coordinatesList)]} {...props} />
       </mesh>

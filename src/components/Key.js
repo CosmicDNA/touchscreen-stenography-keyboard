@@ -1,7 +1,6 @@
 import PropTypes from 'prop-types'
 import React, { useEffect } from 'react'
 import * as THREE from 'three'
-import useDrag from './hooks/useDrag'
 import { getCircularPoints } from './utils/tools'
 import useMount from './hooks/useMount'
 
@@ -27,7 +26,6 @@ import useMount from './hooks/useMount'
  */
 const Key = ({ roundResolution = 32, fingerResolution = 5, width = 8 / 10, lateral = 7 / 10, depth = 1 / 20, keyId, round, setPressedKeys, pressedKeys, allKeys, ...props }) => {
   const { onKeyPress, onKeyRelease } = props
-  const dragProps = useDrag({ fingerResolution, keyId, pressedKeys, setPressedKeys })
   const { isMounted } = useMount()
   const widthOnTwo = width / 2
 
@@ -78,7 +76,6 @@ const Key = ({ roundResolution = 32, fingerResolution = 5, width = 8 / 10, later
 
   return (
     <group
-      {...dragProps}
       {...props}
       // eslint-disable-next-line react/no-unknown-property
       rotation-x={pressed ? Math.PI / 32 * (4 / 10 + 7 / 10) / (lateral + widthOnTwo) : 0}

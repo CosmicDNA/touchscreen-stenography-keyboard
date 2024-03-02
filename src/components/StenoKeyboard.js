@@ -10,8 +10,8 @@ import keyreleaseAudioFile from '../sounds/keyrelease.flac'
 import { useWebSocketContext } from './hooks/useWebSocket'
 import usePrevious from './hooks/usePrevious'
 import { getAddedAndRemovedItems } from './utils/tools'
-import Floor from './Floor'
-// import HexagonFloor from './HexagonFloor'
+// import Floor from './Floor'
+import HexagonFloor from './HexagonFloor'
 
 const enter = 0.2
 const rowSpacing = 1.3
@@ -142,8 +142,8 @@ const StenoKeyboard = (props) => {
           }
         })
       }
-      <Floor {...{ setPressedKeys, pressedKeys, keyId: 'floor' }} position-z={-0.5} position-y={0} />
-      {/* <HexagonFloor {...{ setPressedKeys, pressedKeys }} position={[0, 0, -0.5]}/> */}
+      {/* <Floor {...{ setPressedKeys, pressedKeys, keyId: 'floor' }} position-z={-0.5} position-y={0} /> */}
+      <HexagonFloor {...{ setPressedKeys, pressedKeys }} position={[0, 0, -0.5]}/>
     </group>
   )
 }

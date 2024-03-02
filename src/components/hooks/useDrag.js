@@ -45,7 +45,7 @@ const useDragHook = ({ fingerResolution = 5, keyId, pressedKeys, setPressedKeys 
 
       const previousSet = pressedKeys?.get(keyId)
       const newSet = new Set([...intersects]
-        .filter(o => o.userData.keyId !== 'floor')
+        .filter(o => o.userData.keyId !== 'floor' && !o.userData.keyId.startsWith('polygon'))
         .map(o => o.userData.keyId)
       )
       if (!eqSet(previousSet, newSet)) {
