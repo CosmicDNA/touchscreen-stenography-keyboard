@@ -33,7 +33,9 @@ In the following video, it is being typed upon:
 > This is an example of machine shorthand from a steno keyboard with paper.
 
 
-https://github.com/CosmicDNA/touchscreen-stenography-keyboard/assets/92752640/a0de77a5-2570-4504-a4d2-f5eeeea94b92
+
+https://github.com/CosmicDNA/touchscreen-stenography-keyboard/assets/92752640/60230e82-afb2-4991-9cbc-8ec301a12952
+
 
 ## Development
 
