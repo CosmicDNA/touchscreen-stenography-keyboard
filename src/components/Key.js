@@ -4,6 +4,7 @@ import * as THREE from 'three'
 import { getCircularPoints } from './utils/tools'
 import useMount from './hooks/useMount'
 import { Text3D } from '@react-three/drei'
+import InterMediumRegular from '../fonts/Inter_Medium_Regular.json'
 
 /**
  * Represents a Key component.
@@ -96,7 +97,7 @@ const Key = ({ offsetX = 0, offsetY = 0, scale = 1, roundResolution = 32, finger
         {/* eslint-disable-next-line react/no-unknown-property */}
         <extrudeGeometry args={[new THREE.Shape(pts.map(points => new THREE.Vector2(...points))), extrudeSettings]} />
       </mesh>
-      <Text3D font='/Inter_Medium_Regular.json' size={0.2 * scale} height={0.01} position={[-0.07 + offsetX, -0.6 + offsetY, 0.1]}>
+      <Text3D font={InterMediumRegular} size={0.2 * scale} height={0.01} position={[-0.07 + offsetX, -0.6 + offsetY, 0.1]}>
         {keyId.replace('-', '')}
       </Text3D>
     </group>
