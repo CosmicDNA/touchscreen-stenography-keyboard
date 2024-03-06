@@ -33,18 +33,42 @@ const position = [
     .add(referencePosition))
 
 const round = true
+const keys = {
+  sharp: { keyId: '#', width: 9.7, offsetY: 0.15 },
+  asterisk: { keyId: '*', lateral: 2, round, offsetX: -0.05, grow: 'right', offsetY: -0.75 },
+  SH: { keyId: 'S-', lateral: 2, round, offsetY: -0.72 },
+  HD: { keyId: '-D', grow: 'left' },
+  HZ: { keyId: '-Z', grow: 'left' },
+  HF: { keyId: '-F' },
+  HP: { keyId: '-P' },
+  HL: { keyId: '-L' },
+  HT: { keyId: '-T' },
+  HR: { keyId: '-R', offsetX: -0.01 },
+  HG: { keyId: '-G', offsetX: -0.01 },
+  HB: { keyId: '-B' },
+  HS: { keyId: '-S' },
+  AH: { keyId: 'A-', offsetX: -0.01 },
+  OH: { keyId: 'O-', offsetX: -0.02 },
+  HE: { keyId: '-E' },
+  HU: { keyId: '-U', offsetX: -0.02 },
+  TH: { keyId: 'T-' },
+  PH: { keyId: 'P-' },
+  HH: { keyId: 'H-' },
+  KH: { keyId: 'K-' },
+  WH: { keyId: 'W-', offsetX: -0.06 },
+  RH: { keyId: 'R-' }
+}
+
 const config = [
-  { type: 'Key', keyId: '#', width: 9.7, position: position[0], offsetY: 0.15 },
-  { type: 'Key', keyId: '*', lateral: 2, position: position[1], round, offsetX: -0.05, grow: 'right', offsetY: -0.75 },
-  { type: 'Key', keyId: 'S-', lateral: 2, position: position[2], round, offsetY: -0.72 },
-  { type: 'Key', keyId: '-D', lateral: 1.1, position: position[3].clone().add(new THREE.Vector3(4, 0, 0)), grow: 'left' },
-  { type: 'Key', keyId: '-Z', position: position[4].clone().add(new THREE.Vector3(4, 0, 0)), round, grow: 'left' },
-  { type: 'Row', keys: ['-F', '-P', '-L', '-T'], position: position[3], lateral: 1.1 },
-  { type: 'Row', keys: ['-R', '-G', '-B', '-S'], position: position[4], round },
-  { type: 'Row', keys: ['A-', 'O-'], position: position[5], round },
-  { type: 'Row', keys: ['-E', '-U'], position: position[6], round },
-  { type: 'Row', keys: ['T-', 'P-', 'H-'], position: position[7], lateral: 1.1 },
-  { type: 'Row', keys: ['K-', 'W-', 'R-'], position: position[8], round }
+  { type: 'Key', ...keys.sharp, position: position[0] },
+  { type: 'Key', ...keys.asterisk, position: position[1] },
+  { type: 'Key', ...keys.SH, position: position[2] },
+  { type: 'Row', keys: [keys.HF, keys.HP, keys.HL, keys.HT, keys.HD], position: position[3], lateral: 1.1 },
+  { type: 'Row', keys: [keys.HR, keys.HG, keys.HB, keys.HS, keys.HZ], position: position[4], round },
+  { type: 'Row', keys: [keys.AH, keys.OH], position: position[5], round },
+  { type: 'Row', keys: [keys.HE, keys.HU], position: position[6], round },
+  { type: 'Row', keys: [keys.TH, keys.PH, keys.HH], position: position[7], lateral: 1.1 },
+  { type: 'Row', keys: [keys.KH, keys.WH, keys.RH], position: position[8], round }
 ]
 
 const rowItems = config.filter(o => o.type === 'Row')

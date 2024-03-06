@@ -6,11 +6,12 @@ import * as THREE from 'three'
 const KeyGroup = ({ keys, name, position, ...props }) => {
   return (
     <>
-      {[...Array(keys.length).keys()].map(i =>
+      {keys.map((theKey, i) =>
         <Key
           position={[position.x + i, position.y, position.z]}
-          keyId={keys[i]}
-          key={`${name}_${keys[i]}`}
+          keyId={theKey.keyId}
+          key={`${name}_${theKey.keyId}`}
+          {...theKey}
           {...props}/>
       )}
     </>
@@ -18,7 +19,7 @@ const KeyGroup = ({ keys, name, position, ...props }) => {
 }
 
 KeyGroup.propTypes = {
-  keys: PropTypes.arrayOf(PropTypes.string).isRequired,
+  keys: PropTypes.arrayOf(PropTypes.object).isRequired,
   name: PropTypes.string.isRequired,
   position: PropTypes.instanceOf(THREE.Vector3).isRequired,
   round: PropTypes.bool,
