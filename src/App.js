@@ -25,7 +25,8 @@ const websocketOptions = {
   secret: { value: 'mysecretkey' }
 }
 const keyboardOptions = {
-  sendStroke: { value: sendStroke.onKeyRelease, options: Object.keys(sendStroke) }
+  sendStroke: { value: sendStroke.onKeyRelease, options: Object.keys(sendStroke) },
+  lockPosition: { value: false, options: [true, false] }
 }
 
 const wsOptionsAtom = getAtom({ websocketOptions })
@@ -69,6 +70,9 @@ const Tunneled = ({ ...props }) => {
           minPolarAngle={0}
           dampingFactor={0.05}
           maxPolarAngle={Math.PI / 2.1}
+          enableRotate={!kControls.lockPosition}
+          enablePan={!kControls.lockPosition}
+          enableZoom={!kControls.lockPosition}
         />
           <Grid position={[0, -0.5, 0]} />
       </Canvas>
