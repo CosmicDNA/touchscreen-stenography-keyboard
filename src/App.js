@@ -3,9 +3,9 @@ import { Canvas } from '@react-three/fiber'
 import { OrbitControls, ContactShadows } from '@react-three/drei'
 import StenoKeyboard from './components/StenoKeyboard'
 import { WebSocketProvider } from './components/hooks/useWebSocket'
-import { useControls } from 'leva'
 import { TunnelProvider, useTunnelContext } from './components/hooks/useTunnel'
 import Grid from './components/Grid'
+import useLevaControls, { getAtom } from './components/hooks/useLevaControls'
 
 const protocols = {
   ws: 'ws://',
@@ -17,19 +17,31 @@ const sendStroke = {
   onKeyRelease: 'onKeyRelease'
 }
 
-const protocolOptions = Object.keys(protocols)
+const websocketOptions = {
+  protocol: { value: protocols.ws, options: Object.keys(protocols) },
+  host: { value: 'localhost' },
+  port: { value: 8086, min: 1024, max: 49151, step: 1 },
+  path: { value: '/websocket' },
+  secret: { value: 'mysecretkey' }
+}
+const keyboardOptions = {
+  sendStroke: { value: sendStroke.onKeyRelease, options: Object.keys(sendStroke) }
+}
+
+const wsOptionsAtom = getAtom({ websocketOptions })
+const kOptionsAtom = getAtom({ keyboardOptions })
 
 const Tunneled = ({ ...props }) => {
   const { status } = useTunnelContext()
-  const options = {
-    protocol: { value: protocols.ws, options: protocolOptions },
-    host: { value: 'localhost' },
-    port: { value: 8086, min: 1024, max: 49151, step: 1 },
-    path: { value: '/websocket' },
-    secret: { value: 'mysecretkey' }
-  }
-  const wsControls = useControls('Plover Web-socket Plugin', options)
-  const kControls = useControls('Keyboard', { sendStroke: { value: sendStroke.onKeyRelease, options: Object.keys(sendStroke) } })
+  const wsControls = useLevaControls({
+    useControlsParams: ['Plover Web-socket Plugin', websocketOptions],
+    atom: wsOptionsAtom
+  })
+  const kControls = useLevaControls({
+    useControlsParams: ['Keyboard', keyboardOptions],
+    atom: kOptionsAtom
+  })
+
   return (
     <>
       <header>
