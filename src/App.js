@@ -69,7 +69,7 @@ const Tunneled = ({ ...props }) => {
           minPolarAngle={0}
           dampingFactor={0.05}
           maxPolarAngle={Math.PI / 2.1}
-          touches={false} />
+        />
           <Grid position={[0, -0.5, 0]} />
       </Canvas>
     </>
