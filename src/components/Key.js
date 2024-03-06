@@ -74,11 +74,9 @@ const Key = ({ offsetX = 0, offsetY = 0, scale = 1, roundResolution = 32, finger
 
     const pre = [
       [underSemiCircumference[0][0] - addLeft, underSemiCircumference[0][1] + lateral],
-      [underSemiCircumference[0][0] - addLeft, underSemiCircumference[0][1]],
-      [underSemiCircumference[0][0], underSemiCircumference[0][1]]
+      [underSemiCircumference[0][0] - addLeft, underSemiCircumference[0][1]]
     ]
     const pos = [
-      [underSemiCircumference[underSemiCircumference.length - 1][0], underSemiCircumference[underSemiCircumference.length - 1][1]],
       [underSemiCircumference[underSemiCircumference.length - 1][0] + addRight, underSemiCircumference[underSemiCircumference.length - 1][1]],
       [underSemiCircumference[underSemiCircumference.length - 1][0] + addRight, underSemiCircumference[underSemiCircumference.length - 1][1] + lateral]
     ]
