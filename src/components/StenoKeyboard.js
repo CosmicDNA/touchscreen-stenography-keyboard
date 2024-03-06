@@ -34,11 +34,13 @@ const position = [
 
 const round = true
 const config = [
-  { type: 'Key', keyId: '#', width: 9.8, position: position[0], offsetY: 0.15 },
-  { type: 'Key', keyId: '*', lateral: 2, position: position[1], round, offsetX: -0.05, offsetY: -0.75 },
+  { type: 'Key', keyId: '#', width: 9.7, position: position[0], offsetY: 0.15 },
+  { type: 'Key', keyId: '*', lateral: 2, position: position[1], round, offsetX: -0.05, grow: 'right', offsetY: -0.75 },
   { type: 'Key', keyId: 'S-', lateral: 2, position: position[2], round, offsetY: -0.72 },
-  { type: 'Row', keys: ['-F', '-P', '-L', '-T', '-D'], position: position[3], lateral: 1.1 },
-  { type: 'Row', keys: ['-R', '-G', '-B', '-S', '-Z'], position: position[4], round },
+  { type: 'Key', keyId: '-D', lateral: 1.1, position: position[3].clone().add(new THREE.Vector3(4, 0, 0)), grow: 'left' },
+  { type: 'Key', keyId: '-Z', position: position[4].clone().add(new THREE.Vector3(4, 0, 0)), round, grow: 'left' },
+  { type: 'Row', keys: ['-F', '-P', '-L', '-T'], position: position[3], lateral: 1.1 },
+  { type: 'Row', keys: ['-R', '-G', '-B', '-S'], position: position[4], round },
   { type: 'Row', keys: ['A-', 'O-'], position: position[5], round },
   { type: 'Row', keys: ['-E', '-U'], position: position[6], round },
   { type: 'Row', keys: ['T-', 'P-', 'H-'], position: position[7], lateral: 1.1 },

@@ -26,7 +26,7 @@ import InterMediumRegular from '../fonts/Inter_Medium_Regular.json'
  * Key component.
  * @param {KeyProps} props - The props object.
  */
-const Key = ({ offsetX = 0, offsetY = 0, scale = 1, roundResolution = 32, fingerResolution = 5, width = 8 / 10, lateral = 7 / 10, depth = 1 / 20, keyId, round, setPressedKeys, pressedKeys, allKeys, ...props }) => {
+const Key = ({ offsetX = 0, offsetY = 0, scale = 1, roundResolution = 32, fingerResolution = 5, width = 7 / 10, lateral = 7 / 10, depth = 1 / 20, keyId, round, grow, setPressedKeys, pressedKeys, allKeys, ...props }) => {
   const { onKeyPress, onKeyRelease } = props
   const { isMounted } = useMount()
   const widthOnTwo = width / 2
@@ -46,6 +46,22 @@ const Key = ({ offsetX = 0, offsetY = 0, scale = 1, roundResolution = 32, finger
     }
   }, [pressed])
 
+  let addLeft, addRight
+  switch (grow) {
+    case 'left':
+      addLeft = 0.1
+      addRight = 0
+      break
+    case 'right':
+      addLeft = 0
+      addRight = 0.1
+      break
+    default:
+      addLeft = 0
+      addRight = 0
+      break
+  }
+
   let pts
   if (round) {
     const radius = widthOnTwo
@@ -56,12 +72,20 @@ const Key = ({ offsetX = 0, offsetY = 0, scale = 1, roundResolution = 32, finger
       Math.PI
     )
 
-    const pre = [underSemiCircumference[0][0], underSemiCircumference[0][1] + lateral]
-    const pos = [underSemiCircumference[underSemiCircumference.length - 1][0], underSemiCircumference[underSemiCircumference.length - 1][1] + lateral]
+    const pre = [
+      [underSemiCircumference[0][0] - addLeft, underSemiCircumference[0][1] + lateral],
+      [underSemiCircumference[0][0] - addLeft, underSemiCircumference[0][1]],
+      [underSemiCircumference[0][0], underSemiCircumference[0][1]]
+    ]
+    const pos = [
+      [underSemiCircumference[underSemiCircumference.length - 1][0], underSemiCircumference[underSemiCircumference.length - 1][1]],
+      [underSemiCircumference[underSemiCircumference.length - 1][0] + addRight, underSemiCircumference[underSemiCircumference.length - 1][1]],
+      [underSemiCircumference[underSemiCircumference.length - 1][0] + addRight, underSemiCircumference[underSemiCircumference.length - 1][1] + lateral]
+    ]
 
-    pts = [pre, ...underSemiCircumference, pos]
+    pts = [...pre, ...underSemiCircumference, ...pos]
   } else {
-    pts = [[-widthOnTwo, 0], [-widthOnTwo, lateral], [widthOnTwo, lateral], [widthOnTwo, 0]]
+    pts = [[-widthOnTwo - addLeft, 0], [-widthOnTwo - addLeft, lateral], [widthOnTwo + addRight, lateral], [widthOnTwo + addRight, 0]]
   }
 
   const extrudeSettings = {
@@ -105,6 +129,7 @@ const Key = ({ offsetX = 0, offsetY = 0, scale = 1, roundResolution = 32, finger
 }
 
 Key.propTypes = {
+  grow: PropTypes.string,
   scale: PropTypes.number,
   offsetX: PropTypes.number,
   offsetY: PropTypes.number,
