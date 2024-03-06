@@ -57,7 +57,9 @@ const StenoKeyboard = ({ controls, ...props }) => {
 
   // sendMessage('close')
   useEffect(() => {
-    console.log(lastJsonMessage)
+    if (lastJsonMessage) {
+      console.log(lastJsonMessage)
+    }
   }, [lastJsonMessage])
 
   const [playKeyPress] = useSound(keypressAudioFile)
