@@ -42,7 +42,13 @@ const WebSocketContext = createContext()
 const useWebSocketContext = () => useContext(WebSocketContext)
 
 const WebSocketProvider = ({ children, url, secretkey }) => {
-  const { readyState, lastJsonMessage, sendMessage, sendJsonMessage } = useWebSocket(url)
+  const { readyState, lastJsonMessage, sendMessage, sendJsonMessage } = useWebSocket(url, {
+    onOpen: (event) => {
+      // Add your custom header here
+      const authorizationHeader = { type: 'Authorization', value: `Token ${secretkey}` }
+      sendJsonMessage(authorizationHeader)
+    }
+  })
   const newReadyState = new CustomReadyState(readyState)
   const { status } = useTunnelContext()
 
@@ -53,8 +59,7 @@ const WebSocketProvider = ({ children, url, secretkey }) => {
         readyState: newReadyState,
         lastJsonMessage,
         sendMessage,
-        sendJsonMessage,
-        secretkey
+        sendJsonMessage
       }}>
         {children}
       </WebSocketContext.Provider>

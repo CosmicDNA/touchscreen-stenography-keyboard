@@ -77,7 +77,7 @@ const StenoKeyboard = ({ controls, ...props }) => {
   const ref = useRef()
   const [largestKeySet, setLargestKeySet] = useState(new Set())
   const [pressedKeys, setPressedKeys] = useState(new Map())
-  const { lastJsonMessage, sendJsonMessage, secretkey } = useWebSocketContext()
+  const { lastJsonMessage, sendJsonMessage } = useWebSocketContext()
 
   // sendMessage('close')
   useEffect(() => {
@@ -129,7 +129,7 @@ const StenoKeyboard = ({ controls, ...props }) => {
   })
 
   const allKeys = new Set([...pressedKeys.values()].flatMap((set) => [...set]))
-  const previousAllKeys = usePrevious(allKeys)
+  const previousAllKeys = usePrevious(allKeys, [])
 
   const [addedItems, removedItems] = getAddedAndRemovedItems(allKeys, previousAllKeys)
 
@@ -137,7 +137,7 @@ const StenoKeyboard = ({ controls, ...props }) => {
     if (addedItems.size) {
       // console.log('Added items:', addedItems)
       if (controls.sendStroke === 'onKeyPress') {
-        sendJsonMessage({ stroke: [...addedItems], secretkey })
+        sendJsonMessage({ stroke: [...addedItems] })
       }
     }
 
@@ -150,7 +150,7 @@ const StenoKeyboard = ({ controls, ...props }) => {
     if (allKeys.size === 0) {
       if (controls.sendStroke === 'onKeyRelease') {
         const stroke = [...largestKeySet]
-        sendJsonMessage({ stroke, secretkey })
+        sendJsonMessage({ stroke })
         setLargestKeySet(new Set())
       }
     } else {

@@ -10,6 +10,10 @@ import useLevaControls, { getAtom } from './components/hooks/useLevaControls'
 
 import { atomWithStorage } from 'jotai/utils'
 import { useAtom } from 'jotai'
+// import useProtocol from './components/hooks/useProtocol'
+import { useGetProtocolQuery } from './features/protocol/api/apiSlice'
+import { useDispatch, useSelector } from 'react-redux'
+import { setSecret } from './features/secret/secretSlice'
 
 const ReactToCameraChange = ({ setCameraPosition, children }) => {
   useFrame(({ camera }) => {
@@ -27,18 +31,12 @@ ReactToCameraChange.propTypes = {
   children: PropTypes.any
 }
 
-const protocols = {
-  ws: 'ws://',
-  wss: 'wss://'
-}
-
 const sendStroke = {
   onKeyPress: 'onKeyPress',
   onKeyRelease: 'onKeyRelease'
 }
 
 const websocketOptions = {
-  protocol: { value: protocols.ws, options: Object.keys(protocols) },
   host: { value: 'localhost' },
   port: { value: 8086, min: 1024, max: 49151, step: 1 },
   path: { value: '/websocket' },
@@ -50,23 +48,46 @@ const keyboardOptions = {
 }
 
 const wsOptionsAtom = getAtom({ websocketOptions })
-const kOptionsAtom = getAtom({ keyboardOptions })
+// const kOptionsAtom = getAtom({ keyboardOptions })
 
 const cameraAtom = atomWithStorage('cameraPosition', [0, 6, 10])
 
 const Tunneled = ({ ...props }) => {
-  // const [cameraPosition, setCameraPosition] = useState([])
-
+  const dispatch = useDispatch()
+  const currentSecret = useSelector((state) => state.secretSlice.secret) // Replace with your actual slice name
+  // console.log(currentSecret, dispatch, setSecret)
   const { status } = useTunnelContext()
   const wsControls = useLevaControls({
     useControlsParams: ['Plover Web-socket Plugin', websocketOptions],
     atom: wsOptionsAtom
   })
-  const kControls = useLevaControls({
-    useControlsParams: ['Keyboard', keyboardOptions],
-    atom: kOptionsAtom
-  })
+  // const kControls = useLevaControls({
+  //   useControlsParams: ['Keyboard', keyboardOptions],
+  //   atom: kOptionsAtom
+  // })
+  const kControls = getAtom(keyboardOptions)
   const [cameraPosition, setCameraPosition] = useAtom(cameraAtom)
+
+  // const protocol = useProtocol(wsControls.controls.secret, wsControls.loading)
+
+  const {
+    data: protocol,
+    isLoading,
+    // isSuccess,
+    isError,
+    error
+  } = useGetProtocolQuery()
+
+  if ([wsControls, kControls].find(a => a.loading)) return <>Loading...</>
+  if (isError) return <>{error}</>
+  const { controls } = wsControls
+  console.log({ currentSecret, secret: controls.secret, isLoading })
+  if (currentSecret !== controls.secret) {
+    console.log(controls.secret)
+    dispatch(setSecret(controls.secret))
+  } else {
+    console.log('Hello to you!')
+  }
 
   return (
     <>
@@ -81,8 +102,8 @@ const Tunneled = ({ ...props }) => {
           <directionalLight position={[10, 10, 5]} />
           {/* <Suspense fallback={<status.In>Loading ...</status.In>}> */}
           <WebSocketProvider
-            url={`${wsControls.protocol}${wsControls.host}:${wsControls.port}${wsControls.path}`}
-            secretkey={wsControls.secret}
+            url={`${protocol.data}${controls.host}:${controls.port}${controls.path}`}
+            secretkey={controls.secret}
           >
             <StenoKeyboard controls={kControls} />
           </WebSocketProvider>
