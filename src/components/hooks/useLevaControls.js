@@ -1,18 +1,27 @@
 /* eslint-disable no-unused-vars */
-import { useEffect } from 'react'
 import { useControls } from 'leva'
 import { atomWithStorage } from 'jotai/utils'
 import { editedObject } from '../utils/tools'
 import { useAtom } from 'jotai'
 import usePrevious from './usePrevious'
 
+class CustomAtomWithStorage {
+  constructor (aws, key) {
+    this.aws = aws
+    this.key = key
+  }
+}
+
 const getAtomSelector = ([key, value]) => [key, value.value]
 const getAtomWithStorage = (ops) => {
-  const entry = Object.entries(ops)[0]
-  return atomWithStorage(
-    entry[0],
-    editedObject(entry[1], getAtomSelector)
+  const [[key, value]] = Object.entries(ops)
+  const aws = atomWithStorage(
+    key,
+    editedObject(value, getAtomSelector),
+    undefined,
+    { getOnInit: true }
   )
+  return new CustomAtomWithStorage(aws, key)
 }
 
 const transient = false
@@ -21,21 +30,52 @@ const getAugmentedControlOptions = (useControlsOptions, onChange) => {
   return editedObject(useControlsOptions, selector)
 }
 
+/**
+ *
+ * @param {CustomAtomWithStorage} atom
+ * @returns
+ */
+const getItemFromLocalStorage = atom =>
+  JSON.parse(localStorage.getItem(atom.key))
+
+/**
+ *
+ * @param {{atom: CustomAtomWithStorage, useControlsParams: [string, {[key: string]: { value: any }}]}} param0
+ * @returns
+ */
 const useLevaControls = ({ atom, useControlsParams }) => {
   const [folderName, useControlsOptions] = useControlsParams
-  const [options, setOptions] = useAtom(atom)
+  const [options, setOptions] = useAtom(atom.aws)
 
-  let notInitialising = false
+  let initialising = true
 
   const onChange = p => v => {
-    const defaultValue = controls[p]
-    // console.log({ p, v, defaultValue })
-    if (defaultValue !== v || notInitialising) {
-      notInitialising = true
-      // console.log(`Detected a change in ${p} to ${v}`)
+    const previousValue = options[p]
+    const item = getItemFromLocalStorage(atom)
+    // console.log(item)
+    const noKeySaved = !item
+    // const detectedChange = previousValue !== v
+    // console.log({ detectedChange, initialising, previousValue, v, p, noKeySaved, item, options })
+    if (previousValue !== v && !initialising) {
+      initialising = false
+      // console.log(`Detected a change in ${p} from ${previousValue} to ${v}`)
       const newOptions = { ...options, [p]: v }
       setOptions(newOptions)
       setPreviousOptions(newOptions)
+    } else {
+      if (noKeySaved) {
+        initialising = false
+        // console.log('Never saved to local storage, saving now...')
+        const newOptions = { ...options, [p]: v }
+        setOptions(newOptions)
+        setPreviousOptions(newOptions)
+      } else {
+        if (initialising) {
+          initialising = false
+          // console.log('This is a spurious attempt to revert options to the default value!')
+          setControls(options)
+        }
+      }
     }
   }
   const augmentedControlOptions = getAugmentedControlOptions(useControlsOptions, onChange)
@@ -44,23 +84,6 @@ const useLevaControls = ({ atom, useControlsParams }) => {
 
   const [previousOptions, setPreviousOptions] = usePrevious(options, null)
   const deps = [previousOptions, options, controls].map(d => JSON.stringify(d))
-
-  useEffect(() => {
-    if (options) {
-      if (deps[0] !== deps[1]) {
-        // console.log('There was an options update!')
-        if (previousOptions !== null) {
-          // console.log('The last options update was not the update from null!')
-          if (deps[2] !== deps[1]) {
-            setControls(options)
-            // console.log(options)
-            // console.log(previousOptions)
-            // console.log('Set Controls!', deps)
-          }
-        }
-      }
-    }
-  }, deps)
 
   const isLoading = !deps.every(dep => dep === deps[0])
 

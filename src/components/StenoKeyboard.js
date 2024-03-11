@@ -131,8 +131,6 @@ const StenoKeyboard = ({ controls, ...props }) => {
   const allKeys = new Set([...pressedKeys.values()].flatMap((set) => [...set]))
   // eslint-disable-next-line no-unused-vars
   const [previousAllKeys, setPreviousAllKeys] = usePrevious(allKeys, emptySet)
-  console.log({ allKeys, previousAllKeys })
-
   const [addedItems, removedItems] = getAddedAndRemovedItems(allKeys, previousAllKeys)
 
   useEffect(() => {

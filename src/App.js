@@ -1,4 +1,3 @@
-/* eslint-disable no-unused-vars */
 import PropTypes from 'prop-types'
 import React, { useEffect } from 'react'
 import { Canvas, useFrame } from '@react-three/fiber'
@@ -68,8 +67,8 @@ const Tunneled = ({ ...props }) => {
   })
 
   const currentSecret = useSelector((state) => state.secret.secret)
-  const rawSkip = currentSecret !== controls.secret
-  const skip = !currentSecret || rawSkip
+  const didSecretChange = currentSecret !== controls.secret
+  const skip = !currentSecret || didSecretChange
 
   const protocolQuery = useGetProtocolQuery(null, { skip })
   const {
@@ -80,15 +79,16 @@ const Tunneled = ({ ...props }) => {
     error
   } = protocolQuery
 
-  const isLoading = Boolean([kControls, wsControls, protocolQuery].find(a => a.isLoading))
+  const isLoading = Boolean([kControls, wsControls].find(a => a.isLoading))
 
+  // eslint-disable-next-line no-unused-vars
   const [cameraPosition, setCameraPosition] = useAtom(cameraAtom)
   const dispatch = useDispatch()
 
   useEffect(() => {
+    console.log({ isLoading, currentSecret, constrolsSecret: controls.secret })
     if (!isLoading) {
-      // console.log(loadingControls)
-      if (rawSkip) {
+      if (didSecretChange) {
         // console.log(controls.secret)
         // console.log('Dispatching')
         dispatch(setSecret(controls.secret))
@@ -96,7 +96,7 @@ const Tunneled = ({ ...props }) => {
     }
   }, [isLoading, currentSecret, controls.secret])
 
-  if (isLoading) return <>Loading...</>
+  if (isLoading || protocolQuery.isLoading) return <>Loading...</>
   // console.log({ wsControls, kControls })
   // if (isError) return <>{error}</>
   // console.log({ useGetProtocolQuery, currentSecret, secret: controls.secret }) // , isLoading, protocol, isError, error
@@ -124,7 +124,11 @@ const Tunneled = ({ ...props }) => {
           <directionalLight position={[10, 10, 5]} />
           {/* <Suspense fallback={<status.In>Loading ...</status.In>}> */}
           <WebSocketProvider
-            url={`${protocol}${controls.host}:${controls.port}${controls.path}`}
+            url={
+              isSuccess
+                ? `${protocol}${controls.host}:${controls.port}${controls.path}`
+                : 'ws://localhost:8086/dummy'
+            }
             secretkey={controls.secret}
           >
             <StenoKeyboard controls={kControls} />
