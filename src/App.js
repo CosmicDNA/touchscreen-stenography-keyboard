@@ -1,18 +1,17 @@
 import PropTypes from 'prop-types'
-import React from 'react'
+import React, { useEffect } from 'react'
 import { Canvas, useFrame } from '@react-three/fiber'
 import { OrbitControls, ContactShadows } from '@react-three/drei'
 import StenoKeyboard from './components/StenoKeyboard'
 import { WebSocketProvider } from './components/hooks/useWebSocket'
 import { TunnelProvider, useTunnelContext } from './components/hooks/useTunnel'
 import Grid from './components/Grid'
-import useLevaControls, { getAtom } from './components/hooks/useLevaControls'
+import useLevaControls, { getAtomWithStorage } from './components/hooks/useLevaControls'
 
 import { atomWithStorage } from 'jotai/utils'
 import { useAtom } from 'jotai'
-// import useProtocol from './components/hooks/useProtocol'
 import { useGetProtocolQuery } from './features/protocol/api/apiSlice'
-import { useDispatch, useSelector } from 'react-redux'
+import { useSelector, useDispatch } from 'react-redux'
 import { setSecret } from './features/secret/secretSlice'
 
 const ReactToCameraChange = ({ setCameraPosition, children }) => {
@@ -47,53 +46,63 @@ const keyboardOptions = {
   lockPosition: { value: false, options: [true, false] }
 }
 
-const wsOptionsAtom = getAtom({ websocketOptions })
-// const kOptionsAtom = getAtom({ keyboardOptions })
+const wsOptionsAtom = getAtomWithStorage({ websocketOptions })
+const kOptionsAtom = getAtomWithStorage({ keyboardOptions })
 
 const cameraAtom = atomWithStorage('cameraPosition', [0, 6, 10])
 
 const Tunneled = ({ ...props }) => {
-  const dispatch = useDispatch()
-  const currentSecret = useSelector((state) => state.secretSlice.secret) // Replace with your actual slice name
-  // console.log(currentSecret, dispatch, setSecret)
   const { status } = useTunnelContext()
   const wsControls = useLevaControls({
     useControlsParams: ['Plover Web-socket Plugin', websocketOptions],
     atom: wsOptionsAtom
   })
-  // const kControls = useLevaControls({
-  //   useControlsParams: ['Keyboard', keyboardOptions],
-  //   atom: kOptionsAtom
-  // })
-  const kControls = getAtom(keyboardOptions)
-  const [cameraPosition, setCameraPosition] = useAtom(cameraAtom)
+  const { controls } = wsControls
 
-  // const protocol = useProtocol(wsControls.controls.secret, wsControls.loading)
+  const kControls = useLevaControls({
+    useControlsParams: ['Keyboard', keyboardOptions],
+    atom: kOptionsAtom
+  })
+
+  const currentSecret = useSelector((state) => state.secret.secret)
+  const rawSkip = currentSecret !== controls.secret
+  const skip = !currentSecret || rawSkip
+  const loadingControls = Boolean([kControls, wsControls].find(a => a.loading))
 
   const {
     data: protocol,
-    isLoading,
+    // isLoading,
     // isSuccess,
     isError,
     error
-  } = useGetProtocolQuery()
+  } = useGetProtocolQuery(null, { skip })
 
-  if ([wsControls, kControls].find(a => a.loading)) return <>Loading...</>
-  if (isError) return <>{error}</>
-  const { controls } = wsControls
-  console.log({ currentSecret, secret: controls.secret, isLoading })
-  if (currentSecret !== controls.secret) {
-    console.log(controls.secret)
-    dispatch(setSecret(controls.secret))
-  } else {
-    console.log('Hello to you!')
-  }
+  const [cameraPosition, setCameraPosition] = useAtom(cameraAtom)
+  const dispatch = useDispatch()
+
+  useEffect(() => {
+    if (!loadingControls) {
+      // console.log(loadingControls)
+      if (rawSkip) {
+        // console.log(controls.secret)
+        // console.log('Dispatching')
+        dispatch(setSecret(controls.secret))
+      }
+    }
+  }, [loadingControls, currentSecret, controls.secret])
+
+  if (loadingControls) return <>Loading...</>
+  // console.log({ wsControls, kControls })
+  // if (isError) return <>{error}</>
+  // console.log({ useGetProtocolQuery, currentSecret, secret: controls.secret }) // , isLoading, protocol, isError, error
+  // console.log({ isLoading, protocol, isError, error })
 
   return (
     <>
       <header>
         <status.Out />
       </header>
+      {<status.In>{isError ? JSON.stringify(error) : `got protocol ${protocol}`}</status.In>}
       <Canvas camera={{ position: Object.values(cameraPosition), fov: 25 }}>
         <ReactToCameraChange setCameraPosition={setCameraPosition}>
           {/* eslint-disable-next-line react/no-unknown-property */}
@@ -102,7 +111,7 @@ const Tunneled = ({ ...props }) => {
           <directionalLight position={[10, 10, 5]} />
           {/* <Suspense fallback={<status.In>Loading ...</status.In>}> */}
           <WebSocketProvider
-            url={`${protocol.data}${controls.host}:${controls.port}${controls.path}`}
+            url={`${protocol}${controls.host}:${controls.port}${controls.path}`}
             secretkey={controls.secret}
           >
             <StenoKeyboard controls={kControls} />
@@ -137,3 +146,30 @@ const App = () => {
 }
 
 export default App
+
+// import React from 'react'
+// import useLevaControls, { getAtomWithStorage } from './components/hooks/useLevaControls'
+
+// const websocketOptions = {
+//   // host: { value: 'localhost' },
+//   // port: { value: 8086, min: 1024, max: 49151, step: 1 },
+//   // path: { value: '/websocket' },
+//   secret: { value: 'mysecretkey' }
+// }
+// const wsOptionsAtom = getAtomWithStorage({ websocketOptions })
+
+// const App = () => {
+//   const wsControls = useLevaControls({
+//     useControlsParams: ['Plover Web-socket Plugin', websocketOptions],
+//     atom: wsOptionsAtom
+//   })
+//   if (wsControls.loading) return <>Loading ...</>
+//   console.log(wsControls.controls)
+//   return (
+//     <>
+//       {JSON.stringify(wsControls.controls)}
+//     </>
+//   )
+// }
+
+// export default App

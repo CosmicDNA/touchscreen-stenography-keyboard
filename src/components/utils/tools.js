@@ -62,10 +62,16 @@ const dep = (set) => {
   return JSON.stringify([...set].sort())
 }
 
+const editedObject = (object, selector) =>
+  Object.fromEntries(
+    Object.entries(object).map(selector)
+  )
+
 export {
   dep,
   eqSet,
   eqArr,
+  editedObject,
   getUniqueItems,
   getAddedAndRemovedItems,
   getCircularPoints

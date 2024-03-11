@@ -8,9 +8,9 @@ export const apiSlice = createApi({
   // All of our requests will have URLs starting with '/fakeApi'
   baseQuery: fetchBaseQuery({
     baseUrl: 'http://localhost:8086',
-    prepareHeaders: (headers, { getState }) => {
+    prepareHeaders: async (headers, { getState }) => {
       const state = getState()
-      const secret = state.secretSlice.secret
+      const secret = state.secret.secret
       headers.set('Authorization', `Token ${secret}`)
       return headers
     }
