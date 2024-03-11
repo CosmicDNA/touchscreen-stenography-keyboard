@@ -1,3 +1,4 @@
+/* eslint-disable no-unused-vars */
 import PropTypes from 'prop-types'
 import React, { useEffect } from 'react'
 import { Canvas, useFrame } from '@react-three/fiber'
@@ -13,6 +14,8 @@ import { useAtom } from 'jotai'
 import { useGetProtocolQuery } from './features/protocol/api/apiSlice'
 import { useSelector, useDispatch } from 'react-redux'
 import { setSecret } from './features/secret/secretSlice'
+import JSONPretty from 'react-json-pretty'
+import 'react-json-pretty/themes/monikai.css'
 
 const ReactToCameraChange = ({ setCameraPosition, children }) => {
   useFrame(({ camera }) => {
@@ -67,21 +70,23 @@ const Tunneled = ({ ...props }) => {
   const currentSecret = useSelector((state) => state.secret.secret)
   const rawSkip = currentSecret !== controls.secret
   const skip = !currentSecret || rawSkip
-  const loadingControls = Boolean([kControls, wsControls].find(a => a.loading))
 
+  const protocolQuery = useGetProtocolQuery(null, { skip })
   const {
     data: protocol,
     // isLoading,
-    // isSuccess,
+    isSuccess,
     isError,
     error
-  } = useGetProtocolQuery(null, { skip })
+  } = protocolQuery
+
+  const isLoading = Boolean([kControls, wsControls, protocolQuery].find(a => a.isLoading))
 
   const [cameraPosition, setCameraPosition] = useAtom(cameraAtom)
   const dispatch = useDispatch()
 
   useEffect(() => {
-    if (!loadingControls) {
+    if (!isLoading) {
       // console.log(loadingControls)
       if (rawSkip) {
         // console.log(controls.secret)
@@ -89,9 +94,9 @@ const Tunneled = ({ ...props }) => {
         dispatch(setSecret(controls.secret))
       }
     }
-  }, [loadingControls, currentSecret, controls.secret])
+  }, [isLoading, currentSecret, controls.secret])
 
-  if (loadingControls) return <>Loading...</>
+  if (isLoading) return <>Loading...</>
   // console.log({ wsControls, kControls })
   // if (isError) return <>{error}</>
   // console.log({ useGetProtocolQuery, currentSecret, secret: controls.secret }) // , isLoading, protocol, isError, error
@@ -102,9 +107,17 @@ const Tunneled = ({ ...props }) => {
       <header>
         <status.Out />
       </header>
-      {<status.In>{isError ? JSON.stringify(error) : `got protocol ${protocol}`}</status.In>}
+      {<status.In>
+      {
+        isSuccess
+          ? `got protocol ${protocol}`
+          : isError
+            ? <JSONPretty id="json-pretty" data={error}></JSONPretty>
+            : 'dummy'
+      }
+      </status.In>}
       <Canvas camera={{ position: Object.values(cameraPosition), fov: 25 }}>
-        <ReactToCameraChange setCameraPosition={setCameraPosition}>
+        {/* <ReactToCameraChange setCameraPosition={setCameraPosition}> */}
           {/* eslint-disable-next-line react/no-unknown-property */}
           <ambientLight intensity={0.5} />
           {/* eslint-disable-next-line react/no-unknown-property */}
@@ -131,7 +144,7 @@ const Tunneled = ({ ...props }) => {
             enableZoom={!kControls.lockPosition}
           />
           <Grid position={[0, -0.5, 0]} />
-        </ReactToCameraChange>
+        {/* </ReactToCameraChange> */}
       </Canvas>
     </>
   )
@@ -163,7 +176,7 @@ export default App
 //     useControlsParams: ['Plover Web-socket Plugin', websocketOptions],
 //     atom: wsOptionsAtom
 //   })
-//   if (wsControls.loading) return <>Loading ...</>
+//   if (wsControls.isLoading) return <>Loading ...</>
 //   console.log(wsControls.controls)
 //   return (
 //     <>

@@ -72,7 +72,7 @@ const config = [
 ]
 
 const rowItems = config.filter(o => o.type === 'Row')
-
+const emptySet = new Set()
 const StenoKeyboard = ({ controls, ...props }) => {
   const ref = useRef()
   const [largestKeySet, setLargestKeySet] = useState(new Set())
@@ -129,7 +129,9 @@ const StenoKeyboard = ({ controls, ...props }) => {
   })
 
   const allKeys = new Set([...pressedKeys.values()].flatMap((set) => [...set]))
-  const previousAllKeys = usePrevious(allKeys, [])
+  // eslint-disable-next-line no-unused-vars
+  const [previousAllKeys, setPreviousAllKeys] = usePrevious(allKeys, emptySet)
+  console.log({ allKeys, previousAllKeys })
 
   const [addedItems, removedItems] = getAddedAndRemovedItems(allKeys, previousAllKeys)
 

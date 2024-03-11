@@ -62,10 +62,10 @@ const useLevaControls = ({ atom, useControlsParams }) => {
     }
   }, deps)
 
-  const loading = !deps.every(dep => dep === deps[0])
+  const isLoading = !deps.every(dep => dep === deps[0])
 
   return {
-    loading,
+    isLoading,
     controls
   }
 }
