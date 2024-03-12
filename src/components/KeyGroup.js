@@ -1,7 +1,7 @@
 import React from 'react'
 import PropTypes from 'prop-types'
 import Key from './Key'
-import * as THREE from 'three'
+import { Vector3 } from 'three'
 
 const KeyGroup = ({ keys, name, position, ...props }) => {
   return (
@@ -21,7 +21,7 @@ const KeyGroup = ({ keys, name, position, ...props }) => {
 KeyGroup.propTypes = {
   keys: PropTypes.arrayOf(PropTypes.object).isRequired,
   name: PropTypes.string.isRequired,
-  position: PropTypes.instanceOf(THREE.Vector3).isRequired,
+  position: PropTypes.instanceOf(Vector3).isRequired,
   round: PropTypes.bool,
   pressedKeys: PropTypes.objectOf(Map).isRequired,
   setPressedKeys: PropTypes.func.isRequired,

@@ -2,7 +2,7 @@ import PropTypes from 'prop-types'
 import React, { useState, useRef, useEffect } from 'react'
 import KeyGroup from './KeyGroup'
 import Key from './Key'
-import * as THREE from 'three'
+import { Vector3 } from 'three'
 import { useFrame } from '@react-three/fiber'
 import keySets from './steno-script'
 import useSound from 'use-sound'
@@ -17,7 +17,7 @@ const enter = 0.2
 const rowSpacing = 1.3
 const animate = false
 
-const referencePosition = new THREE.Vector3(0.5, -2.4, 0)
+const referencePosition = new Vector3(0.5, -2.4, 0)
 const position = [
   [-0.5, 4.8, 0],
   [-1, 3 * rowSpacing, 0],
@@ -29,7 +29,7 @@ const position = [
   [-4, 3 * rowSpacing, 0],
   [-4, 2 * rowSpacing, 0]
 ]
-  .map(p => (new THREE.Vector3(...p))
+  .map(p => (new Vector3(...p))
     .add(referencePosition))
 
 const round = true
@@ -87,7 +87,7 @@ const StenoKeyboard = ({ controls, ...props }) => {
   }, [lastJsonMessage])
 
   const [playKeyPress] = useSound(keypressAudioFile)
-  const [playKeyRelease] = useSound(keyreleaseAudioFile, { volume: 0.7 })
+  const [playKeyRelease] = useSound(keyreleaseAudioFile, { volume: 0.2 })
 
   const onKeyPress = (keyId) => {
     playKeyPress()

@@ -53,7 +53,7 @@ const kOptionsAtom = getAtomWithStorage({ keyboardOptions })
 
 const cameraAtom = atomWithStorage('cameraPosition', [0, 6, 10])
 
-const Tunneled = ({ ...props }) => {
+const Tunneled = () => {
   const { status } = useTunnelContext()
   const wsControls = useLevaControls({
     useControlsParams: ['Plover Web-socket Plugin', websocketOptions],
@@ -86,7 +86,7 @@ const Tunneled = ({ ...props }) => {
   const dispatch = useDispatch()
 
   useEffect(() => {
-    console.log({ isLoading, currentSecret, constrolsSecret: controls.secret })
+    // console.log({ isLoading, currentSecret, constrolsSecret: controls.secret })
     if (!isLoading) {
       if (didSecretChange) {
         // console.log(controls.secret)

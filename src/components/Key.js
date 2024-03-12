@@ -1,6 +1,6 @@
 import PropTypes from 'prop-types'
 import React, { useEffect } from 'react'
-import * as THREE from 'three'
+import { Color, Shape, Vector2 } from 'three'
 import { getCircularPoints } from './utils/tools'
 import useMount from './hooks/useMount'
 import { Text3D } from '@react-three/drei'
@@ -96,7 +96,7 @@ const Key = ({ offsetX = 0, offsetY = 0, scale = 1, roundResolution = 32, finger
   }
 
   const colorA = '#90B6AF'
-  const colorB = THREE.Color.NAMES.whitesmoke
+  const colorB = Color.NAMES.whitesmoke
 
   return (
     <group
@@ -117,7 +117,7 @@ const Key = ({ offsetX = 0, offsetY = 0, scale = 1, roundResolution = 32, finger
           <meshLambertMaterial key={i} attach={`material-${i}`} args={[{ color, wireframe: false }]} />
         )}
         {/* eslint-disable-next-line react/no-unknown-property */}
-        <extrudeGeometry args={[new THREE.Shape(pts.map(points => new THREE.Vector2(...points))), extrudeSettings]} />
+        <extrudeGeometry args={[new Shape(pts.map(points => new Vector2(...points))), extrudeSettings]} />
       </mesh>
       <Text3D font={InterMediumRegular} size={0.2 * scale} height={0.01} position={[-0.07 + offsetX, -0.6 + offsetY, 0.1]}>
         {keyId.replace('-', '')}

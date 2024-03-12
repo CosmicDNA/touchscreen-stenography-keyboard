@@ -1,19 +1,18 @@
 {
-  "name": "drei-rendertexture",
+  "name": "touchscreen-stenography-keyboard",
   "version": "1.0.0",
-  "description": "Portal a live scene events and all into a texture.",
+  "description": "Touchscreen stegraphy keyboard.",
   "keywords": [
-    "portals",
-    "rendertexture"
+    "plover",
+    "keyboard",
+    "stenography"
   ],
   "main": "src/index.js",
   "license": "MIT",
   "dependencies": {
-    "@pmndrs/assets": "1.6.0",
     "@react-three/drei": "9.99.4",
     "@react-three/fiber": "8.15.16",
     "@reduxjs/toolkit": "^2.2.1",
-    "@types/three": "0.161.2",
     "@use-gesture/react": "^10.3.0",
     "jotai": "^2.7.0",
     "leva": "^0.9.35",
@@ -21,19 +20,20 @@
     "react-dom": "18.2.0",
     "react-json-pretty": "^2.2.0",
     "react-redux": "^9.1.0",
-    "react-scripts": "5.0.1",
     "react-use-websocket": "^4.8.1",
+    "socket.io-client": "^4.7.4",
     "three": "0.161.0",
     "tunnel-rat": "^0.1.2",
     "use-sound": "^4.0.1"
   },
   "devDependencies": {
     "@babel/core": "^7.23.9",
-    "@babel/plugin-proposal-private-property-in-object": "^7.21.11",
     "@babel/plugin-syntax-flow": "^7.23.3",
+    "@babel/plugin-transform-private-property-in-object": "^7.23.4",
     "@babel/plugin-transform-react-jsx": "^7.23.4",
     "@craco/craco": "^7.1.0",
     "@types/node": "*",
+    "@types/three": "0.161.2",
     "eslint": "^8.57.0",
     "eslint-config-standard": "^17.1.0",
     "eslint-plugin-import": "^2.29.1",
@@ -44,6 +44,7 @@
     "lint-staged": "^15.2.2",
     "postcss": "^8.4.35",
     "react-proptypes-generate": "^1.7.6",
+    "react-scripts": "5.0.1",
     "typescript": ">=5"
   },
   "scripts": {

@@ -1,6 +1,6 @@
 import { useRef } from 'react'
 import { eqSet, getCircularPoints } from '../utils/tools'
-import * as THREE from 'three'
+import { Vector2, Raycaster } from 'three'
 import { useDrag } from '@use-gesture/react'
 import { useThree } from '@react-three/fiber'
 
@@ -27,14 +27,14 @@ const useDragHook = ({ fingerResolution = 5, keyId, pressedKeys, setPressedKeys 
   const bind = useDrag(({ event, down }) => {
     if (down) {
       const { clientX, clientY } = event
-      const coords = new THREE.Vector2(
+      const coords = new Vector2(
         (clientX / window.innerWidth) * 2 - 1,
         -(clientY / window.innerHeight) * 2 + 1
       )
-      const fingerVectors = rawFingerModel.map(v => new THREE.Vector2(...v).add(coords))
+      const fingerVectors = rawFingerModel.map(v => new Vector2(...v).add(coords))
 
       const intersects = new Set([...fingerVectors.map(v => {
-        const raycaster = new THREE.Raycaster()
+        const raycaster = new Raycaster()
         raycaster.far = 50
         raycaster.setFromCamera(v, camera)
         // Retrieve all key meshes
