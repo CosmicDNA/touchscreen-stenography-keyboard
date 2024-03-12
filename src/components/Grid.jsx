@@ -1,5 +1,4 @@
 import PropTypes from 'prop-types'
-import React from 'react'
 import { Instances, Instance } from '@react-three/drei'
 
 const Grid = ({ number = 23, lineWidth = 0.026, height = 0.5, ...props }) => (

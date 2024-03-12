@@ -1,5 +1,4 @@
 import PropTypes from 'prop-types'
-import React from 'react'
 import Hexagon from './Hexagon'
 
 const sqrt3 = Math.sqrt(3)

@@ -1,10 +1,7 @@
-import React, { createContext, useContext } from 'react'
 import PropTypes from 'prop-types'
 import tunnel from 'tunnel-rat'
+import { TunnelContext } from './useTunnelContext'
 
-const TunnelContext = createContext()
-
-const useTunnelContext = () => useContext(TunnelContext)
 
 const TunnelProvider = ({ children }) => {
   const status = tunnel()
@@ -22,4 +19,4 @@ TunnelProvider.propTypes = {
   children: PropTypes.any
 }
 
-export { useTunnelContext, TunnelProvider }
+export { TunnelProvider }

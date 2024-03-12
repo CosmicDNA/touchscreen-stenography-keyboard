@@ -1,8 +1,8 @@
 import PropTypes from 'prop-types'
-import React, { useState, useRef, useEffect } from 'react'
+import { useState, useRef, useEffect } from 'react'
 import KeyGroup from './KeyGroup'
 import Key from './Key'
-import * as THREE from 'three'
+import { Vector3 } from 'three'
 import { useFrame } from '@react-three/fiber'
 import keySets from './steno-script'
 import useSound from 'use-sound'
@@ -17,7 +17,7 @@ const enter = 0.2
 const rowSpacing = 1.3
 const animate = false
 
-const referencePosition = new THREE.Vector3(0.5, -2.4, 0)
+const referencePosition = new Vector3(0.5, -2.4, 0)
 const position = [
   [-0.5, 4.8, 0],
   [-1, 3 * rowSpacing, 0],
@@ -29,7 +29,7 @@ const position = [
   [-4, 3 * rowSpacing, 0],
   [-4, 2 * rowSpacing, 0]
 ]
-  .map(p => (new THREE.Vector3(...p))
+  .map(p => (new Vector3(...p))
     .add(referencePosition))
 
 const round = true
@@ -89,12 +89,12 @@ const StenoKeyboard = ({ controls, ...props }) => {
   const [playKeyPress] = useSound(keypressAudioFile)
   const [playKeyRelease] = useSound(keyreleaseAudioFile, { volume: 0.7 })
 
-  const onKeyPress = (keyId) => {
+  const onKeyPress = () => {
     playKeyPress()
     // console.log(`Key ${keyId} was pressed.`)
   }
 
-  const onKeyRelease = (keyId) => {
+  const onKeyRelease = () => {
     playKeyRelease()
     // console.log(`Key ${keyId} was released.`)
   }
@@ -132,6 +132,7 @@ const StenoKeyboard = ({ controls, ...props }) => {
   // eslint-disable-next-line no-unused-vars
   const [previousAllKeys, setPreviousAllKeys] = usePrevious(allKeys, emptySet)
   const [addedItems, removedItems] = getAddedAndRemovedItems(allKeys, previousAllKeys)
+  removedItems
 
   useEffect(() => {
     if (addedItems.size) {
@@ -141,10 +142,10 @@ const StenoKeyboard = ({ controls, ...props }) => {
       }
     }
 
-    if (removedItems.size) {
-      // console.log('Removed items:', removedItems)
-    }
-  }, [addedItems, removedItems].map(s => dep(s)))
+    // if (removedItems.size) {
+    //   console.log('Removed items:', removedItems)
+    // }
+  }, [dep(addedItems), controls.sendStroke, sendJsonMessage])
 
   useEffect(() => {
     if (allKeys.size === 0) {

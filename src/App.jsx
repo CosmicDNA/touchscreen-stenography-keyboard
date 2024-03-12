@@ -1,10 +1,11 @@
 import PropTypes from 'prop-types'
-import React, { useEffect } from 'react'
+import { useEffect } from 'react'
 import { Canvas, useFrame } from '@react-three/fiber'
 import { OrbitControls, ContactShadows } from '@react-three/drei'
 import StenoKeyboard from './components/StenoKeyboard'
 import { WebSocketProvider } from './components/hooks/useWebSocket'
-import { TunnelProvider, useTunnelContext } from './components/hooks/useTunnel'
+import { TunnelProvider } from './components/hooks/useTunnel/useTunnel'
+import { useTunnelContext } from './components/hooks/useTunnel/useTunnelContext'
 import Grid from './components/Grid'
 import useLevaControls, { getAtomWithStorage } from './components/hooks/useLevaControls'
 
@@ -53,7 +54,7 @@ const kOptionsAtom = getAtomWithStorage({ keyboardOptions })
 
 const cameraAtom = atomWithStorage('cameraPosition', [0, 6, 10])
 
-const Tunneled = ({ ...props }) => {
+const Tunneled = () => {
   const { status } = useTunnelContext()
   const wsControls = useLevaControls({
     useControlsParams: ['Plover Web-socket Plugin', websocketOptions],
@@ -86,7 +87,7 @@ const Tunneled = ({ ...props }) => {
   const dispatch = useDispatch()
 
   useEffect(() => {
-    console.log({ isLoading, currentSecret, constrolsSecret: controls.secret })
+    // console.log({ isLoading, currentSecret, constrolsSecret: controls.secret })
     if (!isLoading) {
       if (didSecretChange) {
         // console.log(controls.secret)
@@ -94,7 +95,7 @@ const Tunneled = ({ ...props }) => {
         dispatch(setSecret(controls.secret))
       }
     }
-  }, [isLoading, currentSecret, controls.secret])
+  }, [isLoading, currentSecret, controls.secret, didSecretChange, dispatch])
 
   if (isLoading || protocolQuery.isLoading) return <>Loading...</>
   // console.log({ wsControls, kControls })

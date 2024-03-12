@@ -1,6 +1,6 @@
 import PropTypes from 'prop-types'
-import React, { useEffect } from 'react'
-import * as THREE from 'three'
+import { useEffect } from 'react'
+import { Color, Shape, Vector2 } from 'three'
 import { getCircularPoints } from './utils/tools'
 import useMount from './hooks/useMount'
 import { Text3D } from '@react-three/drei'
@@ -26,7 +26,7 @@ import InterMediumRegular from '../fonts/Inter_Medium_Regular.json'
  * Key component.
  * @param {KeyProps} props - The props object.
  */
-const Key = ({ offsetX = 0, offsetY = 0, scale = 1, roundResolution = 32, fingerResolution = 5, width = 7 / 10, lateral = 7 / 10, depth = 1 / 20, keyId, round, grow, setPressedKeys, pressedKeys, allKeys, ...props }) => {
+const Key = ({ offsetX = 0, offsetY = 0, scale = 1, roundResolution = 32, width = 7 / 10, lateral = 7 / 10, depth = 1 / 20, keyId, round, grow, allKeys, ...props }) => {
   const { onKeyPress, onKeyRelease } = props
   const { isMounted } = useMount()
   const widthOnTwo = width / 2
@@ -44,7 +44,7 @@ const Key = ({ offsetX = 0, offsetY = 0, scale = 1, roundResolution = 32, finger
         onKeyRelease(keyId)
       }
     }
-  }, [pressed])
+  }, [isMounted, keyId, onKeyPress, onKeyRelease, pressed])
 
   let addLeft, addRight
   switch (grow) {
@@ -96,7 +96,7 @@ const Key = ({ offsetX = 0, offsetY = 0, scale = 1, roundResolution = 32, finger
   }
 
   const colorA = '#90B6AF'
-  const colorB = THREE.Color.NAMES.whitesmoke
+  const colorB = Color.NAMES.whitesmoke
 
   return (
     <group
@@ -117,7 +117,7 @@ const Key = ({ offsetX = 0, offsetY = 0, scale = 1, roundResolution = 32, finger
           <meshLambertMaterial key={i} attach={`material-${i}`} args={[{ color, wireframe: false }]} />
         )}
         {/* eslint-disable-next-line react/no-unknown-property */}
-        <extrudeGeometry args={[new THREE.Shape(pts.map(points => new THREE.Vector2(...points))), extrudeSettings]} />
+        <extrudeGeometry args={[new Shape(pts.map(points => new Vector2(...points))), extrudeSettings]} />
       </mesh>
       <Text3D font={InterMediumRegular} size={0.2 * scale} height={0.01} position={[-0.07 + offsetX, -0.6 + offsetY, 0.1]}>
         {keyId.replace('-', '')}
@@ -138,8 +138,6 @@ Key.propTypes = {
   roundResolution: PropTypes.number,
   fingerResolution: PropTypes.number,
   width: PropTypes.number,
-  pressedKeys: PropTypes.instanceOf(Map).isRequired,
-  setPressedKeys: PropTypes.func.isRequired,
   onKeyPress: PropTypes.func.isRequired,
   onKeyRelease: PropTypes.func.isRequired,
   allKeys: PropTypes.instanceOf(Set).isRequired
