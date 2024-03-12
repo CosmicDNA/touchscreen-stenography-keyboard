@@ -53,7 +53,12 @@ const wsOptionsAtom = getAtomWithStorage({ websocketOptions })
 const kOptionsAtom = getAtomWithStorage({ keyboardOptions })
 
 const initialCameraPosition = [0, 6, 10]
-const cameraAtom = atomWithStorage('cameraPosition', initialCameraPosition)
+const cameraAtom = atomWithStorage(
+  'cameraPosition',
+  initialCameraPosition,
+  undefined,
+  { getOnInit: true }
+)
 
 const Tunneled = () => {
   const { status } = useTunnelContext()
@@ -105,12 +110,10 @@ const Tunneled = () => {
   // console.log({ useGetProtocolQuery, currentSecret, secret: controls.secret }) // , isLoading, protocol, isError, error
   // console.log({ isLoading, protocol, isError, error })
 
-  console.log(kControls)
-
   const onOrbitMotionEnd = (event) => {
-    console.log(event.target)
+    console.log('Received onOrbitMotionEnd event', event)
     const newCameraPosition = cameraPosition
-    console.log(`Setting camera position to ${newCameraPosition}`)
+    console.log('Setting persistent camera position to', newCameraPosition)
     setPersistentCameraPosition(newCameraPosition)
   }
 
