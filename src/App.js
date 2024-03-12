@@ -7,7 +7,7 @@ import { WebSocketProvider } from './components/hooks/useWebSocket'
 import { TunnelProvider, useTunnelContext } from './components/hooks/useTunnel'
 import Grid from './components/Grid'
 import useLevaControls, { getAtomWithStorage } from './components/hooks/useLevaControls'
-
+import { Vector3 } from 'three'
 import { atomWithStorage } from 'jotai/utils'
 import { useAtom } from 'jotai'
 import { useGetProtocolQuery } from './features/protocol/api/apiSlice'
@@ -17,9 +17,21 @@ import JSONPretty from 'react-json-pretty'
 import 'react-json-pretty/themes/monikai.css'
 import styles from './App.module.css'
 
-const ReactToCameraChange = ({ setCameraPosition, children }) => {
-  useFrame(({ camera }) => {
-    setCameraPosition(camera.position)
+/**
+ *
+ * @param {{scheduledCameraPositionSave: {scheduled: Boolean, setPersistentCameraPosition: func} setScheduledCameraPositionSave: func}} param0
+ * @returns
+ */
+const ReactToCameraChange = ({ onCameraUpdate, children, trackCamera = true }) => {
+  let previousCameraPosition = new Vector3()
+  useFrame(({ camera }, clockDelta) => {
+    if (trackCamera) {
+      const position = camera.position
+      const cameraPositionDelta = position.clone().sub(previousCameraPosition)
+      const speed = cameraPositionDelta.clone().divideScalar(clockDelta)
+      onCameraUpdate({ speed, position })
+      previousCameraPosition = position.clone()
+    }
   })
 
   return (
@@ -29,7 +41,8 @@ const ReactToCameraChange = ({ setCameraPosition, children }) => {
   )
 }
 ReactToCameraChange.propTypes = {
-  setCameraPosition: PropTypes.func.isRequired,
+  onCameraUpdate: PropTypes.func.isRequired,
+  trackCamera: PropTypes.bool,
   children: PropTypes.any
 }
 
@@ -52,7 +65,7 @@ const keyboardOptions = {
 const wsOptionsAtom = getAtomWithStorage({ websocketOptions })
 const kOptionsAtom = getAtomWithStorage({ keyboardOptions })
 
-const initialCameraPosition = [0, 6, 10]
+const initialCameraPosition = new Vector3(0, 6, 10)
 const cameraAtom = atomWithStorage(
   'cameraPosition',
   initialCameraPosition,
@@ -90,7 +103,7 @@ const Tunneled = () => {
 
   // eslint-disable-next-line no-unused-vars
   const [persistentCameraPosition, setPersistentCameraPosition] = useAtom(cameraAtom)
-  const [cameraPosition, setCameraPosition] = useState(initialCameraPosition)
+  const [trackCamera, setTrackCamera] = useState(false)
   const dispatch = useDispatch()
 
   useEffect(() => {
@@ -111,10 +124,19 @@ const Tunneled = () => {
   // console.log({ isLoading, protocol, isError, error })
 
   const onOrbitMotionEnd = (event) => {
-    console.log('Received onOrbitMotionEnd event', event)
-    const newCameraPosition = cameraPosition
-    console.log('Setting persistent camera position to', newCameraPosition)
-    setPersistentCameraPosition(newCameraPosition)
+    // console.log('Received onOrbitMotionEnd event', event)
+    // console.log('Scheduling camera position save')
+    setTrackCamera(true)
+  }
+
+  const onCameraUpdate = ({ speed, position }) => {
+    const speedModule = speed.length()
+    if (speedModule < 1E-3) {
+      // Pretty much stabilised
+      setTrackCamera(false)
+      setPersistentCameraPosition(position)
+      // console.log('Saved to persistent storage camera position:', position)
+    }
   }
 
   const { parent, child } = styles
@@ -125,7 +147,7 @@ const Tunneled = () => {
         <status.Out />
       </div>
         <Canvas camera={{ position: Object.values(persistentCameraPosition), fov: 25 }}>
-          <ReactToCameraChange setCameraPosition={setCameraPosition}>
+          <ReactToCameraChange {...{ onCameraUpdate, trackCamera } }>
             {/* eslint-disable-next-line react/no-unknown-property */}
             <ambientLight intensity={0.5} />
             {/* eslint-disable-next-line react/no-unknown-property */}
@@ -146,8 +168,6 @@ const Tunneled = () => {
             {/* <ContactShadows frames={1} position-y={-0.5} blur={3} color="orange" /> */}
             <OrbitControls
               onEnd={onOrbitMotionEnd}
-              autoRotate={false}
-              autoRotateSpeed={-0.1}
               zoomSpeed={0.25}
               minPolarAngle={0}
               dampingFactor={0.05}
