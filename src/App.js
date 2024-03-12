@@ -15,7 +15,7 @@ import { useSelector, useDispatch } from 'react-redux'
 import { setSecret } from './features/secret/secretSlice'
 import JSONPretty from 'react-json-pretty'
 import 'react-json-pretty/themes/monikai.css'
-import './App.css'
+import styles from './App.module.css'
 
 const ReactToCameraChange = ({ setCameraPosition, children }) => {
   useFrame(({ camera }) => {
@@ -117,9 +117,11 @@ const Tunneled = () => {
     setPersistentCameraPosition(newCameraPosition)
   }
 
+  const { parent, child } = styles
+
   return (
-    <div className='parent'>
-      <div className='child'>
+    <div className={parent}>
+      <div className={child}>
         <status.Out />
       </div>
         <Canvas camera={{ position: Object.values(persistentCameraPosition), fov: 25 }}>
