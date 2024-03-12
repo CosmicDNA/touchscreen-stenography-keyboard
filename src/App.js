@@ -1,5 +1,5 @@
 import PropTypes from 'prop-types'
-import React, { useEffect } from 'react'
+import React, { useEffect, useState } from 'react'
 import { Canvas, useFrame } from '@react-three/fiber'
 import { OrbitControls, ContactShadows } from '@react-three/drei'
 import StenoKeyboard from './components/StenoKeyboard'
@@ -15,6 +15,7 @@ import { useSelector, useDispatch } from 'react-redux'
 import { setSecret } from './features/secret/secretSlice'
 import JSONPretty from 'react-json-pretty'
 import 'react-json-pretty/themes/monikai.css'
+import './App.css'
 
 const ReactToCameraChange = ({ setCameraPosition, children }) => {
   useFrame(({ camera }) => {
@@ -51,7 +52,8 @@ const keyboardOptions = {
 const wsOptionsAtom = getAtomWithStorage({ websocketOptions })
 const kOptionsAtom = getAtomWithStorage({ keyboardOptions })
 
-const cameraAtom = atomWithStorage('cameraPosition', [0, 6, 10])
+const initialCameraPosition = [0, 6, 10]
+const cameraAtom = atomWithStorage('cameraPosition', initialCameraPosition)
 
 const Tunneled = () => {
   const { status } = useTunnelContext()
@@ -82,7 +84,8 @@ const Tunneled = () => {
   const isLoading = Boolean([kControls, wsControls].find(a => a.isLoading))
 
   // eslint-disable-next-line no-unused-vars
-  const [cameraPosition, setCameraPosition] = useAtom(cameraAtom)
+  const [persistentCameraPosition, setPersistentCameraPosition] = useAtom(cameraAtom)
+  const [cameraPosition, setCameraPosition] = useState(initialCameraPosition)
   const dispatch = useDispatch()
 
   useEffect(() => {
@@ -102,55 +105,66 @@ const Tunneled = () => {
   // console.log({ useGetProtocolQuery, currentSecret, secret: controls.secret }) // , isLoading, protocol, isError, error
   // console.log({ isLoading, protocol, isError, error })
 
+  console.log(kControls)
+
+  const onOrbitMotionEnd = (event) => {
+    console.log(event.target)
+    const newCameraPosition = cameraPosition
+    console.log(`Setting camera position to ${newCameraPosition}`)
+    setPersistentCameraPosition(newCameraPosition)
+  }
+
   return (
-    <>
-      <header>
+    <div className='parent'>
+      <div className='child'>
         <status.Out />
-      </header>
-      {<status.In>
-      {
-        isSuccess
-          ? `got protocol ${protocol}`
-          : isError
-            ? <JSONPretty id="json-pretty" data={error}></JSONPretty>
-            : 'dummy'
-      }
-      </status.In>}
-      <Canvas camera={{ position: Object.values(cameraPosition), fov: 25 }}>
-        {/* <ReactToCameraChange setCameraPosition={setCameraPosition}> */}
-          {/* eslint-disable-next-line react/no-unknown-property */}
-          <ambientLight intensity={0.5} />
-          {/* eslint-disable-next-line react/no-unknown-property */}
-          <directionalLight position={[10, 10, 5]} />
-          {/* <Suspense fallback={<status.In>Loading ...</status.In>}> */}
-          <WebSocketProvider
-            url={
+      </div>
+        <Canvas camera={{ position: Object.values(persistentCameraPosition), fov: 25 }}>
+          <ReactToCameraChange setCameraPosition={setCameraPosition}>
+            {/* eslint-disable-next-line react/no-unknown-property */}
+            <ambientLight intensity={0.5} />
+            {/* eslint-disable-next-line react/no-unknown-property */}
+            <directionalLight position={[10, 10, 5]} />
+            {/* <Suspense fallback={<status.In>Loading ...</status.In>}> */}
+            <WebSocketProvider
+              url={
+                isSuccess
+                  ? `${protocol}${controls.host}:${controls.port}${controls.path}`
+                  : 'ws://localhost:8086/dummy'
+              }
+              secretkey={controls.secret}
+            >
+              <StenoKeyboard controls={kControls} />
+            </WebSocketProvider>
+            {/* </Suspense> */}
+            <ContactShadows frames={3} position-y={-0.5} blur={1} opacity={0.75} />
+            {/* <ContactShadows frames={1} position-y={-0.5} blur={3} color="orange" /> */}
+            <OrbitControls
+              onEnd={onOrbitMotionEnd}
+              autoRotate={false}
+              autoRotateSpeed={-0.1}
+              zoomSpeed={0.25}
+              minPolarAngle={0}
+              dampingFactor={0.05}
+              enableDamping={true}
+              maxPolarAngle={Math.PI / 2.1}
+              enableRotate={!kControls.controls.lockPosition}
+              enablePan={!kControls.controls.lockPosition}
+              enableZoom={!kControls.controls.lockPosition}
+            />
+            <Grid position={[0, -0.5, 0]} />
+          </ReactToCameraChange>
+        </Canvas>
+          <status.In className='child'>
+            {
               isSuccess
-                ? `${protocol}${controls.host}:${controls.port}${controls.path}`
-                : 'ws://localhost:8086/dummy'
+                ? `got protocol ${protocol}`
+                : isError
+                  ? <JSONPretty id="json-pretty" data={error}></JSONPretty>
+                  : 'dummy'
             }
-            secretkey={controls.secret}
-          >
-            <StenoKeyboard controls={kControls} />
-          </WebSocketProvider>
-          {/* </Suspense> */}
-          <ContactShadows frames={3} position-y={-0.5} blur={1} opacity={0.75} />
-          {/* <ContactShadows frames={1} position-y={-0.5} blur={3} color="orange" /> */}
-          <OrbitControls
-            autoRotate={false}
-            autoRotateSpeed={-0.1}
-            zoomSpeed={0.25}
-            minPolarAngle={0}
-            dampingFactor={0.05}
-            maxPolarAngle={Math.PI / 2.1}
-            enableRotate={!kControls.lockPosition}
-            enablePan={!kControls.lockPosition}
-            enableZoom={!kControls.lockPosition}
-          />
-          <Grid position={[0, -0.5, 0]} />
-        {/* </ReactToCameraChange> */}
-      </Canvas>
-    </>
+          </status.In>
+    </div>
   )
 }
 

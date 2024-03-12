@@ -1,0 +1,14 @@
+.parent {
+  position: relative; /* Set parent position to relative */
+  height: 100vh; /* Ensure full viewport height */
+}
+
+.child {
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: green;
+  position: absolute; /* Position child absolutely within the parent */
+  top: 0; /* Adjust top position as needed */
+  left: 0; /* Adjust left position as needed */
+  /* Other styles for the child */
+}
