@@ -3,7 +3,7 @@
 import { createSlice } from '@reduxjs/toolkit'
 
 const initialState = {
-  secret: null // Initialize with an empty string or your default secret
+  secret: null // Initialize with an empty string
 }
 
 const secretSlice = createSlice({
@@ -18,4 +18,4 @@ const secretSlice = createSlice({
 
 export const { setSecret } = secretSlice.actions
 
-export default secretSlice.reducer
+export default secretSlice

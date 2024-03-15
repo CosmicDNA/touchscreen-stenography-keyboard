@@ -1,5 +1,5 @@
 import PropTypes from 'prop-types'
-import React, { useEffect, useState } from 'react'
+import React, { useState, useEffect } from 'react'
 import { Canvas, useFrame } from '@react-three/fiber'
 import { OrbitControls, ContactShadows } from '@react-three/drei'
 import StenoKeyboard from './components/StenoKeyboard'
@@ -10,9 +10,9 @@ import useLevaControls, { getAtomWithStorage } from './components/hooks/useLevaC
 import { Vector3 } from 'three'
 import { atomWithStorage } from 'jotai/utils'
 import { useAtom } from 'jotai'
-import { useGetProtocolQuery } from './features/protocol/api/apiSlice'
-import { useSelector, useDispatch } from 'react-redux'
-import { setSecret } from './features/secret/secretSlice'
+import { useGetProtocolQuery, useGetPublicKeyQuery } from './features/protocol/api/apiSlice'
+// import { useSelector, useDispatch } from 'react-redux'
+// import { setPublicKey } from './features/server/serverSlice'
 import JSONPretty from 'react-json-pretty'
 import 'react-json-pretty/themes/monikai.css'
 import styles from './App.module.css'
@@ -54,8 +54,7 @@ const sendStroke = {
 const websocketOptions = {
   host: { value: 'localhost' },
   port: { value: 8086, min: 1024, max: 49151, step: 1 },
-  path: { value: '/websocket' },
-  secret: { value: 'mysecretkey' }
+  path: { value: '/websocket' }
 }
 const keyboardOptions = {
   sendStroke: { value: sendStroke.onKeyRelease, options: Object.keys(sendStroke) },
@@ -86,11 +85,16 @@ const Tunneled = () => {
     atom: kOptionsAtom
   })
 
-  const currentSecret = useSelector((state) => state.secret.secret)
-  const didSecretChange = currentSecret !== controls.secret
-  const skip = !currentSecret || didSecretChange
+  const publicKeyQuery = useGetPublicKeyQuery(null)
+  const {
+    data: publicKey
+    // isLoading,
+    // isSuccess,
+    // isError,
+    // error
+  } = publicKeyQuery
 
-  const protocolQuery = useGetProtocolQuery(null, { skip })
+  const protocolQuery = useGetProtocolQuery({ publicKey, object: { message: 'Hello to you!' } })
   const {
     data: protocol,
     // isLoading,
@@ -104,18 +108,20 @@ const Tunneled = () => {
   // eslint-disable-next-line no-unused-vars
   const [persistentCameraPosition, setPersistentCameraPosition] = useAtom(cameraAtom)
   const [trackCamera, setTrackCamera] = useState(false)
-  const dispatch = useDispatch()
+  // const dispatch = useDispatch()
 
   useEffect(() => {
-    // console.log({ isLoading, currentSecret, constrolsSecret: controls.secret })
-    if (!isLoading) {
-      if (didSecretChange) {
-        // console.log(controls.secret)
-        // console.log('Dispatching')
-        dispatch(setSecret(controls.secret))
-      }
-    }
-  }, [isLoading, currentSecret, controls.secret])
+    console.log(publicKey)
+    console.log(publicKeyQuery)
+  //   // console.log({ isLoading, currentSecret, constrolsSecret: controls.secret })
+  //   if (!isLoading) {
+  //     if (didSecretChange) {
+  //       // console.log(controls.secret)
+  //       // console.log('Dispatching')
+  //       dispatch(setSecret(controls.secret))
+  //     }
+  //   }
+  }, [isLoading, publicKey, publicKeyQuery])
 
   if (isLoading || protocolQuery.isLoading) return <>Loading...</>
   // console.log({ wsControls, kControls })

@@ -21,10 +21,12 @@
     "react-json-pretty": "^2.2.0",
     "react-redux": "^9.1.0",
     "react-use-websocket": "^4.8.1",
-    "socket.io-client": "^4.7.4",
     "three": "0.161.0",
     "tunnel-rat": "^0.1.2",
-    "use-sound": "^4.0.1"
+    "tweetnacl": "^1.0.3",
+    "tweetnacl-util": "^0.15.1",
+    "use-sound": "^4.0.1",
+    "util": "^0.12.5"
   },
   "devDependencies": {
     "@babel/core": "^7.23.9",
