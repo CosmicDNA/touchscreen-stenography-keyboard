@@ -55,14 +55,7 @@ const WebSocketProvider = ({ children, url, publicKey }) => {
   )
   const { readyState, lastJsonMessage, sendJsonMessage, sendMessage } = useWebSocket(url, { queryParams })
   const newReadyState = new CustomReadyState(readyState)
-  // eslint-disable-next-line no-unused-vars
   const { status } = useTunnelContext()
-
-  console.log(url)
-  console.log(newReadyState)
-  console.log(newReadyState.getConnectionMessage(url))
-  console.log(newReadyState.state())
-  console.log(newReadyState.status())
 
   return (
     <>

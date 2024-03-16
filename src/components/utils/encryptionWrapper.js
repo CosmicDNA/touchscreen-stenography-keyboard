@@ -10,6 +10,7 @@ const pairA = generateKeyPair()
  * @returns {{publicKey: String, encryptedMessage: String}}
  */
 const encryptionProcess = (publicKey, json, nonce = undefined) => {
+  console.log('Computing')
   const decodedPublicKey = hexDecode(publicKey)
   const secretOrSharedKey = box.before(decodedPublicKey, pairA.secretKey)
   const encryptedMessage = encrypt({ secretOrSharedKey, json, nonce })
