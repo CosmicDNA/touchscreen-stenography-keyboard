@@ -10,7 +10,7 @@ import useLevaControls, { getAtomWithStorage } from './components/hooks/useLevaC
 import { Vector3 } from 'three'
 import { atomWithStorage } from 'jotai/utils'
 import { useAtom } from 'jotai'
-import { useGetProtocolQuery, useGetPublicKeyQuery } from './features/protocol/api/apiSlice'
+import { useGetPublicKeyQuery } from './features/protocol/api/apiSlice'
 import JSONPretty from 'react-json-pretty'
 import 'react-json-pretty/themes/monikai.css'
 import styles from './App.module.css'
@@ -52,7 +52,7 @@ const sendStroke = {
 const websocketOptions = {
   host: { value: 'localhost' },
   port: { value: 8086, min: 1024, max: 49151, step: 1 },
-  path: { value: '/websocket' }
+  TLS: { value: 'no', options: ['no', 'yes'] }
 }
 const keyboardOptions = {
   sendStroke: { value: sendStroke.onKeyRelease, options: Object.keys(sendStroke) },
@@ -77,31 +77,28 @@ const Tunneled = () => {
     atom: wsOptionsAtom
   })
   const { controls } = wsControls
+  const isTLS = controls.TLS === 'yes'
+  const urlPredicate = `://${controls.host}:${controls.port}`
+  const baseUrl = `${isTLS ? 'https' : 'http'}${urlPredicate}`
 
   const kControls = useLevaControls({
     useControlsParams: ['Keyboard', keyboardOptions],
     atom: kOptionsAtom
   })
 
-  const publicKeyQuery = useGetPublicKeyQuery(null)
+  const publicKeyQuery = useGetPublicKeyQuery(baseUrl)
   const {
-    data: publicKey
-  } = publicKeyQuery
-
-  const protocolQuery = useGetProtocolQuery({ publicKey, object: 'Hello to you!' }, { skip: !publicKey })
-  const {
-    data: protocol,
-    isSuccess,
+    data: publicKey,
     isError,
     error
-  } = protocolQuery
+  } = publicKeyQuery
 
   const isLoading = Boolean([kControls, wsControls, publicKeyQuery].find(a => a.isLoading))
 
   const [persistentCameraPosition, setPersistentCameraPosition] = useAtom(cameraAtom)
   const [trackCamera, setTrackCamera] = useState(false)
 
-  if (isLoading || protocolQuery.isLoading) return <>Loading...</>
+  if (isLoading) return <>Loading...</>
 
   const onOrbitMotionEnd = (event) => {
     setTrackCamera(true)
@@ -130,18 +127,15 @@ const Tunneled = () => {
             <ambientLight intensity={0.5} />
             {/* eslint-disable-next-line react/no-unknown-property */}
             <directionalLight position={[10, 10, 5]} />
-            {/* <Suspense fallback={<status.In>Loading ...</status.In>}> */}
             <WebSocketProvider
               url={
-                isSuccess
-                  ? `${protocol}${controls.host}:${controls.port}${controls.path}`
-                  : 'ws://localhost:8086/dummy'
+                !isLoading &&
+                  `${isTLS ? 'wss' : 'ws'}${urlPredicate}/websocket`
               }
               publicKey={publicKey}
             >
               <StenoKeyboard controls={kControls.controls} />
             </WebSocketProvider>
-            {/* </Suspense> */}
             <ContactShadows frames={3} position-y={-0.5} blur={1} opacity={0.75} />
             {/* <ContactShadows frames={1} position-y={-0.5} blur={3} color="orange" /> */}
             <OrbitControls

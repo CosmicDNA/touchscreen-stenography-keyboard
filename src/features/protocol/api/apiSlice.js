@@ -8,25 +8,24 @@ export const apiSlice = createApi({
   reducerPath: 'api',
   // All of our requests will have URLs starting with '/fakeApi'
   baseQuery: fetchBaseQuery({
-    baseUrl: 'http://localhost:8086'
   }),
   // The "endpoints" represent operations and requests for this server
   endpoints: builder => ({
     // The `getPosts` endpoint is a "query" operation that returns data
     getProtocol: builder.query({
       // The URL for the request is '/fakeApi/posts'
-      query: ({ publicKey, object }) => {
+      query: ({ baseUrl, publicKey, object }) => {
         const params = encryptionProcess(publicKey, object)
         return {
-          url: '/protocol',
+          url: `${baseUrl}/protocol`,
           params
         }
       }
     }),
     getPublicKey: builder.query({
-      query: () => {
+      query: (baseUrl) => {
         return {
-          url: '/getpublickey'
+          url: `${baseUrl}/getpublickey`
         }
       }
     })

@@ -3,7 +3,7 @@
 import { createSlice } from '@reduxjs/toolkit'
 
 const initialState = {
-  secret: '123' // Initialize with an empty string
+  secret: '' // Initialize with an empty string
 }
 
 const secretSlice = createSlice({
