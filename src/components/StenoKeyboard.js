@@ -15,7 +15,7 @@ import HexagonFloor from './HexagonFloor'
 
 const enter = 0.2
 const rowSpacing = 1.3
-const animate = false
+const animate = true
 
 const referencePosition = new Vector3(0.5, -2.4, 0)
 const position = [
@@ -73,7 +73,7 @@ const config = [
 
 const rowItems = config.filter(o => o.type === 'Row')
 const emptySet = new Set()
-let initialised = false
+let initialised = true
 const StenoKeyboard = ({ controls, ...props }) => {
   const ref = useRef()
   const [largestKeySet, setLargestKeySet] = useState(new Set())
@@ -103,7 +103,7 @@ const StenoKeyboard = ({ controls, ...props }) => {
   // Animate the keys
   useFrame(({ clock }) => {
     if (animate) {
-      const keySetsWithRest = [...keySets, [], []]
+      const keySetsWithRest = [[], [], [], [], ...keySets]
       const elapsedTime = clock.getElapsedTime()
       const speed = 1 // Adjust the typing speed
       const ratio = 0.6 // chord/blank ratio
