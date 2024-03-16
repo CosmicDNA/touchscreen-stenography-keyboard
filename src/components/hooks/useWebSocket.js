@@ -47,7 +47,7 @@ const nonce = new Uint8Array([238, 249, 116, 23, 191, 120, 190, 185, 255, 98, 41
 
 const useWebSocketContext = () => useContext(WebSocketContext)
 const WebSocketProvider = ({ children, url, publicKey }) => {
-  const middlewareAuthenticationRequest = 'MAR'
+  const middlewareAuthenticationRequest = 'MAR' // It could be any message, really as long it is properly encrypted.
   // Here we use a constant nonce for the connection to avoid re renders.
   const queryParams = useMemo(
     () => encryptionProcess(publicKey, middlewareAuthenticationRequest, nonce),
