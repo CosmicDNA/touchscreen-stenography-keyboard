@@ -11,8 +11,6 @@ import { Vector3 } from 'three'
 import { atomWithStorage } from 'jotai/utils'
 import { useAtom } from 'jotai'
 import { useGetProtocolQuery, useGetPublicKeyQuery } from './features/protocol/api/apiSlice'
-// import { useSelector, useDispatch } from 'react-redux'
-// import { setPublicKey } from './features/server/serverSlice'
 import JSONPretty from 'react-json-pretty'
 import 'react-json-pretty/themes/monikai.css'
 import styles from './App.module.css'
@@ -88,16 +86,11 @@ const Tunneled = () => {
   const publicKeyQuery = useGetPublicKeyQuery(null)
   const {
     data: publicKey
-    // isLoading,
-    // isSuccess,
-    // isError,
-    // error
   } = publicKeyQuery
 
   const protocolQuery = useGetProtocolQuery({ publicKey, object: 'Hello to you!' }, { skip: !publicKey })
   const {
     data: protocol,
-    // isLoading,
     isSuccess,
     isError,
     error
@@ -105,20 +98,12 @@ const Tunneled = () => {
 
   const isLoading = Boolean([kControls, wsControls, publicKeyQuery].find(a => a.isLoading))
 
-  // eslint-disable-next-line no-unused-vars
   const [persistentCameraPosition, setPersistentCameraPosition] = useAtom(cameraAtom)
   const [trackCamera, setTrackCamera] = useState(false)
-  // const dispatch = useDispatch()
 
   if (isLoading || protocolQuery.isLoading) return <>Loading...</>
-  // console.log({ wsControls, kControls })
-  // if (isError) return <>{error}</>
-  // console.log({ useGetProtocolQuery, currentSecret, secret: controls.secret }) // , isLoading, protocol, isError, error
-  // console.log({ isLoading, protocol, isError, error })
 
   const onOrbitMotionEnd = (event) => {
-    // console.log('Received onOrbitMotionEnd event', event)
-    // console.log('Scheduling camera position save')
     setTrackCamera(true)
   }
 
@@ -175,11 +160,6 @@ const Tunneled = () => {
         </Canvas>
           <status.In className='child'>
             {
-              // isSuccess
-              //   ? `got protocol ${protocol}`
-              //   : isError
-              //     ? <JSONPretty id="json-pretty" data={error}></JSONPretty>
-              //     : 'dummy'
                 isError &&
                   <JSONPretty id="json-pretty" data={error}></JSONPretty>
             }
@@ -198,27 +178,21 @@ const App = () => {
 
 export default App
 
-// import React from 'react'
-// import useLevaControls, { getAtomWithStorage } from './components/hooks/useLevaControls'
-
-// const websocketOptions = {
-//   // host: { value: 'localhost' },
-//   // port: { value: 8086, min: 1024, max: 49151, step: 1 },
-//   // path: { value: '/websocket' },
-//   secret: { value: 'mysecretkey' }
-// }
-// const wsOptionsAtom = getAtomWithStorage({ websocketOptions })
+// import React, { useEffect } from 'react'
+// import { useDispatch, useSelector } from 'react-redux'
+// import { setSecret } from './features/secret/secretSlice'
 
 // const App = () => {
-//   const wsControls = useLevaControls({
-//     useControlsParams: ['Plover Web-socket Plugin', websocketOptions],
-//     atom: wsOptionsAtom
-//   })
-//   if (wsControls.isLoading) return <>Loading ...</>
-//   console.log(wsControls.controls)
+//   const dispatch = useDispatch()
+//   useEffect(() => {
+//     dispatch(setSecret(253))
+//   }, [])
+
+//   const currentSecret = useSelector((state) => state.secret.secret)
+//   console.log(currentSecret)
 //   return (
 //     <>
-//       {JSON.stringify(wsControls.controls)}
+//       <>{currentSecret}</>
 //     </>
 //   )
 // }

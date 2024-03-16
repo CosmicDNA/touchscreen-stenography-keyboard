@@ -73,6 +73,7 @@ const config = [
 
 const rowItems = config.filter(o => o.type === 'Row')
 const emptySet = new Set()
+let initialised = false
 const StenoKeyboard = ({ controls, ...props }) => {
   const ref = useRef()
   const [largestKeySet, setLargestKeySet] = useState(new Set())
@@ -148,11 +149,12 @@ const StenoKeyboard = ({ controls, ...props }) => {
 
   useEffect(() => {
     if (allKeys.size === 0) {
-      if (controls.sendStroke === 'onKeyRelease') {
+      if (initialised && controls.sendStroke === 'onKeyRelease') {
         const stroke = [...largestKeySet]
         sendJsonMessage({ stroke })
         setLargestKeySet(new Set())
       }
+      initialised = true
     } else {
       if (allKeys.size > largestKeySet.size) {
         // Should record largest key set!
