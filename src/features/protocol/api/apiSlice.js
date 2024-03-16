@@ -3,6 +3,10 @@ import { createApi, fetchBaseQuery } from '@reduxjs/toolkit/query/react'
 import { encrypt, box, generateKeyPair } from './encryption'
 import { Buffer } from 'buffer'
 
+const hexEncode = (uint8Array) => Array.from(uint8Array)
+  .map(byte => byte.toString(16).padStart(2, '0'))
+  .join('')
+
 const pairA = generateKeyPair()
 console.log(pairA.secretKey)
 console.log(pairA.publicKey)
@@ -27,7 +31,7 @@ export const apiSlice = createApi({
         return {
           url: '/protocol',
           params: {
-            publicKey,
+            publicKey: hexEncode(pairA.publicKey),
             encryptedMessage: encryptedObject
           }
         }
