@@ -34,7 +34,10 @@ In the following video, it is being typed upon:
 
 
 
-https://github.com/CosmicDNA/touchscreen-stenography-keyboard/assets/92752640/60230e82-afb2-4991-9cbc-8ec301a12952
+
+https://github.com/CosmicDNA/touchscreen-stenography-keyboard/assets/92752640/c5960847-21dc-412f-a4d8-af9af335dbce
+
+
 
 
 ## Development
