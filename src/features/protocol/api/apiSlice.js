@@ -1,15 +1,9 @@
 // Import the RTK Query methods from the React-specific entry point
 import { createApi, fetchBaseQuery } from '@reduxjs/toolkit/query/react'
-import { encrypt, box, generateKeyPair } from './encryption'
+import { encrypt, box, generateKeyPair, hexEncode } from './encryption'
 import { Buffer } from 'buffer'
 
-const hexEncode = (uint8Array) => Array.from(uint8Array)
-  .map(byte => byte.toString(16).padStart(2, '0'))
-  .join('')
-
 const pairA = generateKeyPair()
-console.log(pairA.secretKey)
-console.log(pairA.publicKey)
 
 // Define our single API slice object
 export const apiSlice = createApi({

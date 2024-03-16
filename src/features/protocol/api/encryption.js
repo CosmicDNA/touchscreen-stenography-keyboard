@@ -9,6 +9,13 @@ import {
 const newNonce = () => randomBytes(box.nonceLength)
 const generateKeyPair = () => box.keyPair()
 
+/**
+ *
+ * @param {Uint8Array} secretOrSharedKey
+ * @param {*} json
+ * @param {Uint8Array} key
+ * @returns
+ */
 const encrypt = (
   secretOrSharedKey,
   json,
@@ -28,6 +35,13 @@ const encrypt = (
   return base64FullMessage
 }
 
+/**
+ *
+ * @param {Uint8Array} secretOrSharedKey
+ * @param {String} messageWithNonce
+ * @param {Uint8Array} key
+ * @returns {*}
+ */
 const decrypt = (
   secretOrSharedKey,
   messageWithNonce,
@@ -52,4 +66,13 @@ const decrypt = (
   return JSON.parse(base64DecryptedMessage)
 }
 
-export { generateKeyPair, encrypt, decrypt, box }
+/**
+ *
+ * @param {Uint8Array} uint8Array
+ * @returns {String}
+ */
+const hexEncode = (uint8Array) => Array.from(uint8Array)
+  .map(byte => byte.toString(16).padStart(2, '0'))
+  .join('')
+
+export { generateKeyPair, encrypt, decrypt, box, hexEncode }
