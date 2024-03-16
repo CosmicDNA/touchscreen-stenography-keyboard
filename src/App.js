@@ -94,7 +94,7 @@ const Tunneled = () => {
     // error
   } = publicKeyQuery
 
-  const protocolQuery = useGetProtocolQuery({ publicKey, object: { message: 'Hello to you!' } })
+  const protocolQuery = useGetProtocolQuery({ publicKey, object: { message: 'Hello to you!' } }, { skip: !publicKey })
   const {
     data: protocol,
     // isLoading,

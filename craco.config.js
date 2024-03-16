@@ -3,12 +3,12 @@ module.exports = {
     module: {
       loaders: [
         {
-          test: /[\\\/]tweetnacl[\\\/]/,
+          test: /[\\/]tweetnacl[\\/]/,
           loader: 'exports-loader?window.nacl!imports-loader?this=>window,module=>{},require=>false'
         }
       ],
       noParse: [
-        /[\\\/]tweetnacl[\\\/]/
+        /[\\/]tweetnacl[\\/]/
       ]
     },
     configure: {

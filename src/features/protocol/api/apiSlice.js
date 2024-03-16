@@ -1,7 +1,6 @@
 // Import the RTK Query methods from the React-specific entry point
 import { createApi, fetchBaseQuery } from '@reduxjs/toolkit/query/react'
-import { encrypt, box, generateKeyPair, hexEncode } from './encryption'
-import { Buffer } from 'buffer'
+import { encrypt, box, generateKeyPair, hexEncode, hexDecode } from './encryption'
 
 const pairA = generateKeyPair()
 
@@ -19,14 +18,14 @@ export const apiSlice = createApi({
     getProtocol: builder.query({
       // The URL for the request is '/fakeApi/posts'
       query: ({ publicKey, object }) => {
-        const encodedPublicKey = Uint8Array.from(Buffer.from(publicKey, 'hex'))
-        const sharedA = box.before(encodedPublicKey, pairA.secretKey)
-        const encryptedObject = encrypt(sharedA, object)
+        const decodedPublicKey = hexDecode(publicKey)
+        const sharedA = box.before(decodedPublicKey, pairA.secretKey)
+        const encryptedMessage = encrypt(sharedA, object)
         return {
           url: '/protocol',
           params: {
             publicKey: hexEncode(pairA.publicKey),
-            encryptedMessage: encryptedObject
+            encryptedMessage
           }
         }
       }

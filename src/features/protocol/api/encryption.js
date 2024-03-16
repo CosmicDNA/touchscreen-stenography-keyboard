@@ -5,6 +5,7 @@ import {
   encodeBase64,
   decodeBase64
 } from 'tweetnacl-util'
+import { Buffer } from 'buffer'
 
 const newNonce = () => randomBytes(box.nonceLength)
 const generateKeyPair = () => box.keyPair()
@@ -75,4 +76,11 @@ const hexEncode = (uint8Array) => Array.from(uint8Array)
   .map(byte => byte.toString(16).padStart(2, '0'))
   .join('')
 
-export { generateKeyPair, encrypt, decrypt, box, hexEncode }
+/**
+ *
+ * @param {String} hexEncodedString
+ * @returns {Uint8Array}
+ */
+const hexDecode = (hexEncodedString) => Uint8Array.from(Buffer.from(hexEncodedString, 'hex'))
+
+export { generateKeyPair, encrypt, decrypt, box, hexEncode, hexDecode }
