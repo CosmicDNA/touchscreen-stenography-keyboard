@@ -24,8 +24,8 @@ const position = [
   [-5, 3 * rowSpacing, 0],
   [0, 3 * rowSpacing, 0],
   [0, 2 * rowSpacing, 0],
-  [-enter, rowSpacing, 0],
   [-3 + enter, rowSpacing, 0],
+  [-enter, rowSpacing, 0],
   [-4, 3 * rowSpacing, 0],
   [-4, 2 * rowSpacing, 0]
 ]
