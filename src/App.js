@@ -1,5 +1,5 @@
 import PropTypes from 'prop-types'
-import React, { useState, useEffect } from 'react'
+import React, { useState } from 'react'
 import { Canvas, useFrame } from '@react-three/fiber'
 import { OrbitControls, ContactShadows } from '@react-three/drei'
 import StenoKeyboard from './components/StenoKeyboard'
@@ -94,7 +94,7 @@ const Tunneled = () => {
     // error
   } = publicKeyQuery
 
-  const protocolQuery = useGetProtocolQuery({ publicKey, object: { message: 'Hello to you!' } }, { skip: !publicKey })
+  const protocolQuery = useGetProtocolQuery({ publicKey, object: 'Hello to you!' }, { skip: !publicKey })
   const {
     data: protocol,
     // isLoading,
@@ -109,19 +109,6 @@ const Tunneled = () => {
   const [persistentCameraPosition, setPersistentCameraPosition] = useAtom(cameraAtom)
   const [trackCamera, setTrackCamera] = useState(false)
   // const dispatch = useDispatch()
-
-  useEffect(() => {
-    console.log(publicKey)
-    console.log(publicKeyQuery)
-  //   // console.log({ isLoading, currentSecret, constrolsSecret: controls.secret })
-  //   if (!isLoading) {
-  //     if (didSecretChange) {
-  //       // console.log(controls.secret)
-  //       // console.log('Dispatching')
-  //       dispatch(setSecret(controls.secret))
-  //     }
-  //   }
-  }, [isLoading, publicKey, publicKeyQuery])
 
   if (isLoading || protocolQuery.isLoading) return <>Loading...</>
   // console.log({ wsControls, kControls })
@@ -165,7 +152,7 @@ const Tunneled = () => {
                   ? `${protocol}${controls.host}:${controls.port}${controls.path}`
                   : 'ws://localhost:8086/dummy'
               }
-              secretkey={controls.secret}
+              publicKey={publicKey}
             >
               <StenoKeyboard controls={kControls} />
             </WebSocketProvider>
@@ -188,11 +175,13 @@ const Tunneled = () => {
         </Canvas>
           <status.In className='child'>
             {
-              isSuccess
-                ? `got protocol ${protocol}`
-                : isError
-                  ? <JSONPretty id="json-pretty" data={error}></JSONPretty>
-                  : 'dummy'
+              // isSuccess
+              //   ? `got protocol ${protocol}`
+              //   : isError
+              //     ? <JSONPretty id="json-pretty" data={error}></JSONPretty>
+              //     : 'dummy'
+                isError &&
+                  <JSONPretty id="json-pretty" data={error}></JSONPretty>
             }
           </status.In>
     </div>

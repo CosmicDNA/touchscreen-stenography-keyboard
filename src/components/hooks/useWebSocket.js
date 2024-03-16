@@ -2,7 +2,9 @@ import PropTypes from 'prop-types'
 import React, { createContext, useContext } from 'react'
 import useWebSocket, { ReadyState } from 'react-use-websocket'
 import { useTunnelContext } from './useTunnel'
+import { encryptionProcess } from '../utils/encryptionWrapper'
 const { CONNECTING, OPEN, CLOSING, CLOSED, UNINSTANTIATED } = ReadyState
+
 class CustomReadyState {
   constructor (readyState) {
     this.readyState = readyState
@@ -39,10 +41,22 @@ class CustomReadyState {
 const WebSocketContext = createContext()
 const { Provider } = WebSocketContext
 const useWebSocketContext = () => useContext(WebSocketContext)
-const WebSocketProvider = ({ children, url, secretkey }) => {
-  const { readyState, lastJsonMessage, sendMessage, sendJsonMessage } = useWebSocket(url)
+const WebSocketProvider = ({ children, url, publicKey }) => {
+  const { readyState, lastJsonMessage, sendJsonMessage: rawSendJsonMessage } = useWebSocket(url)
   const newReadyState = new CustomReadyState(readyState)
   const { status } = useTunnelContext()
+
+  const sendJsonMessage = message => {
+    const params = encryptionProcess(publicKey, message)
+    return rawSendJsonMessage(params)
+  }
+
+  const sendMessage = sendJsonMessage
+
+  console.log(url)
+  console.log(newReadyState.getConnectionMessage(url))
+  console.log(newReadyState.state())
+  console.log(newReadyState.status())
   return (
     <>
       {<status.In>{newReadyState.getConnectionMessage(url)}</status.In>}
@@ -60,7 +74,7 @@ const WebSocketProvider = ({ children, url, secretkey }) => {
 
 WebSocketProvider.propTypes = {
   children: PropTypes.any,
-  secretkey: PropTypes.string,
+  publicKey: PropTypes.string,
   url: PropTypes.string
 }
 export { useWebSocketContext, WebSocketProvider }
