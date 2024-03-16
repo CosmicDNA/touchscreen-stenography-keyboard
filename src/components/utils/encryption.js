@@ -7,22 +7,36 @@ import {
 } from 'tweetnacl-util'
 import { Buffer } from 'buffer'
 
+/**
+ *
+ * @returns {Uint8Array}
+ */
 const newNonce = () => randomBytes(box.nonceLength)
-const generateKeyPair = () => box.keyPair()
 
 /**
  *
- * @param {Uint8Array} secretOrSharedKey
- * @param {*} json
- * @param {Uint8Array} key
- * @returns
+ * @returns {nacl.BoxKeyPair}
  */
-const encrypt = (
+const generateKeyPair = () => box.keyPair()
+
+/**
+ * Encrypts data using a secret or shared key and json object.
+ *
+ * @param {{
+*   secretOrSharedKey: Uint8Array,
+*   json: object,
+*   key?: Uint8Array,
+*   nonce?: Uint8Array
+* }} params - The encryption parameters.
+* @returns {Uint8Array} - The encrypted data.
+*/
+const encrypt = ({
   secretOrSharedKey,
   json,
-  key
-) => {
-  const nonce = newNonce()
+  key = undefined,
+  nonce = undefined
+}) => {
+  if (!nonce) nonce = newNonce()
   const messageUint8 = decodeUTF8(JSON.stringify(json))
   const encrypted = key
     ? box(messageUint8, nonce, key, secretOrSharedKey)
@@ -83,4 +97,4 @@ const hexEncode = (uint8Array) => Array.from(uint8Array)
  */
 const hexDecode = (hexEncodedString) => Uint8Array.from(Buffer.from(hexEncodedString, 'hex'))
 
-export { generateKeyPair, encrypt, decrypt, box, hexEncode, hexDecode }
+export { generateKeyPair, encrypt, decrypt, box, hexEncode, hexDecode, newNonce }

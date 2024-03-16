@@ -103,7 +103,7 @@ const Tunneled = () => {
     error
   } = protocolQuery
 
-  const isLoading = Boolean([kControls, wsControls].find(a => a.isLoading))
+  const isLoading = Boolean([kControls, wsControls, publicKeyQuery].find(a => a.isLoading))
 
   // eslint-disable-next-line no-unused-vars
   const [persistentCameraPosition, setPersistentCameraPosition] = useAtom(cameraAtom)
@@ -154,7 +154,7 @@ const Tunneled = () => {
               }
               publicKey={publicKey}
             >
-              <StenoKeyboard controls={kControls} />
+              <StenoKeyboard controls={kControls.controls} />
             </WebSocketProvider>
             {/* </Suspense> */}
             <ContactShadows frames={3} position-y={-0.5} blur={1} opacity={0.75} />

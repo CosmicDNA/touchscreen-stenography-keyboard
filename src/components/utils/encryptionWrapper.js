@@ -1,4 +1,4 @@
-import { encrypt, box, generateKeyPair, hexEncode, hexDecode } from './encryption'
+import { encrypt, box, generateKeyPair, hexEncode, hexDecode, newNonce } from './encryption'
 
 const pairA = generateKeyPair()
 
@@ -6,12 +6,13 @@ const pairA = generateKeyPair()
  *
  * @param {String} publicKey
  * @param {*} object
- * @returns {publicKey: String, encryptedMessage: String}
+ * @param {Uint8Array} nonce
+ * @returns {{publicKey: String, encryptedMessage: String}}
  */
-const encryptionProcess = (publicKey, object) => {
+const encryptionProcess = (publicKey, json, nonce = undefined) => {
   const decodedPublicKey = hexDecode(publicKey)
-  const sharedA = box.before(decodedPublicKey, pairA.secretKey)
-  const encryptedMessage = encrypt(sharedA, object)
+  const secretOrSharedKey = box.before(decodedPublicKey, pairA.secretKey)
+  const encryptedMessage = encrypt({ secretOrSharedKey, json, nonce })
   hexEncode(pairA.publicKey)
   return {
     publicKey: hexEncode(pairA.publicKey),
@@ -19,4 +20,4 @@ const encryptionProcess = (publicKey, object) => {
   }
 }
 
-export { encryptionProcess }
+export { encryptionProcess, newNonce }
