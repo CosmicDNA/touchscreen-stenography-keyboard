@@ -1,5 +1,5 @@
 import PropTypes from 'prop-types'
-import React, { createContext, useContext, useMemo } from 'react'
+import React, { createContext, useContext, useEffect, useMemo } from 'react'
 import useWebSocket, { ReadyState } from 'react-use-websocket'
 import { useTunnelContext } from './useTunnel'
 import { encryptionProcess } from '../utils/encryptionWrapper'
@@ -44,18 +44,28 @@ const WebSocketContext = createContext()
 const { Provider } = WebSocketContext
 
 const nonce = new Uint8Array([238, 249, 116, 23, 191, 120, 190, 185, 255, 98, 41, 13, 85, 255, 217, 51, 181, 121, 79, 19, 67, 152, 183, 64])
+const middlewareAuthenticationRequest = 'MAR' // It could be any message, really as long it is properly encrypted.
 
 const useWebSocketContext = () => useContext(WebSocketContext)
 const WebSocketProvider = ({ children, url, publicKey }) => {
-  const middlewareAuthenticationRequest = 'MAR' // It could be any message, really as long it is properly encrypted.
   // Here we use a constant nonce for the connection to avoid re renders.
   const queryParams = useMemo(
-    () => encryptionProcess(publicKey, middlewareAuthenticationRequest, nonce),
-    [publicKey, middlewareAuthenticationRequest, nonce]
+    () => {
+      if (!publicKey) return null
+      return encryptionProcess(publicKey, middlewareAuthenticationRequest, nonce)
+    }, [publicKey, middlewareAuthenticationRequest, nonce]
   )
   const { readyState, lastJsonMessage, sendJsonMessage, sendMessage } = useWebSocket(url, { queryParams })
   const newReadyState = new CustomReadyState(readyState)
   const { status } = useTunnelContext()
+
+  useEffect(() => {
+    return () => {
+      if (readyState === ReadyState.OPEN) {
+        sendMessage('close')
+      }
+    }
+  }, [readyState])
 
   return (
     <>

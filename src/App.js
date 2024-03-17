@@ -129,8 +129,9 @@ const Tunneled = () => {
             <directionalLight position={[10, 10, 5]} />
             <WebSocketProvider
               url={
-                !isLoading &&
-                  `${isTLS ? 'wss' : 'ws'}${urlPredicate}/websocket`
+                !isLoading
+                  ? `${isTLS ? 'wss' : 'ws'}${urlPredicate}/websocket`
+                  : 'ws://localhost:8086/dummy'
               }
               publicKey={publicKey}
             >

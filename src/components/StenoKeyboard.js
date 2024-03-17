@@ -34,29 +34,29 @@ const position = [
 
 const round = true
 const keys = {
-  sharp: { keyId: '#', width: 9.7, offsetY: 0.15 },
-  asterisk: { keyId: '*', lateral: 2, round, offsetX: -0.05, grow: 'right', offsetY: -0.75 },
-  SH: { keyId: 'S-', lateral: 2, round, offsetY: -0.72 },
-  HD: { keyId: '-D', grow: 'left' },
-  HZ: { keyId: '-Z', grow: 'left' },
-  HF: { keyId: '-F' },
-  HP: { keyId: '-P' },
-  HL: { keyId: '-L' },
-  HT: { keyId: '-T' },
-  HR: { keyId: '-R', offsetX: -0.01 },
-  HG: { keyId: '-G', offsetX: -0.01 },
-  HB: { keyId: '-B' },
-  HS: { keyId: '-S' },
-  AH: { keyId: 'A-', offsetX: -0.01 },
-  OH: { keyId: 'O-', offsetX: -0.02 },
-  HE: { keyId: '-E' },
-  HU: { keyId: '-U', offsetX: -0.02 },
-  TH: { keyId: 'T-' },
-  PH: { keyId: 'P-' },
-  HH: { keyId: 'H-' },
-  KH: { keyId: 'K-' },
-  WH: { keyId: 'W-', offsetX: -0.06 },
-  RH: { keyId: 'R-' }
+  sharp: { keyId: '#', width: 9.7, offsetY: 0.15, order: 0 },
+  SH: { keyId: 'S-', lateral: 2, round, offsetY: -0.72, order: 1 },
+  TH: { keyId: 'T-', order: 2 },
+  KH: { keyId: 'K-', order: 3 },
+  PH: { keyId: 'P-', order: 4 },
+  WH: { keyId: 'W-', order: 5, offsetX: -0.06 },
+  HH: { keyId: 'H-', order: 6 },
+  RH: { keyId: 'R-', order: 7 },
+  AH: { keyId: 'A-', order: 8, offsetX: -0.01 },
+  OH: { keyId: 'O-', order: 9, offsetX: -0.02 },
+  asterisk: { keyId: '*', order: 10, lateral: 2, round, offsetX: -0.05, grow: 'right', offsetY: -0.75 },
+  HE: { keyId: '-E', order: 11 },
+  HU: { keyId: '-U', order: 12, offsetX: -0.02 },
+  HF: { keyId: '-F', order: 13 },
+  HR: { keyId: '-R', order: 14, offsetX: -0.01 },
+  HP: { keyId: '-P', order: 15 },
+  HB: { keyId: '-B', order: 16 },
+  HL: { keyId: '-L', order: 17 },
+  HG: { keyId: '-G', order: 18, offsetX: -0.01 },
+  HT: { keyId: '-T', order: 19 },
+  HS: { keyId: '-S', order: 20 },
+  HD: { keyId: '-D', order: 21, grow: 'left' },
+  HZ: { keyId: '-Z', order: 22, grow: 'left' }
 }
 
 const config = [
@@ -79,10 +79,23 @@ const StenoKeyboard = ({ controls, ...props }) => {
   const [pressedKeys, setPressedKeys] = useState(new Map())
   const { lastJsonMessage, sendJsonMessage } = useWebSocketContext()
 
-  // sendMessage('close')
+  const getTypedKeys = (lastJsonMessage) =>
+    Object.values(keys)
+      .filter(k => lastJsonMessage.keys.includes(k.keyId))
+
+  const getPaperPlaceHolder = (typedKeys) => {
+    const paperPlaceHolder = Array.from({ length: Object.keys(keys).length }, () => '')
+    typedKeys.forEach(tk => {
+      paperPlaceHolder[tk.order] = tk.keyId.replace('-', '')
+    })
+    return paperPlaceHolder
+  }
+
   useEffect(() => {
     if (lastJsonMessage) {
-      console.log(lastJsonMessage)
+      const typedKeys = getTypedKeys(lastJsonMessage)
+      const paperPlaceHolder = getPaperPlaceHolder(typedKeys)
+      console.log(paperPlaceHolder)
     }
   }, [lastJsonMessage])
 

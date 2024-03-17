@@ -42,7 +42,6 @@ const useDragHook = ({ fingerResolution = 5, keyId, pressedKeys, updatePressedKe
         .map(o => o.userData.keyId)
       )
       if (!eqSet(previousSet, newSet)) {
-        console.log('Registering key press for hex', keyId)
         setMyPressedKeys(newSet)
       }
     } else {
