@@ -8,7 +8,7 @@ import useDrag from './hooks/useDrag'
  * @property {Number} fingerResolution - The resolution of the finger for raycasting.
  * @property {String} keyId - The unique identifier for the key.
  * @property {Number} round - The current round.
- * @property {function} setPressedKeys - A function to set pressed keys.
+ * @property {function} updatePressedKeys - A function to set pressed keys.
  * @property {Map<String, Set<String>>} pressedKeys - A Map where keys are strings and values can be of any type.
  * @property {...any} props - Additional props.
  */
@@ -17,8 +17,8 @@ import useDrag from './hooks/useDrag'
  * Key component.
  * @param {KeyProps} props - The props object.
  */
-const Floor = ({ keyId, setPressedKeys, pressedKeys, ...props }) => {
-  const dragProps = useDrag({ keyId, pressedKeys, setPressedKeys })
+const Floor = ({ keyId, updatePressedKeys, pressedKeys, ...props }) => {
+  const dragProps = useDrag({ keyId, pressedKeys, updatePressedKeys })
 
   // console.log(keyId)
   return (
@@ -44,7 +44,7 @@ Floor.propTypes = {
   keyId: PropTypes.string.isRequired,
   fingerResolution: PropTypes.number,
   pressedKeys: PropTypes.instanceOf(Map).isRequired,
-  setPressedKeys: PropTypes.func.isRequired
+  updatePressedKeys: PropTypes.func.isRequired
 }
 
 export default Floor

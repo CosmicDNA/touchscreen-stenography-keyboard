@@ -15,7 +15,7 @@ import HexagonFloor from './HexagonFloor'
 
 const enter = 0.2
 const rowSpacing = 1.3
-const animate = true
+const animate = false
 
 const referencePosition = new Vector3(0.5, -2.4, 0)
 const position = [
@@ -73,7 +73,6 @@ const config = [
 
 const rowItems = config.filter(o => o.type === 'Row')
 const emptySet = new Set()
-let initialised = true
 const StenoKeyboard = ({ controls, ...props }) => {
   const ref = useRef()
   const [largestKeySet, setLargestKeySet] = useState(new Set())
@@ -100,6 +99,14 @@ const StenoKeyboard = ({ controls, ...props }) => {
     // console.log(`Key ${keyId} was released.`)
   }
 
+  const updatePressedKeys = (callback) => {
+    setPressedKeys(prevPressedKeys => {
+      const newMap = new Map(prevPressedKeys)
+      callback(newMap)
+      return newMap
+    })
+  }
+
   // Animate the keys
   useFrame(({ clock }) => {
     if (animate) {
@@ -121,11 +128,7 @@ const StenoKeyboard = ({ controls, ...props }) => {
       // Combine the current key set and the empty set
       const combinedKeySet = delta < ratio ? currentKeySet : []
 
-      setPressedKeys(prevPressedKeys => {
-        const newMap = new Map(prevPressedKeys)
-        newMap.set('#', combinedKeySet)
-        return newMap
-      })
+      updatePressedKeys(map => map.set('auto', combinedKeySet))
     }
   })
 
@@ -148,20 +151,19 @@ const StenoKeyboard = ({ controls, ...props }) => {
   }, [addedItems, removedItems].map(s => dep(s)))
 
   useEffect(() => {
-    if (allKeys.size === 0) {
-      if (initialised && controls.sendStroke === 'onKeyRelease') {
+    if (!allKeys.size) {
+      if (largestKeySet.size && controls.sendStroke === 'onKeyRelease') {
         const stroke = [...largestKeySet]
         sendJsonMessage({ stroke })
         setLargestKeySet(new Set())
       }
-      initialised = true
     } else {
       if (allKeys.size > largestKeySet.size) {
         // Should record largest key set!
         setLargestKeySet(allKeys)
       }
     }
-  }, [dep(allKeys)])
+  }, [dep(allKeys), largestKeySet])
 
   return (
     <group
@@ -172,7 +174,7 @@ const StenoKeyboard = ({ controls, ...props }) => {
     >
       {
         config.map((item, key) => {
-          const keyProps = { ...item, key, setPressedKeys, pressedKeys, allKeys, onKeyPress, onKeyRelease }
+          const keyProps = { ...item, key, allKeys, onKeyPress, onKeyRelease }
           let rowIndex
           switch (item.type) {
             case 'Key':
@@ -186,8 +188,8 @@ const StenoKeyboard = ({ controls, ...props }) => {
           }
         })
       }
-      {/* <Floor {...{ setPressedKeys, pressedKeys, keyId: 'floor' }} position-z={-0.5} position-y={0} /> */}
-      <HexagonFloor {...{ setPressedKeys, pressedKeys }} position={[0, 0, -0.5]}/>
+      {/* <Floor {...{ updatePressedKeys, pressedKeys, keyId: 'floor' }} position-z={-0.5} position-y={0} /> */}
+      <HexagonFloor {...{ updatePressedKeys, pressedKeys }} position={[0, 0, -0.5]}/>
     </group>
   )
 }

@@ -4,7 +4,7 @@ import { Vector2, Raycaster } from 'three'
 import { useDrag } from '@use-gesture/react'
 import { useThree } from '@react-three/fiber'
 
-const useDragHook = ({ fingerResolution = 5, keyId, pressedKeys, setPressedKeys }) => {
+const useDragHook = ({ fingerResolution = 5, keyId, pressedKeys, updatePressedKeys }) => {
   const groupRef = useRef()
   const { camera } = useThree()
   const rawFingerModel = getCircularPoints(
@@ -13,16 +13,8 @@ const useDragHook = ({ fingerResolution = 5, keyId, pressedKeys, setPressedKeys 
     0.05
   )
 
-  const updateMyPressedKeys = (callback) => {
-    setPressedKeys(prevPressedKeys => {
-      const newMap = new Map(prevPressedKeys)
-      callback(newMap)
-      return newMap
-    })
-  }
-
-  const setMyPressedKeys = (newSet) => updateMyPressedKeys((map) => map.set(keyId, newSet))
-  const clearMyPressedKeys = () => updateMyPressedKeys((map) => map.delete(keyId))
+  const setMyPressedKeys = (newSet) => updatePressedKeys((map) => map.set(keyId, newSet))
+  const clearMyPressedKeys = () => updatePressedKeys((map) => map.delete(keyId))
 
   const bind = useDrag(({ event, down }) => {
     if (down) {
@@ -50,6 +42,7 @@ const useDragHook = ({ fingerResolution = 5, keyId, pressedKeys, setPressedKeys 
         .map(o => o.userData.keyId)
       )
       if (!eqSet(previousSet, newSet)) {
+        console.log('Registering key press for hex', keyId)
         setMyPressedKeys(newSet)
       }
     } else {

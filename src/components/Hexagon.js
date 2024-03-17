@@ -4,9 +4,9 @@ import { Vector3, Shape } from 'three'
 import { getCircularPoints } from './utils/tools'
 import useDrag from './hooks/useDrag'
 
-const Hexagon = ({ radius = 1, name, color, pressedKeys, setPressedKeys, ...props }) => {
+const Hexagon = ({ radius = 1, name, color, pressedKeys, updatePressedKeys, ...props }) => {
   const keyId = name
-  const dragProps = useDrag({ keyId, pressedKeys, setPressedKeys })
+  const dragProps = useDrag({ keyId, pressedKeys, updatePressedKeys })
   const underSemiCircumference = getCircularPoints(
     6,
     6,
@@ -40,7 +40,7 @@ Hexagon.propTypes = {
   name: PropTypes.string.isRequired,
   color: PropTypes.string,
   pressedKeys: PropTypes.instanceOf(Map).isRequired,
-  setPressedKeys: PropTypes.func.isRequired
+  updatePressedKeys: PropTypes.func.isRequired
 }
 
 export default Hexagon

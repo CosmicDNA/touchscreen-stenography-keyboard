@@ -16,8 +16,6 @@ import InterMediumRegular from '../fonts/Inter_Medium_Regular.json'
  * @property {Number} depth - The depth of the key.
  * @property {String} keyId - The unique identifier for the key.
  * @property {Number} round - The current round.
- * @property {function} setPressedKeys - A function to set pressed keys.
- * @property {Map<String, Set<String>>} pressedKeys - A Map where keys are strings and values can be of any type.
  * @property {Set<String>} allKeys - Set of pressed keys.
  * @property {...any} props - Additional props.
  */
@@ -26,7 +24,7 @@ import InterMediumRegular from '../fonts/Inter_Medium_Regular.json'
  * Key component.
  * @param {KeyProps} props - The props object.
  */
-const Key = ({ offsetX = 0, offsetY = 0, scale = 1, roundResolution = 32, fingerResolution = 5, width = 7 / 10, lateral = 7 / 10, depth = 1 / 20, keyId, round, grow, setPressedKeys, pressedKeys, allKeys, ...props }) => {
+const Key = ({ offsetX = 0, offsetY = 0, scale = 1, roundResolution = 32, fingerResolution = 5, width = 7 / 10, lateral = 7 / 10, depth = 1 / 20, keyId, round, grow, allKeys, ...props }) => {
   const { onKeyPress, onKeyRelease } = props
   const { isMounted } = useMount()
   const widthOnTwo = width / 2
@@ -138,8 +136,6 @@ Key.propTypes = {
   roundResolution: PropTypes.number,
   fingerResolution: PropTypes.number,
   width: PropTypes.number,
-  pressedKeys: PropTypes.instanceOf(Map).isRequired,
-  setPressedKeys: PropTypes.func.isRequired,
   onKeyPress: PropTypes.func.isRequired,
   onKeyRelease: PropTypes.func.isRequired,
   allKeys: PropTypes.instanceOf(Set).isRequired
