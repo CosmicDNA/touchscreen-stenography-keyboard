@@ -98,8 +98,6 @@ const Tunneled = () => {
   const [persistentCameraPosition, setPersistentCameraPosition] = useAtom(cameraAtom)
   const [trackCamera, setTrackCamera] = useState(false)
 
-  if (isLoading) return <>Loading...</>
-
   const onOrbitMotionEnd = (event) => {
     setTrackCamera(true)
   }
@@ -129,9 +127,9 @@ const Tunneled = () => {
             <directionalLight position={[10, 10, 5]} />
             <WebSocketProvider
               url={
-                !isLoading
-                  ? `${isTLS ? 'wss' : 'ws'}${urlPredicate}/websocket`
-                  : 'ws://localhost:8086/dummy'
+                isLoading
+                  ? 'ws://localhost:8086/dummy'
+                  : `${isTLS ? 'wss' : 'ws'}${urlPredicate}/websocket`
               }
               publicKey={publicKey}
             >

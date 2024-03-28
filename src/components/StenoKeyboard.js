@@ -8,7 +8,7 @@ import keySets from './steno-script'
 import useSound from 'use-sound'
 import keypressAudioFile from '../sounds/keypress.flac'
 import keyreleaseAudioFile from '../sounds/keyrelease.flac'
-import { useWebSocketContext } from './hooks/useWebSocket'
+import { useWebSocketContext, ReadyState } from './hooks/useWebSocket'
 import usePrevious from './hooks/usePrevious'
 import { getAddedAndRemovedItems, dep } from './utils/tools'
 import HexagonFloor from './HexagonFloor'
@@ -77,7 +77,7 @@ const StenoKeyboard = ({ controls, ...props }) => {
   const ref = useRef()
   const [largestKeySet, setLargestKeySet] = useState(new Set())
   const [pressedKeys, setPressedKeys] = useState(new Map())
-  const { lastJsonMessage, sendJsonMessage } = useWebSocketContext()
+  const { lastJsonMessage, sendJsonMessage, readyState } = useWebSocketContext()
 
   const getTypedKeys = (lastJsonMessage) =>
     Object.values(keys)
@@ -150,11 +150,17 @@ const StenoKeyboard = ({ controls, ...props }) => {
   const [previousAllKeys, setPreviousAllKeys] = usePrevious(allKeys, emptySet)
   const [addedItems, removedItems] = getAddedAndRemovedItems(allKeys, previousAllKeys)
 
+  const registerStroke = (message) => {
+    if (readyState === ReadyState.OPEN) {
+      sendJsonMessage(message)
+    }
+  }
+
   useEffect(() => {
     if (addedItems.size) {
       // console.log('Added items:', addedItems)
       if (controls.sendStroke === 'onKeyPress') {
-        sendJsonMessage({ stroke: [...addedItems] })
+        registerStroke({ stroke: [...addedItems] })
       }
     }
 
@@ -167,7 +173,7 @@ const StenoKeyboard = ({ controls, ...props }) => {
     if (!allKeys.size) {
       if (largestKeySet.size && controls.sendStroke === 'onKeyRelease') {
         const stroke = [...largestKeySet]
-        sendJsonMessage({ stroke })
+        registerStroke({ stroke })
         setLargestKeySet(new Set())
       }
     } else {
