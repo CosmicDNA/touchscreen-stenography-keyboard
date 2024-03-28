@@ -55,7 +55,7 @@ const WebSocketProvider = ({ children, url, publicKey }) => {
       return encryptionProcess(publicKey, middlewareAuthenticationRequest, nonce)
     }, [publicKey, middlewareAuthenticationRequest, nonce]
   )
-  const { readyState, lastJsonMessage, sendJsonMessage: rawSendJsonMessage, sendMessage } = useWebSocket(url, { queryParams })
+  const { readyState, lastJsonMessage, sendJsonMessage: rawSendJsonMessage } = useWebSocket(url, { queryParams })
   const newReadyState = new CustomReadyState(readyState)
   const { status } = useTunnelContext()
 
@@ -66,7 +66,7 @@ const WebSocketProvider = ({ children, url, publicKey }) => {
   useEffect(() => {
     return () => {
       if (readyState === ReadyState.OPEN) {
-        sendMessage('close')
+        sendJsonMessage('close')
       }
     }
   }, [readyState])
@@ -77,7 +77,6 @@ const WebSocketProvider = ({ children, url, publicKey }) => {
       <Provider value={{
         readyState: newReadyState,
         lastJsonMessage,
-        sendMessage,
         sendJsonMessage
       }}>
         {children}
