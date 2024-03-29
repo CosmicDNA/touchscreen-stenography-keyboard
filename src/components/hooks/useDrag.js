@@ -30,7 +30,11 @@ const useDragHook = ({ fingerResolution = 5, keyId, pressedKeys, updatePressedKe
         raycaster.far = 50
         raycaster.setFromCamera(v, camera)
         // Retrieve all key meshes
-        const keyMeshes = groupRef.current.parent.children.map(c => c.children[0])
+        const keyMeshes = groupRef.current.parent.children
+          .filter(c => c.name === 'key group')
+          .map(g => g.children[0])
+          .map(g => g.children)
+          .flat()
         // Check for intersections with keys
         const intersects = raycaster.intersectObjects(keyMeshes)
         return intersects
@@ -38,7 +42,6 @@ const useDragHook = ({ fingerResolution = 5, keyId, pressedKeys, updatePressedKe
 
       const previousSet = pressedKeys?.get(keyId)
       const newSet = new Set([...intersects]
-        .filter(o => o.userData.keyId !== 'floor' && !o.userData.keyId.startsWith('polygon'))
         .map(o => o.userData.keyId)
       )
       if (!eqSet(previousSet, newSet)) {

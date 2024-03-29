@@ -24,7 +24,7 @@ import InterMediumRegular from '../fonts/Inter_Medium_Regular.json'
  * Key component.
  * @param {KeyProps} props - The props object.
  */
-const Key = ({ offsetX = 0, offsetY = 0, scale = 1, roundResolution = 32, fingerResolution = 5, width = 7 / 10, lateral = 7 / 10, depth = 1 / 20, keyId, round, grow, allKeys, ...props }) => {
+const Key = ({ offsetX = 0, offsetY = 0, scale = 1, roundResolution = 32, fingerResolution = 5, width = 7 / 10, lateral = 7 / 10, depth = 1 / 20, keyId, round, grow, allKeys, armLength, ...props }) => {
   const { onKeyPress, onKeyRelease } = props
   const { isMounted } = useMount()
   const widthOnTwo = width / 2
@@ -99,27 +99,31 @@ const Key = ({ offsetX = 0, offsetY = 0, scale = 1, roundResolution = 32, finger
   return (
     <group
       {...props}
-      // eslint-disable-next-line react/no-unknown-property
-      rotation-x={pressed ? Math.PI / 32 * (4 / 10 + 7 / 10) / (lateral + widthOnTwo) : 0}
-      // eslint-disable-next-line react/no-unknown-property
-      position-z={pressed ? -0.1 : 0}
+      name='key group'
     >
-      <mesh
+      <group
         // eslint-disable-next-line react/no-unknown-property
-        position-y={-lateral}
+        rotation-x={pressed ? Math.PI / 32 / armLength : 0}
         // eslint-disable-next-line react/no-unknown-property
-        userData={{ keyId }}
+        position-y={armLength}
       >
-        {[colorA, colorB].map((color, i) =>
+        <mesh
           // eslint-disable-next-line react/no-unknown-property
-          <meshLambertMaterial key={i} attach={`material-${i}`} args={[{ color, wireframe: false }]} />
-        )}
-        {/* eslint-disable-next-line react/no-unknown-property */}
-        <extrudeGeometry args={[new Shape(pts.map(points => new Vector2(...points))), extrudeSettings]} />
-      </mesh>
-      <Text3D font={InterMediumRegular} size={0.2 * scale} height={0.01} position={[-0.07 + offsetX, -0.6 + offsetY, 0.1]}>
-        {keyId.replace('-', '')}
-      </Text3D>
+          position-y={-lateral - armLength}
+          // eslint-disable-next-line react/no-unknown-property
+          userData={{ keyId }}
+        >
+          {[colorA, colorB].map((color, i) =>
+            // eslint-disable-next-line react/no-unknown-property
+            <meshLambertMaterial key={i} attach={`material-${i}`} args={[{ color, wireframe: false }]} />
+          )}
+          {/* eslint-disable-next-line react/no-unknown-property */}
+          <extrudeGeometry args={[new Shape(pts.map(points => new Vector2(...points))), extrudeSettings]} />
+        </mesh>
+        <Text3D font={InterMediumRegular} size={0.2 * scale} height={0.01} position={[-0.07 + offsetX, -0.6 + offsetY - armLength, 0.1]}>
+          {keyId.replace('-', '')}
+        </Text3D>
+      </group>
     </group>
   )
 }
@@ -132,6 +136,7 @@ Key.propTypes = {
   depth: PropTypes.number,
   keyId: PropTypes.string.isRequired,
   lateral: PropTypes.number,
+  armLength: PropTypes.number,
   round: PropTypes.bool,
   roundResolution: PropTypes.number,
   fingerResolution: PropTypes.number,

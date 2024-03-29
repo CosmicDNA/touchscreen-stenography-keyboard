@@ -19,15 +19,15 @@ const animate = false
 
 const referencePosition = new Vector3(0.5, -2.4, 0)
 const position = [
-  [-0.5, 4.8, 0],
-  [-1, 3 * rowSpacing, 0],
-  [-5, 3 * rowSpacing, 0],
-  [0, 3 * rowSpacing, 0],
-  [0, 2 * rowSpacing, 0],
-  [-3 + enter, rowSpacing, 0],
-  [-enter, rowSpacing, 0],
-  [-4, 3 * rowSpacing, 0],
-  [-4, 2 * rowSpacing, 0]
+  [-0.5, 4.8, 0], // 0
+  [-1, 3 * rowSpacing, 0], // 1
+  [-5, 3 * rowSpacing, 0], // 2
+  [0, 3 * rowSpacing, 0], // 3
+  [0, 2 * rowSpacing, 0], // 4
+  [-3 + enter, rowSpacing - 0.1, -0.2], // 5
+  [-enter, rowSpacing - 0.1, -0.2], // 6
+  [-4, 3 * rowSpacing, 0], // 7
+  [-4, 2 * rowSpacing, 0] // 8
 ]
   .map(p => (new Vector3(...p))
     .add(referencePosition))
@@ -59,16 +59,25 @@ const keys = {
   HZ: { keyId: '-Z', order: 22, grow: 'left' }
 }
 
+const armPivotY = 6
+
+const armLengths = [
+  armPivotY - position[0].y,
+  armPivotY - position[1].y,
+  armPivotY - position[4].y,
+  armPivotY - position[5].y
+]
+
 const config = [
-  { type: 'Key', ...keys.sharp, position: position[0] },
-  { type: 'Key', ...keys.asterisk, position: position[1] },
-  { type: 'Key', ...keys.SH, position: position[2] },
-  { type: 'Row', keys: [keys.HF, keys.HP, keys.HL, keys.HT, keys.HD], position: position[3], lateral: 1.1 },
-  { type: 'Row', keys: [keys.HR, keys.HG, keys.HB, keys.HS, keys.HZ], position: position[4], round },
-  { type: 'Row', keys: [keys.AH, keys.OH], position: position[5], round },
-  { type: 'Row', keys: [keys.HE, keys.HU], position: position[6], round },
-  { type: 'Row', keys: [keys.TH, keys.PH, keys.HH], position: position[7], lateral: 1.1 },
-  { type: 'Row', keys: [keys.KH, keys.WH, keys.RH], position: position[8], round }
+  { type: 'Key', ...keys.sharp, position: position[0], armLength: armLengths[0] },
+  { type: 'Key', ...keys.asterisk, position: position[1], armLength: armLengths[1] },
+  { type: 'Key', ...keys.SH, position: position[2], armLength: armLengths[1] },
+  { type: 'Row', keys: [keys.HF, keys.HP, keys.HL, keys.HT, keys.HD], position: position[3], lateral: 1.1, armLength: armLengths[1] },
+  { type: 'Row', keys: [keys.HR, keys.HG, keys.HB, keys.HS, keys.HZ], position: position[4], round, armLength: armLengths[2] },
+  { type: 'Row', keys: [keys.AH, keys.OH], position: position[5], round, armLength: armLengths[3] },
+  { type: 'Row', keys: [keys.HE, keys.HU], position: position[6], round, armLength: armLengths[3] },
+  { type: 'Row', keys: [keys.TH, keys.PH, keys.HH], position: position[7], lateral: 1.1, armLength: armLengths[1] },
+  { type: 'Row', keys: [keys.KH, keys.WH, keys.RH], position: position[8], round, armLength: armLengths[2] }
 ]
 
 const rowItems = config.filter(o => o.type === 'Row')
