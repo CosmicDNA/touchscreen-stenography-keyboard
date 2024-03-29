@@ -32,9 +32,8 @@ const useDragHook = ({ fingerResolution = 5, keyId, pressedKeys, updatePressedKe
         // Retrieve all key meshes
         const keyMeshes = groupRef.current.parent.children
           .filter(c => c.name === 'key group')
-          .map(g => g.children[0])
-          .map(g => g.children)
-          .flat()
+          .map(g => g.children[0]) // select first group
+          .map(g => g.children[0]) // select first mesh
         // Check for intersections with keys
         const intersects = raycaster.intersectObjects(keyMeshes)
         return intersects
