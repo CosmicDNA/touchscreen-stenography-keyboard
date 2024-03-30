@@ -1,5 +1,5 @@
 import PropTypes from 'prop-types'
-import React, { useState } from 'react'
+import React, { useState, useMemo } from 'react'
 import { Canvas, useFrame } from '@react-three/fiber'
 import { OrbitControls, ContactShadows } from '@react-three/drei'
 import StenoKeyboard from './components/StenoKeyboard'
@@ -14,6 +14,7 @@ import { useGetPublicKeyQuery } from './features/protocol/api/apiSlice'
 import JSONPretty from 'react-json-pretty'
 import 'react-json-pretty/themes/monikai.css'
 import styles from './App.module.css'
+import { getBox } from './components/utils/encryptionWrapper'
 
 /**
  *
@@ -93,6 +94,13 @@ const Tunneled = () => {
     error
   } = publicKeyQuery
 
+  const secretOrSharedKey = useMemo(
+    () => {
+      if (!publicKey) return null
+      return getBox(publicKey)
+    }, [publicKey]
+  )
+
   const isLoading = Boolean([kControls, wsControls, publicKeyQuery].find(a => a.isLoading))
 
   const [persistentCameraPosition, setPersistentCameraPosition] = useAtom(cameraAtom)
@@ -131,7 +139,7 @@ const Tunneled = () => {
                   ? 'ws://localhost:8086/dummy'
                   : `${isTLS ? 'wss' : 'ws'}${urlPredicate}/websocket`
               }
-              publicKey={publicKey}
+              secretOrSharedKey={secretOrSharedKey}
             >
               <StenoKeyboard controls={kControls.controls} />
             </WebSocketProvider>

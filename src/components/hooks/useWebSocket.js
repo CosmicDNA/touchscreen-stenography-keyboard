@@ -2,7 +2,7 @@ import PropTypes from 'prop-types'
 import React, { createContext, useContext, useEffect, useMemo } from 'react'
 import useWebSocket, { ReadyState } from 'react-use-websocket'
 import { useTunnelContext } from './useTunnel'
-import { encryptionProcess } from '../utils/encryptionWrapper'
+import { encryptionProcess, getEncryptedMessage, getDecryptedMessage } from '../utils/encryptionWrapper'
 const { CONNECTING, OPEN, CLOSING, CLOSED, UNINSTANTIATED } = ReadyState
 
 const getConnectionMessage = (state, url) => {
@@ -29,19 +29,24 @@ const middlewareAuthenticationRequest = 'MAR' // It could be any message, really
  * @returns {{readyState: ReadyState, lastJsonMessage, sendJsonMessage}}
  */
 const useWebSocketContext = () => useContext(WebSocketContext)
-const WebSocketProvider = ({ children, url, publicKey }) => {
+const WebSocketProvider = ({ children, url, secretOrSharedKey }) => {
   // Here we use a constant nonce for the connection to avoid re renders.
   const queryParams = useMemo(
     () => {
-      if (!publicKey) return null
-      return encryptionProcess(publicKey, middlewareAuthenticationRequest, nonce)
-    }, [publicKey, middlewareAuthenticationRequest, nonce]
+      if (!secretOrSharedKey) return null
+      return encryptionProcess(secretOrSharedKey, middlewareAuthenticationRequest, nonce)
+    }, [secretOrSharedKey, middlewareAuthenticationRequest, nonce]
   )
-  const { readyState, lastJsonMessage, sendJsonMessage: rawSendJsonMessage } = useWebSocket(url, { queryParams })
+  const { readyState, sendMessage, lastMessage } = useWebSocket(url, { queryParams }, !!secretOrSharedKey)
   const { status } = useTunnelContext()
 
+  const lastJsonMessage = useMemo(() => {
+    if (!lastMessage) return null
+    return getDecryptedMessage(secretOrSharedKey, lastMessage.data)
+  }, [lastMessage])
+
   const sendJsonMessage = message => {
-    return rawSendJsonMessage(encryptionProcess(publicKey, message))
+    return sendMessage(getEncryptedMessage(secretOrSharedKey, message))
   }
 
   useEffect(() => {
@@ -68,7 +73,7 @@ const WebSocketProvider = ({ children, url, publicKey }) => {
 
 WebSocketProvider.propTypes = {
   children: PropTypes.any,
-  publicKey: PropTypes.string,
+  secretOrSharedKey: PropTypes.instanceOf(Uint8Array),
   url: PropTypes.string
 }
 

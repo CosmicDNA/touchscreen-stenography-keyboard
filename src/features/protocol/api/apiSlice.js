@@ -14,8 +14,8 @@ export const apiSlice = createApi({
     // The `getPosts` endpoint is a "query" operation that returns data
     getProtocol: builder.query({
       // The URL for the request is '/fakeApi/posts'
-      query: ({ baseUrl, publicKey, object }) => {
-        const params = encryptionProcess(publicKey, object)
+      query: ({ baseUrl, secretOrSharedKey, object }) => {
+        const params = encryptionProcess(secretOrSharedKey, object)
         return {
           url: `${baseUrl}/protocol`,
           params
