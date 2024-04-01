@@ -86,7 +86,7 @@ const Tunneled = () => {
     atom: kOptionsAtom
   })
 
-  const publicKeyQuery = useGetPublicKeyQuery(baseUrl)
+  const publicKeyQuery = useGetPublicKeyQuery(baseUrl, { skip: wsControls.isLoading })
   const {
     data: publicKey,
     isError,
