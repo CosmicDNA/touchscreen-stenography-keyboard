@@ -1,23 +1,45 @@
-import { encrypt, box, generateKeyPair, hexEncode, hexDecode, newNonce } from './encryption'
+import { encrypt, decrypt, box, generateKeyPair, hexEncode, hexDecode, newNonce } from './encryption'
 
 const pairA = generateKeyPair()
 
 /**
  *
- * @param {String} publicKey
- * @param {*} object
+ * @param {Uint8Array} secretOrSharedKey
+ * @param {*} json
  * @param {Uint8Array} nonce
  * @returns {{publicKey: String, encryptedMessage: String}}
  */
-const encryptionProcess = (publicKey, json, nonce = undefined) => {
-  const decodedPublicKey = hexDecode(publicKey)
-  const secretOrSharedKey = box.before(decodedPublicKey, pairA.secretKey)
+const encryptionProcess = (secretOrSharedKey, json, nonce = undefined) => {
   const encryptedMessage = encrypt({ secretOrSharedKey, json, nonce })
-  hexEncode(pairA.publicKey)
+  const publicKey = hexEncode(pairA.publicKey)
   return {
-    publicKey: hexEncode(pairA.publicKey),
+    publicKey,
     encryptedMessage
   }
 }
 
-export { encryptionProcess, newNonce }
+const getDecryptedMessage = (secretOrSharedKey, encryptedMessage) => {
+  return decrypt(secretOrSharedKey, encryptedMessage, null)
+}
+
+/**
+ *
+ * @param {Uint8Array} secretOrSharedKey
+ * @param {*} message
+ * @returns
+ */
+const getEncryptedMessage = (secretOrSharedKey, message) => {
+  return encrypt({ secretOrSharedKey, json: message })
+}
+
+/**
+ *
+ * @param {*} publicKey
+ * @returns {Uint8Array}
+ */
+const getBox = (publicKey) => {
+  const decodedPublicKey = hexDecode(publicKey)
+  return box.before(decodedPublicKey, pairA.secretKey)
+}
+
+export { encryptionProcess, getDecryptedMessage, getBox, getEncryptedMessage, newNonce }

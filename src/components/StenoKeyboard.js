@@ -88,23 +88,9 @@ const StenoKeyboard = ({ controls, ...props }) => {
   const [pressedKeys, setPressedKeys] = useState(new Map())
   const { lastJsonMessage, sendJsonMessage, readyState } = useWebSocketContext()
 
-  const getTypedKeys = (lastJsonMessage) =>
-    Object.values(keys)
-      .filter(k => lastJsonMessage.keys.includes(k.keyId))
-
-  const getPaperPlaceHolder = (typedKeys) => {
-    const paperPlaceHolder = Array.from({ length: Object.keys(keys).length }, () => '')
-    typedKeys.forEach(tk => {
-      paperPlaceHolder[tk.order] = tk.keyId.replace('-', '')
-    })
-    return paperPlaceHolder
-  }
-
   useEffect(() => {
     if (lastJsonMessage) {
-      const typedKeys = getTypedKeys(lastJsonMessage)
-      const paperPlaceHolder = getPaperPlaceHolder(typedKeys)
-      console.log(paperPlaceHolder)
+      console.log(lastJsonMessage.paper)
     }
   }, [lastJsonMessage])
 
