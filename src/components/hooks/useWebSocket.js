@@ -5,7 +5,8 @@ import { useTunnelContext } from './useTunnel'
 import { encryptionProcess, getEncryptedMessage, getDecryptedMessage } from '../utils/encryptionWrapper'
 const { CONNECTING, OPEN, CLOSING, CLOSED, UNINSTANTIATED } = ReadyState
 
-const getConnectionMessage = (state, url) => {
+const getConnectionMessage = (state, url, skip) => {
+  if (skip) return 'Awaiting box key...'
   switch (state) {
     case CONNECTING:
       return `Connecting to websocket ${url}...`
@@ -30,14 +31,15 @@ const middlewareAuthenticationRequest = 'MAR' // It could be any message, really
  */
 const useWebSocketContext = () => useContext(WebSocketContext)
 const WebSocketProvider = ({ children, url, secretOrSharedKey }) => {
+  const skip = !secretOrSharedKey
   // Here we use a constant nonce for the connection to avoid re renders.
   const queryParams = useMemo(
     () => {
-      if (!secretOrSharedKey) return null
+      if (skip) return null
       return encryptionProcess(secretOrSharedKey, middlewareAuthenticationRequest, nonce)
     }, [secretOrSharedKey, middlewareAuthenticationRequest, nonce]
   )
-  const { readyState, sendMessage, lastMessage } = useWebSocket(url, { queryParams }, !!secretOrSharedKey)
+  const { readyState, sendMessage, lastMessage } = useWebSocket(url, { queryParams }, !skip)
   const { status } = useTunnelContext()
 
   const lastJsonMessage = useMemo(() => {
@@ -59,7 +61,7 @@ const WebSocketProvider = ({ children, url, secretOrSharedKey }) => {
 
   return (
     <>
-      {<status.In>{getConnectionMessage(readyState, url)}</status.In>}
+      {<status.In>{getConnectionMessage(readyState, url, skip)}</status.In>}
       <Provider value={{
         readyState,
         lastJsonMessage,
