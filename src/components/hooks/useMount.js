@@ -1,18 +1,28 @@
-import { useEffect, useRef } from 'react'
+import { useRef } from 'react'
+import useOnMount from './use-on-mount'
 
-const useMount = () => {
+/**
+ *
+ * @param {Function} callback
+ * @param {Array} deps
+ * @returns
+ */
+const useMount = (callback = () => {}, deps = []) => {
 // Ref to track component mount state
   const isMounted = useRef(false)
 
-  useEffect(() => {
+  useOnMount(() => {
     // Component has mounted, set the flag
-    isMounted.current = true
+    if (!isMounted.current) {
+      isMounted.current = true
+      callback()
+    }
 
     // Cleanup function to reset the flag when component unmounts
     return () => {
       isMounted.current = false
     }
-  }, [])
+  }, deps)
 
   return { isMounted: isMounted.current }
 }

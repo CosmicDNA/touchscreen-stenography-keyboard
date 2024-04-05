@@ -5,7 +5,7 @@ import Key from './Key'
 import { Vector3 } from 'three'
 import { useFrame } from '@react-three/fiber'
 import keySets from './steno-script'
-import useSound from 'use-sound'
+import { useSound } from './hooks/use-sound'
 import keypressAudioFile from '../sounds/keypress.flac'
 import keyreleaseAudioFile from '../sounds/keyrelease.flac'
 import { useWebSocketContext, ReadyState } from './hooks/useWebSocket'
@@ -84,6 +84,8 @@ const rowItems = config.filter(o => o.type === 'Row')
 const emptySet = new Set()
 const StenoKeyboard = ({ controls, ...props }) => {
   const ref = useRef()
+  // eslint-disable-next-line no-unused-vars
+  const [soundEnabled, setSoundEnabled] = useState(false)
   const [largestKeySet, setLargestKeySet] = useState(new Set())
   const [pressedKeys, setPressedKeys] = useState(new Map())
   const { lastJsonMessage, sendJsonMessage, readyState } = useWebSocketContext()
@@ -94,15 +96,24 @@ const StenoKeyboard = ({ controls, ...props }) => {
     }
   }, [lastJsonMessage])
 
-  const [playKeyPress] = useSound(keypressAudioFile)
-  const [playKeyRelease] = useSound(keyreleaseAudioFile, { volume: 0.2 })
+  const skip = !soundEnabled
+  const [playKeyPress] = useSound(keypressAudioFile, { skip })
+  const [playKeyRelease] = useSound(keyreleaseAudioFile, { volume: 0.2, skip })
+
+  const enableSound = () => {
+    if (!soundEnabled) {
+      setSoundEnabled(true)
+    }
+  }
 
   const onKeyPress = (keyId) => {
+    enableSound()
     playKeyPress()
     // console.log(`Key ${keyId} was pressed.`)
   }
 
   const onKeyRelease = (keyId) => {
+    enableSound()
     playKeyRelease()
     // console.log(`Key ${keyId} was released.`)
   }
