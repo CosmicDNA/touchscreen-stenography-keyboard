@@ -4,7 +4,7 @@ import useOnMount from './use-on-mount'
 /**
  *
  * @param {Function} callback
- * @param {Array} deps
+ * @param {React.DependencyList} deps
  * @returns
  */
 const useMount = (callback = () => {}, deps = []) => {
