@@ -23,10 +23,21 @@ https://touch-stenography-keyboard.netlify.app/
 
 ### Plover connection configuration
 
-Within Plover, make sure to select and enable the plugin `plover-engine-server-2`. More information can be found on [the web-socket server Plover plugin repository](https://github.com/user202729/plover_websocket_server). The following image shows the the default configuration for the connection. If you have created a custom `plover_engine_server_config.json`, make sure it is matching the configuration within this app.
+![Plover way](assets/20240413_151518.png)
+*Plover way in Cornish*
+
+> [!TIP]
+> Install plover-enginer-server with the following command from within Plover's installation directory:
+> ```shell
+> ./plover_console -s plover_plugins install git+https://github.com/CosmicDNA/plover_websocket_server.git
+> ```
+
+The following image shows the default configuration for the application. If you have created a custom `plover_engine_server_config.json`, make sure it is matching the configuration within this app.
 
 
-![Plover connection](<assets/Configure web-socket connection.png>)
+[<img src="assets/Configure web-socket connection.png" width="300" />](<assets/Configure web-socket connection.png>)
+
+*App configuration window*
 
 In the following video, it is being typed upon:
 
@@ -37,12 +48,15 @@ In the following video, it is being typed upon:
 
 https://github.com/CosmicDNA/touchscreen-stenography-keyboard/assets/92752640/c5960847-21dc-412f-a4d8-af9af335dbce
 
+*Usage example for typing*
+
 
 
 
 ## Development
 
 ![touchscreen-stenography-keyboard-build](https://github.com/CosmicDNA/touchscreen-stenography-keyboard/assets/92752640/1f1da328-26f4-4ca3-8055-f623a19b7edb)
+*How to start the server in production mode*
 
 ### Running
 
