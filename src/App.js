@@ -51,8 +51,7 @@ const sendStroke = {
 }
 
 const websocketOptions = {
-  host: { value: 'localhost' },
-  port: { value: 8086, min: 1024, max: 49151, step: 1 },
+  host: { value: 'localhost:8086' },
   TLS: { value: 'no', options: ['no', 'yes'] }
 }
 const keyboardOptions = {
@@ -79,7 +78,7 @@ const Tunneled = () => {
   })
   const { controls } = wsControls
   const isTLS = controls.TLS === 'yes'
-  const urlPredicate = `://${controls.host}:${controls.port}`
+  const urlPredicate = `://${controls.host}`
   const baseUrl = `${isTLS ? 'https' : 'http'}${urlPredicate}`
 
   const kControls = useLevaControls({

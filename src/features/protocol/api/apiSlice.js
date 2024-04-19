@@ -25,7 +25,10 @@ export const apiSlice = createApi({
     getPublicKey: builder.query({
       query: (baseUrl) => {
         return {
-          url: `${baseUrl}/getpublickey`
+          url: `${baseUrl}/getpublickey`,
+          headers: {
+            'ngrok-skip-browser-warning': true
+          }
         }
       }
     })
