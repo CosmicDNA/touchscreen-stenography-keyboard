@@ -6,11 +6,11 @@
 
 ## Repository
 
-This code repository hosted at https://github.com/CosmicDNA/touchscreen-stenography-keyboard
+This code repository is hosted at https://github.com/CosmicDNA/touchscreen-stenography-keyboard
 
 ## Purpose of The Project
 
-The aim of this project is to render with React Three Fiber a usefull stenography touchscreen keyboard.
+The aim of this project is to render with React Three Fiber a usefull stenography touchscreen keyboard. So that users can safely send keystrokes to whichever computer running Plover they want.
 
 
 ## Deployed Application
@@ -27,7 +27,10 @@ https://touch-stenography-keyboard.netlify.app/
 *Plover way in Cornish*
 
 > [!TIP]
-> Install plover-enginer-server with the following command from within Plover's installation directory:
+> The recommended way to install the `plover-websocket-server` plugin is through Plover's Plugin Manager.
+> Open Plover, go to **Tools**, click on **Plugins Manager**, select **plover-websocket-server** and click on **Install/Update** button. Finally click on **Restart** button.
+>
+> Alternatively, you can still install it with `plover_console` with following command line from within Plover's installation directory:
 > ```shell
 > ./plover_console -s plover_plugins install git+https://github.com/CosmicDNA/plover_websocket_server.git
 > ```
@@ -76,6 +79,20 @@ yarn global add serve
 
 ```shell
 NODENV=production && serve -s build
+```
+
+## Additional Configuration
+
+To use the plugin with the [deployed Netlify frontend](https://touch-stenography-keyboard.netlify.app) and follow the [plover-websocket-server](https://github.com/CosmicDNA/plover-websocket-server) guidelines, ensure your `plover_websocket_server_config.json` file includes the Netlify URL in the remotes pattern section. You can use for example a remotes pattern that includes both `localhost:8086` and `touch-stenography-keyboard.netlify.app`:
+
+```json
+{
+  "remotes": [
+    {
+      "pattern": "^https?:\/\/(localhost?(:[0-9]*)?|touch-stenography-keyboard.netlify.app)$"
+    }
+  ]
+}
 ```
 
 ## Powered by
