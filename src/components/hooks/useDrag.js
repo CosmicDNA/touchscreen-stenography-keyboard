@@ -1,4 +1,4 @@
-import { useRef } from 'react'
+import { useRef, useMemo } from 'react'
 import { eqSet, getCircularPoints } from '../utils/tools'
 import { Vector2, Raycaster } from 'three'
 import { useDrag } from '@use-gesture/react'
@@ -6,12 +6,24 @@ import { useThree } from '@react-three/fiber'
 
 const useDragHook = ({ fingerResolution = 5, keyId, pressedKeys, updatePressedKeys }) => {
   const groupRef = useRef()
-  const { camera } = useThree()
+  const { camera, scene } = useThree()
   const rawFingerModel = getCircularPoints(
     fingerResolution,
     fingerResolution,
     0.05
   )
+
+  // Memoize the raycaster and the list of meshes to avoid re-calculating on every drag event.
+  const [raycaster, keyMeshes] = useMemo(() => {
+    const meshes = []
+    scene.traverse(child => {
+      if (child.isMesh && (child.userData.keyId || child.parent.userData.keyId)) {
+        meshes.push(child)
+      }
+    })
+    return [new Raycaster(), meshes] // Re-run when pressedKeys changes to ensure all meshes are found
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [scene, pressedKeys])
 
   const setMyPressedKeys = (newSet) => updatePressedKeys((map) => map.set(keyId, newSet))
   const clearMyPressedKeys = () => updatePressedKeys((map) => map.delete(keyId))
@@ -26,22 +38,18 @@ const useDragHook = ({ fingerResolution = 5, keyId, pressedKeys, updatePressedKe
       const fingerVectors = rawFingerModel.map(v => new Vector2(...v).add(coords))
 
       const intersects = new Set([...fingerVectors.map(v => {
-        const raycaster = new Raycaster()
         raycaster.far = 50
         raycaster.setFromCamera(v, camera)
-        // Retrieve all key meshes
-        const keyMeshes = groupRef.current.parent.children
-          .filter(c => c.name === 'key group')
-          .map(g => g.children[0]) // select first group
-          .map(g => g.children[0]) // select first mesh
-        // Check for intersections with keys
-        const intersects = raycaster.intersectObjects(keyMeshes)
+        const intersects = raycaster.intersectObjects(keyMeshes, false)
         return intersects
       }).flat().map(o => o.object)])
 
       const previousSet = pressedKeys?.get(keyId)
-      const newSet = new Set([...intersects]
-        .map(o => o.userData.keyId)
+      const newSet = new Set(
+        [...intersects].map(
+          (o) => o.userData.keyId || o.parent.userData.keyId
+        )
+          .filter(Boolean)
       )
       if (!eqSet(previousSet, newSet)) {
         setMyPressedKeys(newSet)

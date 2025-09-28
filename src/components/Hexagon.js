@@ -25,7 +25,7 @@ const Hexagon = ({ radius = 1, name, color, pressedKeys, updatePressedKeys, ...p
       {...props}
     >
       {/* eslint-disable-next-line react/no-unknown-property */}
-      <mesh userData={{ keyId }}>
+      <mesh userData={{ keyId: name }}>
         {/* eslint-disable-next-line react/no-unknown-property */}
         <meshStandardMaterial attach='material' color={color} opacity={opacity} depthWrite={false} transparent={true}/>
         {/* eslint-disable-next-line react/no-unknown-property */}

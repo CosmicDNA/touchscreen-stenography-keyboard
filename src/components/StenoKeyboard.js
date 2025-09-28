@@ -148,30 +148,28 @@ const StenoKeyboard = ({ controls, ...props }) => {
   const [previousAllKeys, setPreviousAllKeys] = usePrevious(allKeys, emptySet)
   const [addedItems, removedItems] = getAddedAndRemovedItems(allKeys, previousAllKeys)
 
-  const registerStroke = useCallback((message) => {
-    if (readyState === ReadyState.OPEN) {
-      sendJsonMessage(message)
-    }
+  const checkAndRegisterStroke = useCallback((items) => {
+    const stroke = [...items].filter(keyId => keyId.includes('-') || ['#', '*'].includes(keyId))
+    if (stroke.length > 0 && readyState === ReadyState.OPEN) sendJsonMessage({ stroke })
   }, [readyState, sendJsonMessage])
 
   useEffect(() => {
     if (addedItems.size) {
       // console.log('Added items:', addedItems)
       if (controls.sendStroke === 'onKeyPress') {
-        registerStroke({ stroke: [...addedItems] })
+        checkAndRegisterStroke(addedItems)
       }
     }
 
     if (removedItems.size) {
       // console.log('Removed items:', removedItems)
     }
-  }, [addedItems, controls.sendStroke, registerStroke, removedItems.size])
+  }, [addedItems, checkAndRegisterStroke, controls.sendStroke, removedItems.size])
 
   useEffect(() => {
     if (!allKeys.size) {
       if (largestKeySet.size && controls.sendStroke === 'onKeyRelease') {
-        const stroke = [...largestKeySet]
-        registerStroke({ stroke })
+        checkAndRegisterStroke(largestKeySet)
         setLargestKeySet(new Set())
       }
     } else {
@@ -180,7 +178,7 @@ const StenoKeyboard = ({ controls, ...props }) => {
         setLargestKeySet(allKeys)
       }
     }
-  }, [largestKeySet, controls.sendStroke, registerStroke, allKeys])
+  }, [largestKeySet, controls.sendStroke, allKeys, checkAndRegisterStroke])
 
   return (
     <group
