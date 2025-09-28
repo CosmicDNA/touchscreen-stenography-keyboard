@@ -1,5 +1,5 @@
 import PropTypes from 'prop-types'
-import React, { useState, useRef, useEffect } from 'react'
+import React, { useState, useRef, useEffect, useCallback, useMemo } from 'react'
 import KeyGroup from './KeyGroup'
 import Key from './Key'
 import { Vector3 } from 'three'
@@ -10,7 +10,8 @@ import keypressAudioFile from '../sounds/keypress.flac'
 import keyreleaseAudioFile from '../sounds/keyrelease.flac'
 import { useWebSocketContext, ReadyState } from './hooks/useWebSocket'
 import usePrevious from './hooks/usePrevious'
-import { getAddedAndRemovedItems, dep } from './utils/tools'
+import { getAddedAndRemovedItems } from './utils/tools'
+import useWakeLock from './hooks/useWakeLock'
 import HexagonFloor from './HexagonFloor'
 
 const enter = 0.2
@@ -81,9 +82,10 @@ const emptySet = new Set()
 const StenoKeyboard = ({ controls, ...props }) => {
   const ref = useRef()
   // eslint-disable-next-line no-unused-vars
-  const [soundEnabled, setSoundEnabled] = useState(false)
+  const [soundEnabled, setSoundEnabled] = useState(true)
   const [largestKeySet, setLargestKeySet] = useState(new Set())
   const [pressedKeys, setPressedKeys] = useState(new Map())
+  useWakeLock()
   const { lastJsonMessage, sendJsonMessage, readyState } = useWebSocketContext()
 
   useEffect(() => {
@@ -96,31 +98,23 @@ const StenoKeyboard = ({ controls, ...props }) => {
   const [playKeyPress] = useSound(keypressAudioFile, { skip })
   const [playKeyRelease] = useSound(keyreleaseAudioFile, { volume: 0.2, skip })
 
-  const enableSound = () => {
-    if (!soundEnabled) {
-      setSoundEnabled(true)
-    }
-  }
-
-  const onKeyPress = (keyId) => {
-    enableSound()
+  const onKeyPress = useCallback((keyId) => {
     playKeyPress()
     // console.log(`Key ${keyId} was pressed.`)
-  }
+  }, [playKeyPress])
 
-  const onKeyRelease = (keyId) => {
-    enableSound()
+  const onKeyRelease = useCallback((keyId) => {
     playKeyRelease()
     // console.log(`Key ${keyId} was released.`)
-  }
+  }, [playKeyRelease])
 
-  const updatePressedKeys = (callback) => {
+  const updatePressedKeys = useCallback((callback) => {
     setPressedKeys(prevPressedKeys => {
       const newMap = new Map(prevPressedKeys)
       callback(newMap)
       return newMap
     })
-  }
+  }, [])
 
   // Animate the keys
   useFrame(({ clock }) => {
@@ -147,16 +141,18 @@ const StenoKeyboard = ({ controls, ...props }) => {
     }
   })
 
-  const allKeys = new Set([...pressedKeys.values()].flatMap((set) => [...set]))
+  const allKeys = useMemo(() =>
+    new Set([...pressedKeys.values()].flatMap((set) => [...set]))
+  , [pressedKeys])
   // eslint-disable-next-line no-unused-vars
   const [previousAllKeys, setPreviousAllKeys] = usePrevious(allKeys, emptySet)
   const [addedItems, removedItems] = getAddedAndRemovedItems(allKeys, previousAllKeys)
 
-  const registerStroke = (message) => {
+  const registerStroke = useCallback((message) => {
     if (readyState === ReadyState.OPEN) {
       sendJsonMessage(message)
     }
-  }
+  }, [readyState, sendJsonMessage])
 
   useEffect(() => {
     if (addedItems.size) {
@@ -169,7 +165,7 @@ const StenoKeyboard = ({ controls, ...props }) => {
     if (removedItems.size) {
       // console.log('Removed items:', removedItems)
     }
-  }, [addedItems, removedItems].map(s => dep(s)))
+  }, [addedItems, controls.sendStroke, registerStroke, removedItems.size])
 
   useEffect(() => {
     if (!allKeys.size) {
@@ -184,7 +180,7 @@ const StenoKeyboard = ({ controls, ...props }) => {
         setLargestKeySet(allKeys)
       }
     }
-  }, [dep(allKeys), largestKeySet])
+  }, [largestKeySet, controls.sendStroke, registerStroke, allKeys])
 
   return (
     <group

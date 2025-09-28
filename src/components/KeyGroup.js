@@ -1,4 +1,4 @@
-import React from 'react'
+import React, { memo } from 'react'
 import PropTypes from 'prop-types'
 import Key from './Key'
 import { Vector3 } from 'three'
@@ -32,7 +32,14 @@ const KeyGroup = ({ keys, name, position, ...props }) => {
   return (
     <>
       {keys.map((theKey, i) => theKey &&
-        RawKey({ name, position, theKey, i, ...props })
+        <RawKey
+          key={`${name}_${theKey.keyId}`}
+          name={name}
+          position={position}
+          theKey={theKey}
+          i={i}
+          {...props}
+        />
       )}
     </>
   )
@@ -45,4 +52,4 @@ KeyGroup.propTypes = {
   armLength: PropTypes.number.isRequired
 }
 
-export default KeyGroup
+export default memo(KeyGroup)

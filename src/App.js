@@ -2,6 +2,7 @@ import PropTypes from 'prop-types'
 import React, { useState, useMemo } from 'react'
 import { Canvas, useFrame } from '@react-three/fiber'
 import { OrbitControls, ContactShadows } from '@react-three/drei'
+import { Perf } from 'r3f-perf'
 import StenoKeyboard from './components/StenoKeyboard'
 import { WebSocketProvider } from './components/hooks/useWebSocket'
 import { TunnelProvider, useTunnelContext } from './components/hooks/useTunnel'
@@ -127,6 +128,7 @@ const Tunneled = () => {
         <status.Out />
       </div>
         <Canvas camera={{ position: Object.values(persistentCameraPosition), fov: 25 }}>
+          <Perf position='bottom-right'/>
           <ReactToCameraChange {...{ onCameraUpdate, trackCamera } }>
             {/* eslint-disable-next-line react/no-unknown-property */}
             <ambientLight intensity={0.5} />

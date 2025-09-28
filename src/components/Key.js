@@ -1,5 +1,5 @@
 import PropTypes from 'prop-types'
-import React, { useEffect } from 'react'
+import React, { useEffect, memo, useMemo } from 'react'
 import { Color, Shape, Vector2 } from 'three'
 import { getCircularPoints } from './utils/tools'
 import useMount from './hooks/useMount'
@@ -42,56 +42,59 @@ const Key = ({ offsetX = 0, offsetY = 0, scale = 1, roundResolution = 32, finger
         onKeyRelease(keyId)
       }
     }
-  }, [pressed])
+  }, [isMounted, keyId, onKeyPress, onKeyRelease, pressed])
 
-  let addLeft, addRight
-  switch (grow) {
-    case 'left':
-      addLeft = 0.1
-      addRight = 0
-      break
-    case 'right':
-      addLeft = 0
-      addRight = 0.1
-      break
-    default:
-      addLeft = 0
-      addRight = 0
-      break
-  }
+  const extrudedGeometry = useMemo(() => {
+    let addLeft, addRight
+    switch (grow) {
+      case 'left':
+        addLeft = 0.1
+        addRight = 0
+        break
+      case 'right':
+        addLeft = 0
+        addRight = 0.1
+        break
+      default:
+        addLeft = 0
+        addRight = 0
+        break
+    }
 
-  let pts
-  if (round) {
-    const radius = widthOnTwo
-    const underSemiCircumference = getCircularPoints(
-      roundResolution / 2 + 1,
-      roundResolution,
-      radius,
-      Math.PI
-    )
+    let pts
+    if (round) {
+      const radius = widthOnTwo
+      const underSemiCircumference = getCircularPoints(
+        roundResolution / 2 + 1,
+        roundResolution,
+        radius,
+        Math.PI
+      )
 
-    const pre = [
-      [underSemiCircumference[0][0] - addLeft, underSemiCircumference[0][1] + lateral],
-      [underSemiCircumference[0][0] - addLeft, underSemiCircumference[0][1]]
-    ]
-    const pos = [
-      [underSemiCircumference[underSemiCircumference.length - 1][0] + addRight, underSemiCircumference[underSemiCircumference.length - 1][1]],
-      [underSemiCircumference[underSemiCircumference.length - 1][0] + addRight, underSemiCircumference[underSemiCircumference.length - 1][1] + lateral]
-    ]
+      const pre = [
+        [underSemiCircumference[0][0] - addLeft, underSemiCircumference[0][1] + lateral],
+        [underSemiCircumference[0][0] - addLeft, underSemiCircumference[0][1]]
+      ]
+      const pos = [
+        [underSemiCircumference[underSemiCircumference.length - 1][0] + addRight, underSemiCircumference[underSemiCircumference.length - 1][1]],
+        [underSemiCircumference[underSemiCircumference.length - 1][0] + addRight, underSemiCircumference[underSemiCircumference.length - 1][1] + lateral]
+      ]
 
-    pts = [...pre, ...underSemiCircumference, ...pos]
-  } else {
-    pts = [[-widthOnTwo - addLeft, 0], [-widthOnTwo - addLeft, lateral], [widthOnTwo + addRight, lateral], [widthOnTwo + addRight, 0]]
-  }
+      pts = [...pre, ...underSemiCircumference, ...pos]
+    } else {
+      pts = [[-widthOnTwo - addLeft, 0], [-widthOnTwo - addLeft, lateral], [widthOnTwo + addRight, lateral], [widthOnTwo + addRight, 0]]
+    }
 
-  const extrudeSettings = {
-    depth,
-    steps: 1,
-    bevelEnabled: true,
-    bevelThickness: 8 / 200,
-    bevelSize: 0.4 * 8 / 40,
-    bevelSegments: 1
-  }
+    const settings = {
+      depth,
+      steps: 1,
+      bevelEnabled: true,
+      bevelThickness: 8 / 200,
+      bevelSize: 0.4 * 8 / 40,
+      bevelSegments: 1
+    }
+    return [new Shape(pts.map(points => new Vector2(...points))), settings]
+  }, [depth, grow, lateral, round, roundResolution, widthOnTwo])
 
   const colorA = '#90B6AF'
   const colorB = Color.NAMES.whitesmoke
@@ -118,7 +121,7 @@ const Key = ({ offsetX = 0, offsetY = 0, scale = 1, roundResolution = 32, finger
             <meshLambertMaterial key={i} attach={`material-${i}`} args={[{ color, wireframe: false }]} />
           )}
           {/* eslint-disable-next-line react/no-unknown-property */}
-          <extrudeGeometry args={[new Shape(pts.map(points => new Vector2(...points))), extrudeSettings]} />
+          <extrudeGeometry args={extrudedGeometry} />
         </mesh>
         <Text3D font={InterMediumRegular} size={0.2 * scale} height={0.01} position={[-0.07 + offsetX, -0.6 + offsetY - armLength, 0.1]}>
           {keyId.replace('-', '')}
@@ -146,4 +149,4 @@ Key.propTypes = {
   allKeys: PropTypes.instanceOf(Set).isRequired
 }
 
-export default Key
+export default memo(Key)
