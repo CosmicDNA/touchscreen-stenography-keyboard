@@ -22,12 +22,10 @@ const position = [
   [-0.5, 4.8, 0], // 0
   [-1, 3 * rowSpacing, 0], // 1
   [-5, 3 * rowSpacing, 0], // 2
-  [0, 3 * rowSpacing, 0], // 3
-  [0, 2 * rowSpacing, 0], // 4
-  [-3 + enter, rowSpacing - 0.1, -0.2], // 5
-  [-enter, rowSpacing - 0.1, -0.2], // 6
-  [-4, 3 * rowSpacing, 0], // 7
-  [-4, 2 * rowSpacing, 0] // 8
+  [4, 3 * rowSpacing, 0], // 3
+  [4, 2 * rowSpacing, 0], // 4
+  [-4, 3 * rowSpacing, 0], // 5
+  [-4, 2 * rowSpacing, 0] // 6
 ]
   .map(p => (new Vector3(...p))
     .add(referencePosition))
@@ -42,11 +40,11 @@ const keys = {
   WH: { keyId: 'W-', order: 5, offsetX: -0.06 },
   HH: { keyId: 'H-', order: 6 },
   RH: { keyId: 'R-', order: 7 },
-  AH: { keyId: 'A-', order: 8, offsetX: -0.01 },
-  OH: { keyId: 'O-', order: 9, offsetX: -0.02 },
+  AH: { keyId: 'A-', order: 8, offsetX: -0.01, ox: -5 * rowSpacing - enter, oy: -1 * rowSpacing - 0.1, oz: -0.2 },
+  OH: { keyId: 'O-', order: 9, offsetX: -0.02, ox: -5 * rowSpacing - enter, oy: -1 * rowSpacing - 0.1, oz: -0.2 },
   asterisk: { keyId: '*', order: 10, lateral: 2, round, offsetX: -0.05, grow: 'right', offsetY: -0.75 },
-  HE: { keyId: '-E', order: 11 },
-  HU: { keyId: '-U', order: 12, offsetX: -0.02 },
+  HE: { keyId: '-E', order: 11, ox: -5 * rowSpacing + enter, oy: -1 * rowSpacing - 0.1, oz: -0.2 },
+  HU: { keyId: '-U', order: 12, offsetX: -0.02, ox: -5 * rowSpacing + enter, oy: -1 * rowSpacing - 0.1, oz: -0.2 },
   HF: { keyId: '-F', order: 13 },
   HR: { keyId: '-R', order: 14, offsetX: -0.01 },
   HP: { keyId: '-P', order: 15 },
@@ -56,7 +54,8 @@ const keys = {
   HT: { keyId: '-T', order: 19 },
   HS: { keyId: '-S', order: 20 },
   HD: { keyId: '-D', order: 21, grow: 'left' },
-  HZ: { keyId: '-Z', order: 22, grow: 'left' }
+  HZ: { keyId: '-Z', order: 22, grow: 'left' },
+  dummy: null
 }
 
 const armPivotY = 6
@@ -64,20 +63,17 @@ const armPivotY = 6
 const armLengths = [
   armPivotY - position[0].y,
   armPivotY - position[1].y,
-  armPivotY - position[4].y,
-  armPivotY - position[5].y
+  armPivotY - position[4].y
 ]
 
 const config = [
   { type: 'Key', ...keys.sharp, position: position[0], armLength: armLengths[0] },
   { type: 'Key', ...keys.asterisk, position: position[1], armLength: armLengths[1] },
   { type: 'Key', ...keys.SH, position: position[2], armLength: armLengths[1] },
-  { type: 'Row', keys: [keys.HF, keys.HP, keys.HL, keys.HT, keys.HD], position: position[3], lateral: 1.1, armLength: armLengths[1] },
-  { type: 'Row', keys: [keys.HR, keys.HG, keys.HB, keys.HS, keys.HZ], position: position[4], round, armLength: armLengths[2] },
-  { type: 'Row', keys: [keys.AH, keys.OH], position: position[5], round, armLength: armLengths[3] },
-  { type: 'Row', keys: [keys.HE, keys.HU], position: position[6], round, armLength: armLengths[3] },
-  { type: 'Row', keys: [keys.TH, keys.PH, keys.HH], position: position[7], lateral: 1.1, armLength: armLengths[1] },
-  { type: 'Row', keys: [keys.KH, keys.WH, keys.RH], position: position[8], round, armLength: armLengths[2] }
+  { type: 'Key', ...keys.HD, position: position[3], lateral: 1.1, armLength: armLengths[1] },
+  { type: 'Key', ...keys.HZ, position: position[4], round, armLength: armLengths[2] },
+  { type: 'Row', keys: [keys.TH, keys.PH, keys.HH, keys.dummy, keys.HF, keys.HP, keys.HL, keys.HT], position: position[5], lateral: 1.1, armLength: armLengths[1] },
+  { type: 'Row', keys: [keys.KH, keys.WH, keys.RH, keys.dummy, keys.HR, keys.HG, keys.HB, keys.HS, keys.AH, keys.OH, keys.HE, keys.HU], position: position[6], round, armLength: armLengths[2] }
 ]
 
 const rowItems = config.filter(o => o.type === 'Row')
