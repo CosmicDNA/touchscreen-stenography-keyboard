@@ -11,6 +11,7 @@ import keyreleaseAudioFile from '../sounds/keyrelease.flac'
 import { useWebSocketContext, ReadyState } from './hooks/useWebSocket'
 import usePrevious from './hooks/usePrevious'
 import { getAddedAndRemovedItems, dep } from './utils/tools'
+import useWakeLock from './hooks/useWakeLock'
 import HexagonFloor from './HexagonFloor'
 
 const enter = 0.2
@@ -88,6 +89,7 @@ const StenoKeyboard = ({ controls, ...props }) => {
   const [soundEnabled, setSoundEnabled] = useState(false)
   const [largestKeySet, setLargestKeySet] = useState(new Set())
   const [pressedKeys, setPressedKeys] = useState(new Map())
+  useWakeLock()
   const { lastJsonMessage, sendJsonMessage, readyState } = useWebSocketContext()
 
   useEffect(() => {
