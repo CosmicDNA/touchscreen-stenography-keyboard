@@ -6,7 +6,7 @@ import { useThree } from '@react-three/fiber'
 
 const useDragHook = ({ fingerResolution = 5, keyId, pressedKeys, updatePressedKeys }) => {
   const groupRef = useRef()
-  const { camera, scene } = useThree()
+  const { camera, scene, size } = useThree()
   const rawFingerModel = getCircularPoints(
     fingerResolution,
     fingerResolution,
@@ -32,8 +32,8 @@ const useDragHook = ({ fingerResolution = 5, keyId, pressedKeys, updatePressedKe
     if (down) {
       const { clientX, clientY } = event
       const coords = new Vector2(
-        (clientX / window.innerWidth) * 2 - 1,
-        -(clientY / window.innerHeight) * 2 + 1
+        (clientX / size.width) * 2 - 1,
+        -(clientY / size.height) * 2 + 1
       )
       const fingerVectors = rawFingerModel.map(v => new Vector2(...v).add(coords))
 
