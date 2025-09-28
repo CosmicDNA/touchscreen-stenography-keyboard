@@ -43,7 +43,7 @@
     "eslint-plugin-promise": "^6.1.1",
     "eslint-plugin-react": "^7.33.2",
     "husky": "^9.0.11",
-    "lint-staged": "^15.2.2",
+    "lint-staged": "^16.2.3",
     "postcss": "^8.4.35",
     "react-proptypes-generate": "^1.7.6",
     "react-scripts": "5.0.1",
