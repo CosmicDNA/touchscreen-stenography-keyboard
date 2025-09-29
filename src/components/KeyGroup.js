@@ -1,8 +1,8 @@
 import React, { memo } from 'react'
 import PropTypes from 'prop-types'
 import AnyKey from './AnyKey'
-import { Vector3 } from 'three'
-import useKeyGeometry from './hooks/useKeyGeometry'
+import { Vector3, Material } from 'three'
+import useKeyGeometry from './hooks/useKeyGeometry' // Import Material
 
 const RawKey = ({ geometry, name, position, theKey, i, ...props }) => {
   const getKey = (key, attribute) => {
@@ -18,6 +18,7 @@ const RawKey = ({ geometry, name, position, theKey, i, ...props }) => {
       keyId={theKey.keyId}
       key={`${name}_${theKey.keyId}`}
       {...theKey}
+      materials={props.materials} // Pass materials down
       {...props}
     />
   )
@@ -28,10 +29,11 @@ RawKey.propTypes = {
   i: PropTypes.number.isRequired,
   name: PropTypes.string.isRequired,
   position: PropTypes.instanceOf(Vector3).isRequired,
-  armLength: PropTypes.number.isRequired
+  armLength: PropTypes.number.isRequired,
+  materials: PropTypes.arrayOf(PropTypes.instanceOf(Material)).isRequired
 }
 
-const KeyGroup = ({ keys, name, position, ...props }) => {
+const KeyGroup = ({ keys, name, position, materials, ...props }) => {
   const geometry = useKeyGeometry(props)
 
   return (
@@ -44,6 +46,7 @@ const KeyGroup = ({ keys, name, position, ...props }) => {
           theKey={theKey}
           i={i}
           geometry={geometry}
+          materials={materials} // Pass materials down
           {...props}
         />
       )}
@@ -56,7 +59,8 @@ KeyGroup.propTypes = {
   name: PropTypes.string.isRequired,
   round: PropTypes.bool,
   position: PropTypes.instanceOf(Vector3).isRequired,
-  armLength: PropTypes.number.isRequired
+  armLength: PropTypes.number.isRequired,
+  materials: PropTypes.arrayOf(PropTypes.instanceOf(Material)).isRequired
 }
 
 export default memo(KeyGroup)

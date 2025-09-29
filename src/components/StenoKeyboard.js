@@ -1,8 +1,8 @@
 import PropTypes from 'prop-types'
-import React, { useState, useRef, useEffect } from 'react'
+import React, { useState, useRef, useEffect, useMemo } from 'react'
 import KeyGroup from './KeyGroup'
 import Key from './Key'
-import { Vector3 } from 'three'
+import { Vector3, MeshLambertMaterial, Color } from 'three'
 import { useFrame } from '@react-three/fiber'
 import keySets from './steno-script'
 import { useSound } from './hooks/use-sound'
@@ -84,6 +84,13 @@ const StenoKeyboard = ({ controls, ...props }) => {
   // eslint-disable-next-line no-unused-vars
   const [soundEnabled, setSoundEnabled] = useState(true)
   const [largestKeySet, setLargestKeySet] = useState(new Set())
+
+  // Instance materials once
+  const keyMaterials = useMemo(() => {
+    const colorA = '#90B6AF'
+    const colorB = Color.NAMES.whitesmoke
+    return [new MeshLambertMaterial({ color: colorA, wireframe: false }), new MeshLambertMaterial({ color: colorB, wireframe: false })]
+  }, [])
   const [pressedKeys, setPressedKeys] = useState(new Map())
   useWakeLock()
   const { lastJsonMessage, sendJsonMessage, readyState } = useWebSocketContext()
@@ -191,13 +198,13 @@ const StenoKeyboard = ({ controls, ...props }) => {
   return (
     <group
       {...props}
-      ref={ref}
-      // eslint-disable-next-line react/no-unknown-property
-      rotation-x={-Math.PI / 2}
+      ref={ref} // eslint-disable-next-line react/no-unknown-property
+      rotation-x={-Math.PI / 2} // eslint-disable-next-line react/no-unknown-property
     >
       {
         config.map((item, key) => {
-          const keyProps = { ...item, key, allKeys, onKeyPress, onKeyRelease }
+          // Pass the pre-instanced materials to each key/keyGroup
+          const keyProps = { ...item, key, allKeys, onKeyPress, onKeyRelease, materials: keyMaterials }
           let rowIndex
           switch (item.type) {
             case 'Key':

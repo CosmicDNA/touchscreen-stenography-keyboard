@@ -1,8 +1,9 @@
 import PropTypes from 'prop-types'
 import React, { useEffect } from 'react'
+import { Material } from 'three'
 import useMount from './hooks/useMount'
 import AnyKey from './AnyKey'
-import useKeyGeometry from './hooks/useKeyGeometry'
+import useKeyGeometry from './hooks/useKeyGeometry' // Import Material
 
 /**
  * Represents a Key component.
@@ -23,7 +24,7 @@ import useKeyGeometry from './hooks/useKeyGeometry'
  * @param {KeyProps} props - The props object.
  */
 const Key = ({ offsetX = 0, offsetY = 0, scale = 1, roundResolution = 32, fingerResolution = 5, width = 7 / 10, lateral = 7 / 10, depth = 1 / 20, keyId, round, grow, allKeys, armLength, ...props }) => {
-  const { onKeyPress, onKeyRelease } = props
+  const { onKeyPress, onKeyRelease, materials } = props
   const { isMounted } = useMount()
 
   const pressed = allKeys.has(keyId)
@@ -53,6 +54,7 @@ const Key = ({ offsetX = 0, offsetY = 0, scale = 1, roundResolution = 32, finger
       keyId={keyId}
       allKeys={allKeys}
       armLength={armLength}
+      materials={materials}
       {...props}
     />
   )
@@ -73,7 +75,8 @@ Key.propTypes = {
   width: PropTypes.number,
   onKeyPress: PropTypes.func.isRequired,
   onKeyRelease: PropTypes.func.isRequired,
-  allKeys: PropTypes.instanceOf(Set).isRequired
+  allKeys: PropTypes.instanceOf(Set).isRequired,
+  materials: PropTypes.arrayOf(PropTypes.instanceOf(Material)).isRequired
 }
 
 export default Key
