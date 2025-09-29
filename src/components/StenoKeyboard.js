@@ -82,7 +82,7 @@ const emptySet = new Set()
 const StenoKeyboard = ({ controls, ...props }) => {
   const ref = useRef()
   // eslint-disable-next-line no-unused-vars
-  const [soundEnabled, setSoundEnabled] = useState(true)
+  const [soundEnabled, setSoundEnabled] = useState(false)
   const [largestKeySet, setLargestKeySet] = useState(new Set())
 
   // Instance materials once
@@ -203,7 +203,6 @@ const StenoKeyboard = ({ controls, ...props }) => {
     >
       {
         config.map((item, key) => {
-          // Pass all necessary props to each key/keyGroup
           const keyProps = { ...item, key, allKeys, onKeyPress, onKeyRelease, materials: keyMaterials, show3DText: controls.show3DText, updatePressedKeys }
           let rowIndex
           switch (item.type) {

@@ -60,7 +60,8 @@ const keyboardOptions = {
   sendStroke: { value: sendStroke.onKeyRelease, options: Object.keys(sendStroke) },
   lockPosition: { value: false, options: [true, false] },
   performanceMonitor: { value: false, options: [true, false] },
-  show3DText: { value: true, options: [true, false] }
+  show3DText: { value: true, options: [true, false] },
+  showShadows: { value: true, options: [true, false] }
 }
 
 const wsOptionsAtom = getAtomWithStorage({ websocketOptions })
@@ -153,7 +154,7 @@ const Tunneled = () => {
             >
               <StenoKeyboard controls={kControls.controls} />
             </WebSocketProvider>
-            <ContactShadows frames={3} position-y={-0.5} blur={1} opacity={0.75} />
+            {kControls.controls.showShadows && <ContactShadows frames={1} position-y={-0.5} blur={1} opacity={0.75} />}
             {/* <ContactShadows frames={1} position-y={-0.5} blur={3} color="orange" /> */}
             <OrbitControls
               onEnd={onOrbitMotionEnd}
