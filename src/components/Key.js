@@ -1,10 +1,8 @@
 import PropTypes from 'prop-types'
 import React, { useEffect } from 'react'
-import { Color, Shape, Vector2 } from 'three'
-import { getCircularPoints } from './utils/tools'
 import useMount from './hooks/useMount'
-import { Text3D } from '@react-three/drei'
-import InterMediumRegular from '../fonts/Inter_Medium_Regular.json'
+import AnyKey from './AnyKey'
+import useKeyGeometry from './hooks/useKeyGeometry'
 
 /**
  * Represents a Key component.
@@ -27,7 +25,6 @@ import InterMediumRegular from '../fonts/Inter_Medium_Regular.json'
 const Key = ({ offsetX = 0, offsetY = 0, scale = 1, roundResolution = 32, fingerResolution = 5, width = 7 / 10, lateral = 7 / 10, depth = 1 / 20, keyId, round, grow, allKeys, armLength, ...props }) => {
   const { onKeyPress, onKeyRelease } = props
   const { isMounted } = useMount()
-  const widthOnTwo = width / 2
 
   const pressed = allKeys.has(keyId)
 
@@ -44,87 +41,20 @@ const Key = ({ offsetX = 0, offsetY = 0, scale = 1, roundResolution = 32, finger
     }
   }, [pressed])
 
-  let addLeft, addRight
-  switch (grow) {
-    case 'left':
-      addLeft = 0.1
-      addRight = 0
-      break
-    case 'right':
-      addLeft = 0
-      addRight = 0.1
-      break
-    default:
-      addLeft = 0
-      addRight = 0
-      break
-  }
-
-  let pts
-  if (round) {
-    const radius = widthOnTwo
-    const underSemiCircumference = getCircularPoints(
-      roundResolution / 2 + 1,
-      roundResolution,
-      radius,
-      Math.PI
-    )
-
-    const pre = [
-      [underSemiCircumference[0][0] - addLeft, underSemiCircumference[0][1] + lateral],
-      [underSemiCircumference[0][0] - addLeft, underSemiCircumference[0][1]]
-    ]
-    const pos = [
-      [underSemiCircumference[underSemiCircumference.length - 1][0] + addRight, underSemiCircumference[underSemiCircumference.length - 1][1]],
-      [underSemiCircumference[underSemiCircumference.length - 1][0] + addRight, underSemiCircumference[underSemiCircumference.length - 1][1] + lateral]
-    ]
-
-    pts = [...pre, ...underSemiCircumference, ...pos]
-  } else {
-    pts = [[-widthOnTwo - addLeft, 0], [-widthOnTwo - addLeft, lateral], [widthOnTwo + addRight, lateral], [widthOnTwo + addRight, 0]]
-  }
-
-  const extrudeSettings = {
-    depth,
-    steps: 1,
-    bevelEnabled: true,
-    bevelThickness: 8 / 200,
-    bevelSize: 0.4 * 8 / 40,
-    bevelSegments: 1
-  }
-
-  const colorA = '#90B6AF'
-  const colorB = Color.NAMES.whitesmoke
+  const geometry = useKeyGeometry({ width, lateral, depth, round, grow, roundResolution })
 
   return (
-    <group
+    <AnyKey
+      geometry={geometry}
+      offsetX={offsetX}
+      offsetY={offsetY}
+      scale={scale}
+      lateral={lateral}
+      keyId={keyId}
+      allKeys={allKeys}
+      armLength={armLength}
       {...props}
-      name='key group'
-    >
-      <group
-        // eslint-disable-next-line react/no-unknown-property
-        rotation-x={pressed ? Math.PI / 32 / armLength : 0}
-        // eslint-disable-next-line react/no-unknown-property
-        position-y={armLength}
-      >
-        <mesh
-          // eslint-disable-next-line react/no-unknown-property
-          position-y={-lateral - armLength}
-          // eslint-disable-next-line react/no-unknown-property
-          userData={{ keyId }}
-        >
-          {[colorA, colorB].map((color, i) =>
-            // eslint-disable-next-line react/no-unknown-property
-            <meshLambertMaterial key={i} attach={`material-${i}`} args={[{ color, wireframe: false }]} />
-          )}
-          {/* eslint-disable-next-line react/no-unknown-property */}
-          <extrudeGeometry args={[new Shape(pts.map(points => new Vector2(...points))), extrudeSettings]} />
-        </mesh>
-        <Text3D font={InterMediumRegular} size={0.2 * scale} height={0.01} position={[-0.07 + offsetX, -0.6 + offsetY - armLength, 0.1]}>
-          {keyId.replace('-', '')}
-        </Text3D>
-      </group>
-    </group>
+    />
   )
 }
 

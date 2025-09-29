@@ -1,9 +1,10 @@
 import React, { memo } from 'react'
 import PropTypes from 'prop-types'
-import Key from './Key'
+import AnyKey from './AnyKey'
 import { Vector3 } from 'three'
+import useKeyGeometry from './hooks/useKeyGeometry'
 
-const RawKey = ({ name, position, theKey, i, ...props }) => {
+const RawKey = ({ geometry, name, position, theKey, i, ...props }) => {
   const getKey = (key, attribute) => {
     return key[attribute] ? key[attribute] : 0
   }
@@ -11,7 +12,8 @@ const RawKey = ({ name, position, theKey, i, ...props }) => {
   const offsetY = getKey(theKey, 'oy')
   const offsetZ = getKey(theKey, 'oz')
   return (
-    <Key
+    <AnyKey
+      geometry={geometry}
       position={[position.x + i + offsetX, position.y + offsetY, position.z + offsetZ]}
       keyId={theKey.keyId}
       key={`${name}_${theKey.keyId}`}
@@ -21,6 +23,7 @@ const RawKey = ({ name, position, theKey, i, ...props }) => {
   )
 }
 RawKey.propTypes = {
+  geometry: PropTypes.object.isRequired,
   theKey: PropTypes.object.isRequired,
   i: PropTypes.number.isRequired,
   name: PropTypes.string.isRequired,
@@ -29,6 +32,8 @@ RawKey.propTypes = {
 }
 
 const KeyGroup = ({ keys, name, position, ...props }) => {
+  const geometry = useKeyGeometry(props)
+
   return (
     <>
       {keys.map((theKey, i) => theKey &&
@@ -38,6 +43,7 @@ const KeyGroup = ({ keys, name, position, ...props }) => {
           position={position}
           theKey={theKey}
           i={i}
+          geometry={geometry}
           {...props}
         />
       )}
@@ -48,6 +54,7 @@ const KeyGroup = ({ keys, name, position, ...props }) => {
 KeyGroup.propTypes = {
   keys: PropTypes.arrayOf(PropTypes.object).isRequired,
   name: PropTypes.string.isRequired,
+  round: PropTypes.bool,
   position: PropTypes.instanceOf(Vector3).isRequired,
   armLength: PropTypes.number.isRequired
 }
