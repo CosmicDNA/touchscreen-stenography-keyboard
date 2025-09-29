@@ -1,5 +1,5 @@
 import PropTypes from 'prop-types'
-import React, { useState, useRef, useEffect, useMemo, useCallback } from 'react'
+import React, { useState, useRef, useEffect, useMemo } from 'react'
 import KeyGroup from './KeyGroup'
 import Key from './Key'
 import { Vector3, MeshLambertMaterial, Color } from 'three'
@@ -82,7 +82,7 @@ const emptySet = new Set()
 const StenoKeyboard = ({ controls, ...props }) => {
   const ref = useRef()
   // eslint-disable-next-line no-unused-vars
-  const [soundEnabled, setSoundEnabled] = useState(true)
+  const [soundEnabled, setSoundEnabled] = useState(false)
   const [largestKeySet, setLargestKeySet] = useState(new Set())
 
   // Instance materials once
@@ -105,23 +105,23 @@ const StenoKeyboard = ({ controls, ...props }) => {
   const [playKeyPress] = useSound(keypressAudioFile, { skip })
   const [playKeyRelease] = useSound(keyreleaseAudioFile, { volume: 0.2, skip })
 
-  const enableSound = useCallback(() => {
+  const enableSound = () => {
     if (!soundEnabled) {
       setSoundEnabled(true)
     }
-  }, [soundEnabled])
+  }
 
-  const onKeyPress = useCallback((keyId) => {
+  const onKeyPress = (keyId) => {
     enableSound()
     playKeyPress()
     // console.log(`Key ${keyId} was pressed.`)
-  }, [enableSound, playKeyPress])
+  }
 
-  const onKeyRelease = useCallback((keyId) => {
+  const onKeyRelease = (keyId) => {
     enableSound()
     playKeyRelease()
     // console.log(`Key ${keyId} was released.`)
-  }, [enableSound, playKeyRelease])
+  }
 
   const updatePressedKeys = (callback) => {
     setPressedKeys(prevPressedKeys => {

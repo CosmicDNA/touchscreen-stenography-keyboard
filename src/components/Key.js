@@ -1,7 +1,6 @@
 import PropTypes from 'prop-types'
-import React, { useEffect } from 'react'
+import React from 'react'
 import { Material } from 'three'
-import useMount from './hooks/useMount'
 import AnyKey from './AnyKey'
 import useKeyGeometry from './hooks/useKeyGeometry' // Import Material
 
@@ -24,23 +23,7 @@ import useKeyGeometry from './hooks/useKeyGeometry' // Import Material
  * @param {KeyProps} props - The props object.
  */
 const Key = ({ offsetX = 0, offsetY = 0, scale = 1, roundResolution = 32, fingerResolution = 5, width = 7 / 10, lateral = 7 / 10, depth = 1 / 20, keyId, round, grow, allKeys, armLength, ...props }) => {
-  const { onKeyPress, onKeyRelease, materials } = props
-  const { isMounted } = useMount()
-
-  const pressed = allKeys.has(keyId)
-
-  // Watch for changes in the 'pressed' variable
-  useEffect(() => {
-    if (isMounted) {
-      if (pressed) {
-        // Trigger onKeyPress event here when 'pressed' becomes true
-        onKeyPress(keyId)
-      } else {
-        // Trigger onKeyRelease event here when 'pressed' becomes false
-        onKeyRelease(keyId)
-      }
-    }
-  }, [isMounted, keyId, onKeyPress, onKeyRelease, pressed])
+  const { materials } = props
 
   const geometry = useKeyGeometry({ width, lateral, depth, round, grow, roundResolution })
 

@@ -34,7 +34,7 @@ const AnyKey = ({ geometry, offsetX = 0, offsetY = 0, scale = 1, lateral = 7 / 1
         onKeyRelease(keyId)
       }
     }
-  }, [isMounted, keyId, onKeyPress, onKeyRelease, pressed])
+  }, [pressed])
 
   return (
     <group
