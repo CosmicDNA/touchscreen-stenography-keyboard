@@ -17,7 +17,7 @@ The aim of this project is to render with React Three Fiber a usefull stenograph
 
 The application was deployed to Netlify and is available at:
 
-https://touch-stenography-keyboard.netlify.app/
+https://stenography.cosmicdna.co.uk
 
 ## Usage Example
 
@@ -83,13 +83,13 @@ NODENV=production && serve -s build
 
 ## Additional Configuration
 
-To use the plugin with the [deployed Netlify frontend](https://touch-stenography-keyboard.netlify.app) and follow the [plover-websocket-server](https://github.com/CosmicDNA/plover-websocket-server) guidelines, ensure your `plover_websocket_server_config.json` file includes the Netlify URL in the remotes pattern section. You can use for example a remotes pattern that includes both `localhost:8086` and `touch-stenography-keyboard.netlify.app`:
+To use the plugin with the [deployed frontend](https://stenography.cosmicdna.co.uk) and follow the [plover-websocket-server](https://github.com/CosmicDNA/plover-websocket-server) guidelines, ensure your `plover_websocket_server_config.json` file includes the frontend URL in the remotes pattern section. You can use for example a remotes pattern that includes both `localhost:8086` and `stenography.cosmicdna.co.uk`:
 
 ```json
 {
   "remotes": [
     {
-      "pattern": "^https?:\/\/(localhost?(:[0-9]*)?|touch-stenography-keyboard.netlify.app)$"
+      "pattern": "^https?://(localhost(:[0-9]*)?|stenography\\.cosmicdna\\.co\\.uk)/?$"
     }
   ]
 }
