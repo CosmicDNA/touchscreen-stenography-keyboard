@@ -1,8 +1,8 @@
 import PropTypes from 'prop-types'
 import useWebSocket, { ReadyState } from 'react-use-websocket'
-import React, { createContext, useContext, useEffect, useMemo, useCallback } from 'react'
+import React, { createContext, useContext, useEffect, useMemo, useCallback, memo } from 'react'
 import { useTunnelContext } from './useTunnel'
-import { encryptionProcess, getEncryptedMessage, getDecryptedMessage } from '../utils/encryptionWrapper'
+import { getEncryptedMessage, getDecryptedMessage } from '../utils/encryptionWrapper' // This line should be edited to remove the unused import
 const { CONNECTING, OPEN, CLOSING, CLOSED, UNINSTANTIATED } = ReadyState
 
 const getConnectionMessage = (state, url, skip) => {
@@ -23,22 +23,12 @@ const getConnectionMessage = (state, url, skip) => {
 const WebSocketContext = createContext()
 const { Provider } = WebSocketContext
 
-const nonce = new Uint8Array([238, 249, 116, 23, 191, 120, 190, 185, 255, 98, 41, 13, 85, 255, 217, 51, 181, 121, 79, 19, 67, 152, 183, 64])
-const middlewareAuthenticationRequest = 'MAR' // It could be any message, really as long it is properly encrypted.
-
 /**
  * @returns {{readyState: ReadyState, lastJsonMessage, sendJsonMessage}}
  */
 const useWebSocketContext = () => useContext(WebSocketContext)
-const WebSocketProvider = ({ children, url, secretOrSharedKey }) => {
+const WebSocketProvider = memo(function WebSocketProvider ({ children, url, secretOrSharedKey, queryParams }) {
   const skip = !secretOrSharedKey
-  // Here we use a constant nonce for the connection to avoid re renders.
-  const queryParams = useMemo(
-    () => {
-      if (skip) return null
-      return encryptionProcess(secretOrSharedKey, middlewareAuthenticationRequest, nonce)
-    }, [skip, secretOrSharedKey]
-  )
   const { readyState, sendMessage, lastMessage } = useWebSocket(url, { queryParams }, !skip)
   const { status } = useTunnelContext()
 
@@ -71,12 +61,13 @@ const WebSocketProvider = ({ children, url, secretOrSharedKey }) => {
       </Provider>
     </>
   )
-}
+})
 
 WebSocketProvider.propTypes = {
   children: PropTypes.any,
   secretOrSharedKey: PropTypes.instanceOf(Uint8Array),
-  url: PropTypes.string
+  url: PropTypes.string,
+  queryParams: PropTypes.object
 }
 
 export { useWebSocketContext, WebSocketProvider, ReadyState }

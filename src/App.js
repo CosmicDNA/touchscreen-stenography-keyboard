@@ -15,8 +15,8 @@ import { useGetPublicKeyQuery } from './features/protocol/api/apiSlice'
 import JSONPretty from 'react-json-pretty'
 import 'react-json-pretty/themes/monikai.css'
 import styles from './App.module.css'
-import { getBox } from './components/utils/encryptionWrapper'
 import useTheme from './components/hooks/useTheme'
+import useWebSocketAuth from './components/hooks/useWebSocketAuth'
 
 /**
  *
@@ -85,6 +85,12 @@ const Tunneled = () => {
   const isTLS = controls.TLS === 'yes'
   const urlPredicate = `://${controls.host}`
   const baseUrl = `${isTLS ? 'https' : 'http'}${urlPredicate}`
+  const websocketUrl = useMemo(() => {
+    // Only provide a URL if the host is set and we are not in a loading state
+    // specific to the websocket controls.
+    if (wsControls.isLoading || !controls.host) return null
+    return `${isTLS ? 'wss' : 'ws'}${urlPredicate}/websocket`
+  }, [wsControls.isLoading, controls.host, isTLS, urlPredicate])
 
   const kControls = useLevaControls({
     useControlsParams: ['Keyboard', keyboardOptions],
@@ -104,14 +110,7 @@ const Tunneled = () => {
     error
   } = publicKeyQuery
 
-  const secretOrSharedKey = useMemo(
-    () => {
-      if (!publicKey) return null
-      return getBox(publicKey)
-    }, [publicKey]
-  )
-
-  const isLoading = Boolean([kControls, wsControls, publicKeyQuery].find(a => a.isLoading))
+  const { secretOrSharedKey, queryParams } = useWebSocketAuth(publicKey)
 
   const [persistentCameraPosition, setPersistentCameraPosition] = useAtom(cameraAtom)
   const [trackCamera, setTrackCamera] = useState(false)
@@ -145,12 +144,9 @@ const Tunneled = () => {
             {/* eslint-disable-next-line react/no-unknown-property */}
             <directionalLight position={[10, 10, 5]} />
             <WebSocketProvider
-              url={
-                isLoading
-                  ? 'ws://localhost:8086/dummy'
-                  : `${isTLS ? 'wss' : 'ws'}${urlPredicate}/websocket`
-              }
+              url={websocketUrl}
               secretOrSharedKey={secretOrSharedKey}
+              queryParams={queryParams}
             >
               <StenoKeyboard controls={kControls.controls} />
             </WebSocketProvider>
