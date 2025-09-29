@@ -7,6 +7,7 @@ import StenoKeyboard from './components/StenoKeyboard'
 import { WebSocketProvider } from './components/hooks/useWebSocket'
 import { TunnelProvider, useTunnelContext } from './components/hooks/useTunnel'
 import Grid from './components/Grid'
+import Floor from './components/Floor'
 import useLevaControls, { getAtomWithStorage } from './components/hooks/useLevaControls'
 import { Vector3 } from 'three'
 import { atomWithStorage } from 'jotai/utils'
@@ -59,6 +60,7 @@ const keyboardOptions = {
   sendStroke: { value: sendStroke.onKeyRelease, options: Object.keys(sendStroke) },
   lockPosition: { value: false, options: [true, false] },
   performanceMonitor: { value: false, options: [true, false] },
+  showShadows: { value: true, options: [true, false] },
   show3DText: { value: true, options: [true, false] }
 }
 
@@ -146,8 +148,7 @@ const Tunneled = () => {
             >
               <StenoKeyboard controls={kControls.controls} />
             </WebSocketProvider>
-            <ContactShadows frames={3} position-y={-0.5} blur={1} opacity={0.75} />
-            {/* <ContactShadows frames={1} position-y={-0.5} blur={3} color="orange" /> */}
+            {kControls.controls.showShadows && <ContactShadows frames={1} position-y={-0.5} blur={1} opacity={0.75} />}
             <OrbitControls
               onEnd={onOrbitMotionEnd}
               zoomSpeed={0.25}
@@ -160,6 +161,7 @@ const Tunneled = () => {
               enableZoom={!kControls.controls.lockPosition}
             />
             <Grid position={[0, -0.5, 0]} />
+            <Floor position={[0, -0.5, 0]} />
           </ReactToCameraChange>
         </Canvas>
           <status.In className='child'>

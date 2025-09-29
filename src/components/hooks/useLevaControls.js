@@ -45,7 +45,11 @@ const getItemFromLocalStorage = atom =>
  */
 const useLevaControls = ({ atom, useControlsParams }) => {
   const [folderName, useControlsOptions] = useControlsParams
-  const [options, setOptions] = useAtom(atom.aws)
+  // Get default values from the initial configuration
+  const defaultValues = editedObject(useControlsOptions, getAtomSelector)
+  const [storedOptions, setOptions] = useAtom(atom.aws)
+  // Merge stored options with defaults to prevent errors on new options
+  const options = { ...defaultValues, ...storedOptions }
 
   let initialising = true
 
