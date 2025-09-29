@@ -40,7 +40,7 @@ const Key = ({ offsetX = 0, offsetY = 0, scale = 1, roundResolution = 32, finger
         onKeyRelease(keyId)
       }
     }
-  }, [pressed])
+  }, [isMounted, keyId, onKeyPress, onKeyRelease, pressed])
 
   const geometry = useKeyGeometry({ width, lateral, depth, round, grow, roundResolution })
 

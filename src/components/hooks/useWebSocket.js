@@ -1,6 +1,6 @@
 import PropTypes from 'prop-types'
-import React, { createContext, useContext, useEffect, useMemo } from 'react'
 import useWebSocket, { ReadyState } from 'react-use-websocket'
+import React, { createContext, useContext, useEffect, useMemo, useCallback } from 'react'
 import { useTunnelContext } from './useTunnel'
 import { encryptionProcess, getEncryptedMessage, getDecryptedMessage } from '../utils/encryptionWrapper'
 const { CONNECTING, OPEN, CLOSING, CLOSED, UNINSTANTIATED } = ReadyState
@@ -37,7 +37,7 @@ const WebSocketProvider = ({ children, url, secretOrSharedKey }) => {
     () => {
       if (skip) return null
       return encryptionProcess(secretOrSharedKey, middlewareAuthenticationRequest, nonce)
-    }, [secretOrSharedKey, middlewareAuthenticationRequest, nonce]
+    }, [skip, secretOrSharedKey]
   )
   const { readyState, sendMessage, lastMessage } = useWebSocket(url, { queryParams }, !skip)
   const { status } = useTunnelContext()
@@ -45,11 +45,11 @@ const WebSocketProvider = ({ children, url, secretOrSharedKey }) => {
   const lastJsonMessage = useMemo(() => {
     if (!lastMessage) return null
     return getDecryptedMessage(secretOrSharedKey, lastMessage.data)
-  }, [lastMessage])
+  }, [lastMessage, secretOrSharedKey])
 
-  const sendJsonMessage = message => {
+  const sendJsonMessage = useCallback(message => {
     return sendMessage(getEncryptedMessage(secretOrSharedKey, message))
-  }
+  }, [secretOrSharedKey, sendMessage])
 
   useEffect(() => {
     return () => {
@@ -57,7 +57,7 @@ const WebSocketProvider = ({ children, url, secretOrSharedKey }) => {
         sendJsonMessage('close')
       }
     }
-  }, [readyState])
+  }, [readyState, sendJsonMessage])
 
   return (
     <>

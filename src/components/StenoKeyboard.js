@@ -105,23 +105,23 @@ const StenoKeyboard = ({ controls, ...props }) => {
   const [playKeyPress] = useSound(keypressAudioFile, { skip })
   const [playKeyRelease] = useSound(keyreleaseAudioFile, { volume: 0.2, skip })
 
-  // const enableSound = () => {
-  //   if (!soundEnabled) {
-  //     setSoundEnabled(true)
-  //   }
-  // }
+  const enableSound = useCallback(() => {
+    if (!soundEnabled) {
+      setSoundEnabled(true)
+    }
+  }, [soundEnabled])
 
   const onKeyPress = useCallback((keyId) => {
-    // enableSound()
+    enableSound()
     playKeyPress()
     // console.log(`Key ${keyId} was pressed.`)
-  }, [playKeyPress])
+  }, [enableSound, playKeyPress])
 
   const onKeyRelease = useCallback((keyId) => {
-    // enableSound()
+    enableSound()
     playKeyRelease()
     // console.log(`Key ${keyId} was released.`)
-  }, [playKeyRelease])
+  }, [enableSound, playKeyRelease])
 
   const updatePressedKeys = (callback) => {
     setPressedKeys(prevPressedKeys => {

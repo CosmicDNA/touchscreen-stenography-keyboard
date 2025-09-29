@@ -1,5 +1,5 @@
 import PropTypes from 'prop-types'
-import React, { useState, useMemo } from 'react'
+import React, { useState, useMemo, useEffect } from 'react'
 import { Canvas, useFrame } from '@react-three/fiber'
 import { OrbitControls, ContactShadows } from '@react-three/drei'
 import { Perf } from 'r3f-perf'
@@ -16,6 +16,7 @@ import JSONPretty from 'react-json-pretty'
 import 'react-json-pretty/themes/monikai.css'
 import styles from './App.module.css'
 import { getBox } from './components/utils/encryptionWrapper'
+import useTheme from './components/hooks/useTheme'
 
 /**
  *
@@ -88,6 +89,12 @@ const Tunneled = () => {
     useControlsParams: ['Keyboard', keyboardOptions],
     atom: kOptionsAtom
   })
+
+  const theme = useTheme()
+
+  useEffect(() => {
+    document.body.style.backgroundColor = theme === 'dark' ? 'black' : '#f0f0f0'
+  }, [theme])
 
   const publicKeyQuery = useGetPublicKeyQuery(baseUrl, { skip: wsControls.isLoading })
   const {
