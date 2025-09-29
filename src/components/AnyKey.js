@@ -18,7 +18,7 @@ import InterMediumRegular from '../fonts/Inter_Medium_Regular.json'
  * @param {KeyProps} props - The props object.
  */
 const AnyKey = ({ geometry, offsetX = 0, offsetY = 0, scale = 1, lateral = 7 / 10, keyId, allKeys, armLength, ...props }) => {
-  const { onKeyPress, onKeyRelease, materials } = props
+  const { onKeyPress, onKeyRelease, materials, show3DText } = props
   const { isMounted } = useMount()
 
   const pressed = allKeys.has(keyId)
@@ -34,7 +34,7 @@ const AnyKey = ({ geometry, offsetX = 0, offsetY = 0, scale = 1, lateral = 7 / 1
         onKeyRelease(keyId)
       }
     }
-  }, [pressed])
+  }, [isMounted, keyId, onKeyPress, onKeyRelease, pressed])
 
   return (
     <group
@@ -63,9 +63,11 @@ const AnyKey = ({ geometry, offsetX = 0, offsetY = 0, scale = 1, lateral = 7 / 1
               attach={`material-${i}`} />
           )}
         </mesh>
-        <Text3D font={InterMediumRegular} size={0.2 * scale} height={0.01} position={[-0.07 + offsetX, -0.6 + offsetY - armLength, 0.1]}>
-          {keyId.replace('-', '')}
-        </Text3D>
+        {show3DText &&
+          <Text3D font={InterMediumRegular} size={0.2 * scale} height={0.01} position={[-0.07 + offsetX, -0.6 + offsetY - armLength, 0.1]}>
+            {keyId.replace('-', '')}
+          </Text3D>
+        }
       </group>
     </group>
   )
@@ -83,7 +85,8 @@ AnyKey.propTypes = {
   onKeyPress: PropTypes.func.isRequired,
   onKeyRelease: PropTypes.func.isRequired,
   allKeys: PropTypes.instanceOf(Set).isRequired,
-  materials: PropTypes.arrayOf(PropTypes.instanceOf(Material)).isRequired
+  materials: PropTypes.arrayOf(PropTypes.instanceOf(Material)).isRequired,
+  show3DText: PropTypes.bool
 }
 
 export default AnyKey

@@ -1,5 +1,5 @@
 import PropTypes from 'prop-types'
-import React, { useState, useRef, useEffect, useMemo } from 'react'
+import React, { useState, useRef, useEffect, useMemo, useCallback } from 'react'
 import KeyGroup from './KeyGroup'
 import Key from './Key'
 import { Vector3, MeshLambertMaterial, Color } from 'three'
@@ -111,17 +111,17 @@ const StenoKeyboard = ({ controls, ...props }) => {
   //   }
   // }
 
-  const onKeyPress = (keyId) => {
+  const onKeyPress = useCallback((keyId) => {
     // enableSound()
     playKeyPress()
     // console.log(`Key ${keyId} was pressed.`)
-  }
+  }, [playKeyPress])
 
-  const onKeyRelease = (keyId) => {
+  const onKeyRelease = useCallback((keyId) => {
     // enableSound()
     playKeyRelease()
     // console.log(`Key ${keyId} was released.`)
-  }
+  }, [playKeyRelease])
 
   const updatePressedKeys = (callback) => {
     setPressedKeys(prevPressedKeys => {
@@ -203,8 +203,8 @@ const StenoKeyboard = ({ controls, ...props }) => {
     >
       {
         config.map((item, key) => {
-          // Pass the pre-instanced materials to each key/keyGroup
-          const keyProps = { ...item, key, allKeys, onKeyPress, onKeyRelease, materials: keyMaterials }
+          // Pass all necessary props to each key/keyGroup
+          const keyProps = { ...item, key, allKeys, onKeyPress, onKeyRelease, materials: keyMaterials, show3DText: controls.show3DText, updatePressedKeys }
           let rowIndex
           switch (item.type) {
             case 'Key':

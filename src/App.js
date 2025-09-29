@@ -58,7 +58,8 @@ const websocketOptions = {
 const keyboardOptions = {
   sendStroke: { value: sendStroke.onKeyRelease, options: Object.keys(sendStroke) },
   lockPosition: { value: false, options: [true, false] },
-  performanceMonitor: { value: false, options: [true, false] }
+  performanceMonitor: { value: false, options: [true, false] },
+  show3DText: { value: true, options: [true, false] }
 }
 
 const wsOptionsAtom = getAtomWithStorage({ websocketOptions })
