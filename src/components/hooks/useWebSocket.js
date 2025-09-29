@@ -29,7 +29,19 @@ const { Provider } = WebSocketContext
 const useWebSocketContext = () => useContext(WebSocketContext)
 const WebSocketProvider = memo(function WebSocketProvider ({ children, url, secretOrSharedKey, queryParams }) {
   const skip = !secretOrSharedKey
-  const { readyState, sendMessage, lastMessage } = useWebSocket(url, { queryParams }, !skip)
+  const { readyState, sendMessage, lastMessage } = useWebSocket(url, {
+    queryParams,
+    heartbeat: {
+      message: 'ping',
+      interval: 30000,
+      returnMessage: 'pong'
+    },
+    onMessage: (event) => {
+      if (event.data === 'pong') {
+        console.log('Heartbeat pong received!')
+      }
+    }
+  }, !skip)
   const { status } = useTunnelContext()
 
   const lastJsonMessage = useMemo(() => {

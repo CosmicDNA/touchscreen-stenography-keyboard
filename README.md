@@ -32,7 +32,7 @@ https://stenography.cosmicdna.co.uk
 >
 > Alternatively, you can still install it with `plover_console` with following command line from within Plover's installation directory:
 > ```shell
-> ./plover_console -s plover_plugins install git+https://github.com/CosmicDNA/plover_websocket_server.git
+> ./plover_console -s plover_plugins install git+https://github.com/CosmicDNA/plover-websocket-server.git
 > ```
 
 The following image shows the default configuration for the application. If you have created a custom `plover_engine_server_config.json`, make sure it is matching the configuration within this app.
