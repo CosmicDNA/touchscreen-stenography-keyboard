@@ -2,7 +2,7 @@ import PropTypes from 'prop-types'
 import useWebSocket, { ReadyState } from 'react-use-websocket'
 import React, { createContext, useContext, useEffect, useMemo, useCallback, memo } from 'react'
 import { useTunnelContext } from './useTunnel'
-import { getEncryptedMessage, getDecryptedMessage } from '../utils/encryptionWrapper' // This line should be edited to remove the unused import
+import { getEncryptedMessage, getDecryptedMessage, newNonce } from '../utils/encryptionWrapper'
 const { CONNECTING, OPEN, CLOSING, CLOSED, UNINSTANTIATED } = ReadyState
 
 const getConnectionMessage = (state, url, skip) => {
@@ -38,7 +38,7 @@ const WebSocketProvider = memo(function WebSocketProvider ({ children, url, secr
   }, [lastMessage, secretOrSharedKey])
 
   const sendJsonMessage = useCallback(message => {
-    return sendMessage(getEncryptedMessage(secretOrSharedKey, message))
+    return sendMessage(getEncryptedMessage(secretOrSharedKey, message, newNonce()))
   }, [secretOrSharedKey, sendMessage])
 
   useEffect(() => {
