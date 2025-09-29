@@ -53,6 +53,8 @@ const AnyKey = ({ geometry, offsetX = 0, offsetY = 0, scale = 1, lateral = 7 / 1
           // eslint-disable-next-line react/no-unknown-property
           userData={{ keyId }}
           // eslint-disable-next-line react/no-unknown-property
+          castShadow
+          // eslint-disable-next-line react/no-unknown-property
           geometry={geometry}
         >
           {materials.map((material, i) =>

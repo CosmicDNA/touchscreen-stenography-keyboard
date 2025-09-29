@@ -9,17 +9,20 @@ const Floor = ({ ...props }) => {
       <mesh
         {...props}
         // eslint-disable-next-line react/no-unknown-property
+        receiveShadow
+        // eslint-disable-next-line react/no-unknown-property
         rotation-x={-Math.PI / 2}
         // eslint-disable-next-line react/no-unknown-property
+        // position-y={-0.5}
       >
         {/* eslint-disable-next-line react/no-unknown-property */}
         <planeGeometry attach='geometry' args={[100, 100]} />
-        <meshBasicMaterial
+        <meshStandardMaterial
           // eslint-disable-next-line react/no-unknown-property
           attach='material'
           // eslint-disable-next-line react/no-unknown-property
           depthWrite={false}
-          color={(theme === 'dark') ? 'black' : 'white'}/>
+          color={theme === 'dark' ? 'black' : 'white'}/>
       </mesh>
   )
 }

@@ -1,7 +1,7 @@
 import PropTypes from 'prop-types'
 import React, { useState, useMemo } from 'react'
 import { Canvas, useFrame } from '@react-three/fiber'
-import { OrbitControls, ContactShadows } from '@react-three/drei'
+import { OrbitControls } from '@react-three/drei'
 import { Perf } from 'r3f-perf'
 import StenoKeyboard from './components/StenoKeyboard'
 import { WebSocketProvider } from './components/hooks/useWebSocket'
@@ -128,48 +128,55 @@ const Tunneled = () => {
 
   return (
     <div className={parent}>
+      <Canvas shadows camera={{ position: Object.values(persistentCameraPosition), fov: 25 }}>
+        {kControls.controls.performanceMonitor && <Perf position='bottom-right' />}
+        <ReactToCameraChange {...{ onCameraUpdate, trackCamera }}>
+          {/* eslint-disable-next-line react/no-unknown-property */}
+          <ambientLight intensity={0.5} />
+          <directionalLight
+            // eslint-disable-next-line react/no-unknown-property
+            castShadow={kControls.controls.showShadows}
+            // eslint-disable-next-line react/no-unknown-property
+            position={[10, 10, 5]}
+            // eslint-disable-next-line react/no-unknown-property
+            shadow-mapSize-width={2048}
+            // eslint-disable-next-line react/no-unknown-property
+            shadow-mapSize-height={2048}
+          />
+          <WebSocketProvider
+            url={
+              isLoading
+                ? 'ws://localhost:8086/dummy'
+                : `${isTLS ? 'wss' : 'ws'}${urlPredicate}/websocket`
+            }
+            secretOrSharedKey={secretOrSharedKey}
+          >
+            <StenoKeyboard controls={kControls.controls} />
+          </WebSocketProvider>
+          <OrbitControls
+            onEnd={onOrbitMotionEnd}
+            zoomSpeed={0.25}
+            minPolarAngle={0}
+            dampingFactor={0.05}
+            enableDamping={true}
+            maxPolarAngle={Math.PI / 2.1}
+            enableRotate={!kControls.controls.lockPosition}
+            enablePan={!kControls.controls.lockPosition}
+            enableZoom={!kControls.controls.lockPosition}
+          />
+          <Grid position={[0, -0.5, 0]} />
+          <Floor position={[0, -0.5, 0]} />
+        </ReactToCameraChange>
+      </Canvas>
       <div className={child}>
         <status.Out />
       </div>
-        <Canvas camera={{ position: Object.values(persistentCameraPosition), fov: 25 }}>
-          {kControls.controls.performanceMonitor && <Perf position='bottom-right' />}
-          <ReactToCameraChange {...{ onCameraUpdate, trackCamera } }>
-            {/* eslint-disable-next-line react/no-unknown-property */}
-            <ambientLight intensity={0.5} />
-            {/* eslint-disable-next-line react/no-unknown-property */}
-            <directionalLight position={[10, 10, 5]} />
-            <WebSocketProvider
-              url={
-                isLoading
-                  ? 'ws://localhost:8086/dummy'
-                  : `${isTLS ? 'wss' : 'ws'}${urlPredicate}/websocket`
-              }
-              secretOrSharedKey={secretOrSharedKey}
-            >
-              <StenoKeyboard controls={kControls.controls} />
-            </WebSocketProvider>
-            {kControls.controls.showShadows && <ContactShadows frames={1} position-y={-0.5} blur={1} opacity={0.75} />}
-            <OrbitControls
-              onEnd={onOrbitMotionEnd}
-              zoomSpeed={0.25}
-              minPolarAngle={0}
-              dampingFactor={0.05}
-              enableDamping={true}
-              maxPolarAngle={Math.PI / 2.1}
-              enableRotate={!kControls.controls.lockPosition}
-              enablePan={!kControls.controls.lockPosition}
-              enableZoom={!kControls.controls.lockPosition}
-            />
-            <Grid position={[0, -0.5, 0]} />
-            <Floor position={[0, -0.5, 0]} />
-          </ReactToCameraChange>
-        </Canvas>
-          <status.In className='child'>
-            {
-                isError &&
-                  <JSONPretty id="json-pretty" data={error}></JSONPretty>
-            }
-          </status.In>
+      <status.In className='child'>
+        {
+          isError &&
+          <JSONPretty id="json-pretty" data={error}></JSONPretty>
+        }
+      </status.In>
     </div>
   )
 }
