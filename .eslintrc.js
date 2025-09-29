@@ -5,14 +5,15 @@ module.exports = {
   },
   extends: [
     'standard',
-    'plugin:react/recommended'
+    'plugin:react/recommended',
+    'plugin:react-hooks/recommended'
   ],
   parserOptions: {
     ecmaVersion: 'latest',
     sourceType: 'module'
   },
   plugins: [
-    'react'
+    'react' // 'react-hooks' is included by the extends
   ],
   rules: {
   },

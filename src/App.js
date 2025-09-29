@@ -2,6 +2,7 @@ import PropTypes from 'prop-types'
 import React, { useState, useMemo } from 'react'
 import { Canvas, useFrame } from '@react-three/fiber'
 import { OrbitControls, ContactShadows } from '@react-three/drei'
+import { Perf } from 'r3f-perf'
 import StenoKeyboard from './components/StenoKeyboard'
 import { WebSocketProvider } from './components/hooks/useWebSocket'
 import { TunnelProvider, useTunnelContext } from './components/hooks/useTunnel'
@@ -56,7 +57,8 @@ const websocketOptions = {
 }
 const keyboardOptions = {
   sendStroke: { value: sendStroke.onKeyRelease, options: Object.keys(sendStroke) },
-  lockPosition: { value: false, options: [true, false] }
+  lockPosition: { value: false, options: [true, false] },
+  performanceMonitor: { value: false, options: [true, false] }
 }
 
 const wsOptionsAtom = getAtomWithStorage({ websocketOptions })
@@ -127,6 +129,7 @@ const Tunneled = () => {
         <status.Out />
       </div>
         <Canvas camera={{ position: Object.values(persistentCameraPosition), fov: 25 }}>
+          {kControls.controls.performanceMonitor && <Perf position='bottom-right' />}
           <ReactToCameraChange {...{ onCameraUpdate, trackCamera } }>
             {/* eslint-disable-next-line react/no-unknown-property */}
             <ambientLight intensity={0.5} />
@@ -177,24 +180,3 @@ const App = () => {
 }
 
 export default App
-
-// import React, { useEffect } from 'react'
-// import { useDispatch, useSelector } from 'react-redux'
-// import { setSecret } from './features/secret/secretSlice'
-
-// const App = () => {
-//   const dispatch = useDispatch()
-//   useEffect(() => {
-//     dispatch(setSecret(253))
-//   }, [])
-
-//   const currentSecret = useSelector((state) => state.secret.secret)
-//   console.log(currentSecret)
-//   return (
-//     <>
-//       <>{currentSecret}</>
-//     </>
-//   )
-// }
-
-// export default App

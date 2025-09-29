@@ -1,20 +1,11 @@
 import PropTypes from 'prop-types'
 import React from 'react'
-import { Vector3, Shape } from 'three'
-import { getCircularPoints } from './utils/tools'
 import useDrag from './hooks/useDrag'
+import { ShapeGeometry } from 'three'
 
-const Hexagon = ({ radius = 1, name, color, pressedKeys, updatePressedKeys, ...props }) => {
+const Hexagon = ({ geometry, name, color, pressedKeys, updatePressedKeys, ...props }) => {
   const keyId = name
   const dragProps = useDrag({ keyId, pressedKeys, updatePressedKeys })
-  const underSemiCircumference = getCircularPoints(
-    6,
-    6,
-    radius,
-    Math.PI
-  )
-  const coordinatesList = underSemiCircumference
-    .map(n => new Vector3(n[0], n[1], 0))
 
   // const opacity = 0.05
   const opacity = 0
@@ -28,15 +19,19 @@ const Hexagon = ({ radius = 1, name, color, pressedKeys, updatePressedKeys, ...p
       <mesh userData={{ keyId }}>
         {/* eslint-disable-next-line react/no-unknown-property */}
         <meshStandardMaterial attach='material' color={color} opacity={opacity} depthWrite={false} transparent={true}/>
-        {/* eslint-disable-next-line react/no-unknown-property */}
-        <shapeGeometry args={[new Shape(coordinatesList)]} {...props} />
+        <primitive
+          // eslint-disable-next-line react/no-unknown-property
+          object={geometry}
+          // eslint-disable-next-line react/no-unknown-property
+          attach='geometry'
+          {...props} />
       </mesh>
     </group>
   )
 }
 
 Hexagon.propTypes = {
-  radius: PropTypes.number,
+  geometry: PropTypes.instanceOf(ShapeGeometry).isRequired,
   name: PropTypes.string.isRequired,
   color: PropTypes.string,
   pressedKeys: PropTypes.instanceOf(Map).isRequired,
