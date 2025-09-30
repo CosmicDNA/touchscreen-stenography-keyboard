@@ -7,8 +7,8 @@ import StenoKeyboard from './components/StenoKeyboard'
 import { WebSocketProvider } from './components/hooks/useWebSocket'
 import { TunnelProvider, useTunnelContext } from './components/hooks/useTunnel'
 import Grid from './components/Grid'
-import useLevaControls, { getAtomWithStorage } from './components/hooks/useLevaControls'
 import { Vector3 } from 'three'
+import useJotaiLeva from './components/hooks/useJotaiLeva'
 import { atomWithStorage } from 'jotai/utils'
 import { useAtom } from 'jotai'
 import { useGetPublicKeyQuery } from './features/protocol/api/apiSlice'
@@ -52,20 +52,28 @@ const sendStroke = {
   onKeyRelease: 'onKeyRelease'
 }
 
-const websocketOptions = {
-  host: { value: 'localhost:8086' },
-  TLS: { value: 'no', options: ['no', 'yes'] }
-}
-const keyboardOptions = {
-  sendStroke: { value: sendStroke.onKeyRelease, options: Object.keys(sendStroke) },
-  lockPosition: { value: false, options: [true, false] },
-  performanceMonitor: { value: false, options: [true, false] },
-  show3DText: { value: true, options: [true, false] },
-  showShadows: { value: true, options: [true, false] }
-}
+const wsOptionsAtom = atomWithStorage(
+  'websocketOptions',
+  {
+    host: 'localhost:8086',
+    TLS: false
+  },
+  undefined,
+  { getOnInit: true }
+)
 
-const wsOptionsAtom = getAtomWithStorage({ websocketOptions })
-const kOptionsAtom = getAtomWithStorage({ keyboardOptions })
+const kOptionsAtom = atomWithStorage(
+  'keyboardOptions',
+  {
+    sendStroke: { value: sendStroke.onKeyRelease, options: Object.keys(sendStroke) },
+    lockPosition: false,
+    performanceMonitor: false,
+    show3DText: true,
+    showShadows: true
+  },
+  undefined,
+  { getOnInit: true }
+)
 
 const initialCameraPosition = new Vector3(0, 6, 10)
 const cameraAtom = atomWithStorage(
@@ -77,25 +85,18 @@ const cameraAtom = atomWithStorage(
 
 const Tunneled = () => {
   const { status } = useTunnelContext()
-  const wsControls = useLevaControls({
-    useControlsParams: ['Plover Web-socket Plugin', websocketOptions],
-    atom: wsOptionsAtom
-  })
-  const { controls } = wsControls
-  const isTLS = controls.TLS === 'yes'
-  const urlPredicate = `://${controls.host}`
+  const wsControls = useJotaiLeva('Plover Web-socket Plugin', wsOptionsAtom)
+  const kControls = useJotaiLeva('Keyboard', kOptionsAtom)
+
+  const isTLS = wsControls.TLS === 'yes'
+  const urlPredicate = `://${wsControls.host}`
   const baseUrl = `${isTLS ? 'https' : 'http'}${urlPredicate}`
   const websocketUrl = useMemo(() => {
     // Only provide a URL if the host is set and we are not in a loading state
     // specific to the websocket controls.
-    if (wsControls.isLoading || !controls.host) return null
+    if (!wsControls.host) return null
     return `${isTLS ? 'wss' : 'ws'}${urlPredicate}/websocket`
-  }, [wsControls.isLoading, controls.host, isTLS, urlPredicate])
-
-  const kControls = useLevaControls({
-    useControlsParams: ['Keyboard', keyboardOptions],
-    atom: kOptionsAtom
-  })
+  }, [wsControls.host, isTLS, urlPredicate])
 
   const theme = useTheme()
 
@@ -103,7 +104,7 @@ const Tunneled = () => {
     document.body.style.backgroundColor = theme === 'dark' ? 'black' : '#f0f0f0'
   }, [theme])
 
-  const publicKeyQuery = useGetPublicKeyQuery(baseUrl, { skip: wsControls.isLoading })
+  const publicKeyQuery = useGetPublicKeyQuery(baseUrl, { skip: !wsControls.host })
   const {
     data: publicKey,
     isError,
@@ -137,31 +138,32 @@ const Tunneled = () => {
         <status.Out />
       </div>
         <Canvas camera={{ position: Object.values(persistentCameraPosition), fov: 25 }}>
-          {kControls.controls.performanceMonitor && <Perf position='bottom-right' />}
+          {kControls.performanceMonitor && <Perf position='bottom-right' />}
           <ReactToCameraChange {...{ onCameraUpdate, trackCamera } }>
             {/* eslint-disable-next-line react/no-unknown-property */}
             <ambientLight intensity={0.5} />
             {/* eslint-disable-next-line react/no-unknown-property */}
             <directionalLight position={[10, 10, 5]} />
             <WebSocketProvider
-              url={websocketUrl}
+              url={websocketUrl} // The WebSocketProvider will now show its own status
               secretOrSharedKey={secretOrSharedKey}
               queryParams={queryParams}
             >
-              <StenoKeyboard controls={kControls.controls} />
+              <StenoKeyboard controls={kControls} />
             </WebSocketProvider>
-            {kControls.controls.showShadows && <ContactShadows frames={1} position-y={-0.5} blur={1} opacity={0.75} />}
+            {kControls.showShadows && <ContactShadows frames={1} position-y={-0.5} blur={1} opacity={0.75} />}
             {/* <ContactShadows frames={1} position-y={-0.5} blur={3} color="orange" /> */}
             <OrbitControls
               onEnd={onOrbitMotionEnd}
               zoomSpeed={0.25}
+              // The camera position is now persisted via the Jotai atom
               minPolarAngle={0}
               dampingFactor={0.05}
               enableDamping={true}
-              maxPolarAngle={Math.PI / 2.1}
-              enableRotate={!kControls.controls.lockPosition}
-              enablePan={!kControls.controls.lockPosition}
-              enableZoom={!kControls.controls.lockPosition}
+              maxPolarAngle={Math.PI / 2.1} // Prevents camera from going under the grid
+              enableRotate={!kControls.lockPosition}
+              enablePan={!kControls.lockPosition}
+              enableZoom={!kControls.lockPosition}
             />
             <Grid position={[0, -0.5, 0]} />
           </ReactToCameraChange>
