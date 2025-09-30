@@ -34,6 +34,7 @@ const AnyKey = ({ geometry, offsetX = 0, offsetY = 0, scale = 1, lateral = 7 / 1
         onKeyRelease(keyId)
       }
     }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [pressed])
 
   return (

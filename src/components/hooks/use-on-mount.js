@@ -6,6 +6,7 @@ import { useEffect } from 'react'
  * @param {React.DependencyList} deps
  */
 const useOnMount = (callback, deps = []) => {
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   useEffect(callback, deps)
 }
 

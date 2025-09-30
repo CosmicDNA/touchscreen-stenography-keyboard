@@ -178,7 +178,10 @@ const StenoKeyboard = ({ controls, ...props }) => {
     if (removedItems.size) {
       // console.log('Removed items:', removedItems)
     }
-  }, [addedItems, removedItems].map(s => dep(s)))
+  },
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  [addedItems, removedItems].map(s => dep(s))
+  )
 
   useEffect(() => {
     if (!allKeys.size) {
@@ -193,7 +196,10 @@ const StenoKeyboard = ({ controls, ...props }) => {
         setLargestKeySet(allKeys)
       }
     }
-  }, [dep(allKeys), largestKeySet])
+  },
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  [dep(allKeys), largestKeySet]
+  )
 
   return (
     <group
@@ -219,7 +225,7 @@ const StenoKeyboard = ({ controls, ...props }) => {
         })
       }
       {/* <Floor {...{ updatePressedKeys, pressedKeys, keyId: 'floor' }} position-z={-0.5} position-y={0} /> */}
-      <HexagonFloor {...{ updatePressedKeys, pressedKeys }} position={[0, 0, -0.5]}/>
+      <HexagonFloor {...{ updatePressedKeys, pressedKeys }} position={[0, 0, -0.5]} />
     </group>
   )
 }
