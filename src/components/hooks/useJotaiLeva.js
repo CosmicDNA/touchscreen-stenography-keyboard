@@ -18,27 +18,24 @@ const useJotaiLeva = (folderName, atom) => {
     // Guard against running until the atom's value is initialized.
     if (!value) return null
 
-    const schemaDefinition = {}
-    for (const key in value) {
-      const controlValue = value[key]
-      const isComplex = typeof controlValue === 'object' && controlValue !== null && 'value' in controlValue
+    return Object.fromEntries(
+      Object.entries(value).map(([key, controlValue]) => {
+        const isComplex = typeof controlValue === 'object' && controlValue !== null && 'value' in controlValue
 
-      // The `onChange` for each control will update only its own key in the Jotai atom.
-      const onChange = (newValue) => {
-        setValue((prev) => ({
-          ...prev,
-          // For complex controls, we update the `value` property within the object. For primitive controls, we just set the new value.
-          [key]: isComplex ? { ...value[key], value: newValue } : newValue
-        }))
-      }
+        const onChange = (newValue) => {
+          setValue((prev) => ({
+            ...prev,
+            // Use `prev[key]` to avoid stale closures and ensure we're updating the latest state.
+            [key]: isComplex ? { ...prev[key], value: newValue } : newValue
+          }))
+        }
 
-      if (isComplex) {
-        schemaDefinition[key] = { ...controlValue, onChange }
-      } else {
-        schemaDefinition[key] = { value: controlValue, onChange }
-      }
-    }
-    return schemaDefinition
+        const dropIn = isComplex ? { ...controlValue } : { value: controlValue }
+        const schemaEntry = { ...dropIn, onChange }
+
+        return [key, schemaEntry]
+      })
+    )
   }, [value, setValue])
 
   // We pass the stable schema to `useControls`. No top-level `onChange` is needed.
