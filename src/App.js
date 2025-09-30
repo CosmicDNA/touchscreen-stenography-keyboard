@@ -88,7 +88,7 @@ const Tunneled = () => {
   const wsControls = useJotaiLeva('Plover Web-socket Plugin', wsOptionsAtom)
   const kControls = useJotaiLeva('Keyboard', kOptionsAtom)
 
-  const isTLS = wsControls.TLS === 'yes'
+  const isTLS = wsControls.TLS
   const urlPredicate = `://${wsControls.host}`
   const baseUrl = `${isTLS ? 'https' : 'http'}${urlPredicate}`
   const websocketUrl = useMemo(() => {
