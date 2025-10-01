@@ -170,7 +170,7 @@ const StenoKeyboard = ({ controls, ...props }) => {
   useEffect(() => {
     if (addedItems.size) {
       // console.log('Added items:', addedItems)
-      if (controls.sendStroke.value === 'onKeyPress') {
+      if (controls.sendStroke === 'onKeyPress') {
         registerStroke({ stroke: [...addedItems] })
       }
     }
@@ -185,7 +185,7 @@ const StenoKeyboard = ({ controls, ...props }) => {
 
   useEffect(() => {
     if (!allKeys.size) {
-      if (largestKeySet.size && controls.sendStroke.value === 'onKeyRelease') {
+      if (largestKeySet.size && controls.sendStroke === 'onKeyRelease') {
         const stroke = [...largestKeySet]
         registerStroke({ stroke })
         setLargestKeySet(new Set())

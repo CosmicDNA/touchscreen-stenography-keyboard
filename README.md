@@ -65,7 +65,7 @@ https://github.com/CosmicDNA/touchscreen-stenography-keyboard/assets/92752640/c5
 
 In your terminal run:
 ```shell
-yarn && yarn dev
+yarn && yarn start
 ```
 
 ### Building

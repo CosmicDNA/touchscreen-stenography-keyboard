@@ -5,10 +5,9 @@ import { OrbitControls, ContactShadows } from '@react-three/drei'
 import { Perf } from 'r3f-perf'
 import StenoKeyboard from './components/StenoKeyboard'
 import { WebSocketProvider } from './components/hooks/useWebSocket'
-import { TunnelProvider, useTunnelContext } from './components/hooks/useTunnel'
+import { TunnelProvider, useTunnelContext } from './components/hooks/useTunnel.js'
 import Grid from './components/Grid'
 import { Vector3 } from 'three'
-import useJotaiLeva from './components/hooks/useJotaiLeva'
 import { atomWithStorage } from 'jotai/utils'
 import { useAtom } from 'jotai'
 import { useGetPublicKeyQuery } from './features/protocol/api/apiSlice'
@@ -17,6 +16,7 @@ import 'react-json-pretty/themes/monikai.css'
 import styles from './App.module.css'
 import useTheme from './components/hooks/useTheme'
 import useWebSocketAuth from './components/hooks/useWebSocketAuth'
+import usePersistedControls from './components/hooks/use-persisted-controls.js'
 
 /**
  *
@@ -52,28 +52,18 @@ const sendStroke = {
   onKeyRelease: 'onKeyRelease'
 }
 
-const wsOptionsAtom = atomWithStorage(
-  'websocketOptions',
-  {
-    host: 'localhost:8086',
-    TLS: false
-  },
-  undefined,
-  { getOnInit: true }
-)
+const wsSchema = {
+  host: 'localhost:8086',
+  TLS: false
+}
 
-const kOptionsAtom = atomWithStorage(
-  'keyboardOptions',
-  {
-    sendStroke: { value: sendStroke.onKeyRelease, options: Object.keys(sendStroke) },
-    lockPosition: false,
-    performanceMonitor: false,
-    show3DText: true,
-    showShadows: true
-  },
-  undefined,
-  { getOnInit: true }
-)
+const kSchema = {
+  sendStroke: { value: sendStroke.onKeyRelease, options: Object.keys(sendStroke) },
+  lockPosition: false,
+  performanceMonitor: false,
+  show3DText: true,
+  showShadows: true
+}
 
 const initialCameraPosition = new Vector3(0, 6, 10)
 const cameraAtom = atomWithStorage(
@@ -85,8 +75,8 @@ const cameraAtom = atomWithStorage(
 
 const Tunneled = () => {
   const { status } = useTunnelContext()
-  const wsControls = useJotaiLeva('Plover Web-socket Plugin', wsOptionsAtom)
-  const kControls = useJotaiLeva('Keyboard', kOptionsAtom)
+  const wsControls = usePersistedControls('Plover Web-socket Plugin', wsSchema)
+  const kControls = usePersistedControls('Keyboard', kSchema)
 
   const isTLS = wsControls.TLS
   const urlPredicate = `://${wsControls.host}`
