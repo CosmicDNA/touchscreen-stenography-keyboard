@@ -1,24 +1,32 @@
 import PropTypes from 'prop-types'
 import useWebSocket, { ReadyState } from 'react-use-websocket'
-import React, { createContext, useContext, useEffect, useMemo, useCallback, memo } from 'react'
+import React, { createContext, useContext, useEffect, useMemo, useCallback, memo, useState } from 'react'
 import { useTunnelContext } from './useTunnel'
 import { getEncryptedMessage, getDecryptedMessage, newNonce } from '../utils/encryptionWrapper'
 const { CONNECTING, OPEN, CLOSING, CLOSED, UNINSTANTIATED } = ReadyState
 
-const getConnectionMessage = (state, url, skip) => {
+const getConnectionMessage = (state, url, skip, closeEvent) => {
   if (skip) return 'Awaiting box key...'
   switch (state) {
-    case CONNECTING:
+    case CONNECTING: {
       return `Connecting to websocket ${url}...`
-    case OPEN:
+    } case OPEN: {
       return `Websocket connection to ${url} successfully opened!`
-    case CLOSING:
+    } case CLOSING: {
       return `Closing websocket connection to ${url}...`
-    case CLOSED:
-      return `Websocket connection to ${url} is closed!`
-    case UNINSTANTIATED:
+    } case CLOSED: {
+      const reason = closeEvent?.reason ? ` Reason: ${closeEvent.reason}` : ''
+      const code = closeEvent?.code ? ` (Code: ${closeEvent.code})` : ''
+      return `Websocket connection to ${url} is closed!${code}${reason}`
+    } case UNINSTANTIATED: {
       return `Websocket connection to ${url} is uninstantiated!`
+    }
   }
+}
+const getAndLogConnectionMessage = (state, url, skip, closeEvent) => {
+  const message = getConnectionMessage(state, url, skip, closeEvent)
+  console.log(message)
+  return message
 }
 const WebSocketContext = createContext()
 const { Provider } = WebSocketContext
@@ -28,6 +36,7 @@ const { Provider } = WebSocketContext
  */
 const useWebSocketContext = () => useContext(WebSocketContext)
 const WebSocketProvider = memo(function WebSocketProvider ({ children, url, secretOrSharedKey, queryParams }) {
+  const [closeEvent, setCloseEvent] = useState(null)
   const skip = !secretOrSharedKey
   const { readyState, sendMessage, lastMessage } = useWebSocket(url, {
     queryParams,
@@ -40,6 +49,11 @@ const WebSocketProvider = memo(function WebSocketProvider ({ children, url, secr
       if (event.data === 'pong') {
         console.log('Heartbeat pong received!')
       }
+    },
+    shouldReconnect: (closeEvent) => {
+      console.log('WebSocket closed:', closeEvent)
+      setCloseEvent(closeEvent)
+      return false
     }
   }, !skip)
   const { status } = useTunnelContext()
@@ -63,7 +77,9 @@ const WebSocketProvider = memo(function WebSocketProvider ({ children, url, secr
 
   return (
     <>
-      {<status.In>{getConnectionMessage(readyState, url, skip)}</status.In>}
+      {<status.In>{
+        getAndLogConnectionMessage(readyState, url, skip, closeEvent)
+      }</status.In>}
       <Provider value={{
         readyState,
         lastJsonMessage,

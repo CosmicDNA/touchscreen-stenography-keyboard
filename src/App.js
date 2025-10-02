@@ -135,7 +135,7 @@ const Tunneled = () => {
             {/* eslint-disable-next-line react/no-unknown-property */}
             <directionalLight position={[10, 10, 5]} />
             <WebSocketProvider
-              url={websocketUrl} // The WebSocketProvider will now show its own status
+              url={websocketUrl}
               secretOrSharedKey={secretOrSharedKey}
               queryParams={queryParams}
             >

@@ -1,4 +1,4 @@
-import { encrypt, decrypt, box, generateKeyPair, hexEncode, hexDecode, newNonce } from './encryption'
+import { urlSafeEncrypt, decrypt, box, generateKeyPair, hexEncode, hexDecode, newNonce, encrypt } from './encryption'
 
 const pairA = generateKeyPair()
 
@@ -10,7 +10,7 @@ const pairA = generateKeyPair()
  * @returns {{publicKey: String, encryptedMessage: String}}
  */
 const encryptionProcess = (secretOrSharedKey, json, nonce = undefined) => {
-  const encryptedMessage = encrypt({ secretOrSharedKey, json, nonce })
+  const encryptedMessage = urlSafeEncrypt({ secretOrSharedKey, json, nonce })
   const publicKey = hexEncode(pairA.publicKey)
   return {
     publicKey,

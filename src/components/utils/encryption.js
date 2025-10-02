@@ -51,6 +51,21 @@ const encrypt = ({
 }
 
 /**
+ * Encrypts data and makes it safe for use in a URL.
+ *
+ * @param {{
+*   secretOrSharedKey: Uint8Array,
+*   json: object,
+*   key?: Uint8Array,
+*   nonce?: Uint8Array
+* }} params - The encryption parameters.
+* @returns {String} - The URL-encoded, Base64-encoded, encrypted data.
+*/
+const urlSafeEncrypt = (params) => {
+  return encodeURIComponent(encrypt(params))
+}
+
+/**
  *
  * @param {Uint8Array} secretOrSharedKey
  * @param {String} messageWithNonce
@@ -66,7 +81,7 @@ const decrypt = (
   const nonce = messageWithNonceAsUint8Array.slice(0, box.nonceLength)
   const message = messageWithNonceAsUint8Array.slice(
     box.nonceLength,
-    messageWithNonce.length
+    messageWithNonceAsUint8Array.length
   )
 
   const decrypted = key
@@ -97,4 +112,4 @@ const hexEncode = (uint8Array) => Array.from(uint8Array)
  */
 const hexDecode = (hexEncodedString) => Uint8Array.from(Buffer.from(hexEncodedString, 'hex'))
 
-export { generateKeyPair, encrypt, decrypt, box, hexEncode, hexDecode, newNonce }
+export { generateKeyPair, encrypt, decrypt, urlSafeEncrypt, box, hexEncode, hexDecode, newNonce }
