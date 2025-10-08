@@ -3,8 +3,15 @@ import useWebSocket, { ReadyState } from 'react-use-websocket'
 import React, { createContext, useContext, useEffect, useMemo, useCallback, memo, useState } from 'react'
 import { useTunnelContext } from './useTunnel'
 import { getEncryptedMessage, getDecryptedMessage, newNonce } from '../utils/encryptionWrapper'
+import ColoredCircle from '../ColoredCircle'
 const { CONNECTING, OPEN, CLOSING, CLOSED, UNINSTANTIATED } = ReadyState
 
+const readyStateToColor = (state) => {
+  if (state === OPEN) return 'green'
+  if (state === CONNECTING) return 'yellow'
+  if (state === CLOSING) return 'orange'
+  return 'red' // CLOSED or UNINSTANTIATED
+}
 const getConnectionMessage = (state, url, skip, closeEvent) => {
   if (skip) return 'Awaiting box key...'
   switch (state) {
@@ -77,9 +84,12 @@ const WebSocketProvider = memo(function WebSocketProvider ({ children, url, secr
 
   return (
     <>
-      {<status.In>{
-        getAndLogConnectionMessage(readyState, url, skip, closeEvent)
-      }</status.In>}
+      {<status.In>
+        <>
+          <ColoredCircle color={readyStateToColor(readyState)} />
+          {getAndLogConnectionMessage(readyState, url, skip, closeEvent)}
+        </>
+      </status.In>}
       <Provider value={{
         readyState,
         lastJsonMessage,

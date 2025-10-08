@@ -13,7 +13,7 @@ import { useAtom } from 'jotai'
 import { useGetPublicKeyQuery } from './features/protocol/api/apiSlice'
 import JSONPretty from 'react-json-pretty'
 import 'react-json-pretty/themes/monikai.css'
-import styles from './App.module.css'
+import styles from './App.module.css' // This import is now used
 import useTheme from './components/hooks/useTheme'
 import useWebSocketAuth from './components/hooks/useWebSocketAuth'
 import usePersistedControls from './components/hooks/use-persisted-controls.js'
