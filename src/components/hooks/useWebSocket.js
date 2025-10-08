@@ -7,29 +7,40 @@ import ColoredCircle from '../ColoredCircle'
 const { CONNECTING, OPEN, CLOSING, CLOSED, UNINSTANTIATED } = ReadyState
 
 const readyStateToColor = (state) => {
-  if (state === OPEN) return 'green'
+  if (state === OPEN) return 'lime'
   if (state === CONNECTING) return 'yellow'
   if (state === CLOSING) return 'orange'
   return 'red' // CLOSED or UNINSTANTIATED
 }
-const getConnectionMessage = (state, url, skip, closeEvent) => {
-  if (skip) return 'Awaiting box key...'
+const getConnectionMessage = (state, url, skip, closeEvent, httpError) => {
+  const timestamp = new Date().toLocaleTimeString()
+  const baseMessage = `[${timestamp}] `
+
+  if (httpError) {
+    const status = httpError.status ? `Status: ${httpError.status}\n` : ''
+    const details = httpError.data?.error || httpError.error || 'An unknown error occurred while fetching the public key.'
+    return `${baseMessage}Error connecting to ${url}\n${status}Details: ${details}`
+  }
+
+  if (skip) return `${baseMessage}Awaiting box key...`
+
   switch (state) {
     case CONNECTING: {
-      return `Connecting to websocket ${url}...`
+      return `${baseMessage}Connecting to websocket ${url}...`
     } case OPEN: {
-      return `Websocket connection to ${url} successfully opened!`
+      return `${baseMessage}Websocket connection to ${url} successfully opened!`
     } case CLOSING: {
-      return `Closing websocket connection to ${url}...`
+      return `${baseMessage}Closing websocket connection to ${url}...`
     } case CLOSED: {
-      const reason = closeEvent?.reason ? ` Reason: ${closeEvent.reason}` : ''
-      const code = closeEvent?.code ? ` (Code: ${closeEvent.code})` : ''
-      return `Websocket connection to ${url} is closed!${code}${reason}`
+      const code = closeEvent?.code ? `\nCode: ${closeEvent.code}` : ''
+      const reason = closeEvent?.reason ? `\nReason: ${closeEvent.reason}` : ''
+      return `${baseMessage}Websocket connection to ${url} is closed.${code}${reason}`
     } case UNINSTANTIATED: {
-      return `Websocket connection to ${url} is uninstantiated!`
+      return `${baseMessage}Websocket connection to ${url} is uninstantiated.`
     }
   }
 }
+// eslint-disable-next-line no-unused-vars
 const getAndLogConnectionMessage = (state, url, skip, closeEvent) => {
   const message = getConnectionMessage(state, url, skip, closeEvent)
   console.log(message)
@@ -42,7 +53,8 @@ const { Provider } = WebSocketContext
  * @returns {{readyState: ReadyState, lastJsonMessage, sendJsonMessage}}
  */
 const useWebSocketContext = () => useContext(WebSocketContext)
-const WebSocketProvider = memo(function WebSocketProvider ({ children, url, secretOrSharedKey, queryParams }) {
+const WebSocketProvider = memo(function WebSocketProvider ({ children, url, secretOrSharedKey, queryParams, httpError }) {
+  // eslint-disable-next-line no-unused-vars
   const [closeEvent, setCloseEvent] = useState(null)
   const skip = !secretOrSharedKey
   const { readyState, sendMessage, lastMessage } = useWebSocket(url, {
@@ -86,8 +98,11 @@ const WebSocketProvider = memo(function WebSocketProvider ({ children, url, secr
     <>
       {<status.In>
         <>
-          <ColoredCircle color={readyStateToColor(readyState)} />
-          {getAndLogConnectionMessage(readyState, url, skip, closeEvent)}
+          <ColoredCircle
+            color={readyStateToColor(readyState)}
+            glow={readyState !== OPEN}
+            tooltip={getConnectionMessage(readyState, url, skip, closeEvent, httpError)}
+          />
         </>
       </status.In>}
       <Provider value={{
@@ -105,7 +120,8 @@ WebSocketProvider.propTypes = {
   children: PropTypes.any,
   secretOrSharedKey: PropTypes.instanceOf(Uint8Array),
   url: PropTypes.string,
-  queryParams: PropTypes.object
+  queryParams: PropTypes.object,
+  httpError: PropTypes.object
 }
 
 export { useWebSocketContext, WebSocketProvider, ReadyState }

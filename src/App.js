@@ -11,7 +11,7 @@ import { Vector3 } from 'three'
 import { atomWithStorage } from 'jotai/utils'
 import { useAtom } from 'jotai'
 import { useGetPublicKeyQuery } from './features/protocol/api/apiSlice'
-import JSONPretty from 'react-json-pretty'
+// import JSONPretty from 'react-json-pretty'
 import 'react-json-pretty/themes/monikai.css'
 import styles from './App.module.css' // This import is now used
 import useTheme from './components/hooks/useTheme'
@@ -97,7 +97,9 @@ const Tunneled = () => {
   const publicKeyQuery = useGetPublicKeyQuery(baseUrl, { skip: !wsControls.host })
   const {
     data: publicKey,
+    // eslint-disable-next-line no-unused-vars
     isError,
+    // eslint-disable-next-line no-unused-vars
     error
   } = publicKeyQuery
 
@@ -138,6 +140,7 @@ const Tunneled = () => {
               url={websocketUrl}
               secretOrSharedKey={secretOrSharedKey}
               queryParams={queryParams}
+              httpError={error}
             >
               <StenoKeyboard controls={kControls} />
             </WebSocketProvider>
@@ -158,12 +161,12 @@ const Tunneled = () => {
             <Grid position={[0, -0.5, 0]} />
           </ReactToCameraChange>
         </Canvas>
-          <status.In className='child'>
+          {/* <status.In className='child'>
             {
                 isError &&
                   <JSONPretty id="json-pretty" data={error}></JSONPretty>
             }
-          </status.In>
+          </status.In> */}
     </div>
   )
 }
