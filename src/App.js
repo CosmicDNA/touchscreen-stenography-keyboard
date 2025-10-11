@@ -17,6 +17,7 @@ import styles from './App.module.css' // This import is now used
 import useTheme from './components/hooks/useTheme'
 import useWebSocketAuth from './components/hooks/useWebSocketAuth'
 import usePersistedControls from './components/hooks/use-persisted-controls.js'
+import useFullScreen from './components/hooks/useFullScreen.js'
 
 /**
  *
@@ -89,6 +90,7 @@ const Tunneled = () => {
   }, [wsControls.host, isTLS, urlPredicate])
 
   const theme = useTheme()
+  useFullScreen()
 
   useEffect(() => {
     document.body.style.backgroundColor = theme === 'dark' ? 'black' : '#f0f0f0'
