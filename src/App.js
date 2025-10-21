@@ -18,6 +18,7 @@ import useTheme from './components/hooks/useTheme'
 import useWebSocketAuth from './components/hooks/useWebSocketAuth'
 import usePersistedControls from './components/hooks/use-persisted-controls.js'
 import useFullScreen from './components/hooks/useFullScreen.js'
+import { ToastContainer, toast } from 'react-toastify'
 
 /**
  *
@@ -90,7 +91,10 @@ const Tunneled = () => {
   }, [wsControls.host, isTLS, urlPredicate])
 
   const theme = useTheme()
-  useFullScreen()
+
+  const isTouchDevice = useMemo(() => ('ontouchstart' in window) || (navigator.maxTouchPoints > 0), [])
+
+  useFullScreen(!isTouchDevice)
 
   useEffect(() => {
     document.body.style.backgroundColor = theme === 'dark' ? 'black' : '#f0f0f0'
@@ -109,6 +113,23 @@ const Tunneled = () => {
 
   const [persistentCameraPosition, setPersistentCameraPosition] = useAtom(cameraAtom)
   const [trackCamera, setTrackCamera] = useState(false)
+
+  useEffect(() => {
+    if (isTouchDevice) {
+      return // Don't show the warning on touch devices
+    }
+
+    const handleFirstClick = () => {
+      toast('Intended for touchscreen devices. For the best experience, please use a device with touch capabilities.')
+      window.removeEventListener('mousedown', handleFirstClick)
+    }
+
+    window.addEventListener('mousedown', handleFirstClick)
+
+    return () => {
+      window.removeEventListener('mousedown', handleFirstClick)
+    }
+  }, []) // Run only once on component mount
 
   const onOrbitMotionEnd = (event) => {
     setTrackCamera(true)
@@ -131,39 +152,42 @@ const Tunneled = () => {
       <div className={child}>
         <status.Out />
       </div>
-        <Canvas camera={{ position: Object.values(persistentCameraPosition), fov: 25 }}>
-          {kControls.performanceMonitor && <Perf position='bottom-right' />}
-          <ReactToCameraChange {...{ onCameraUpdate, trackCamera } }>
-            {/* eslint-disable-next-line react/no-unknown-property */}
-            <ambientLight intensity={0.5} />
-            {/* eslint-disable-next-line react/no-unknown-property */}
-            <directionalLight position={[10, 10, 5]} />
-            <WebSocketProvider
-              url={websocketUrl}
-              secretOrSharedKey={secretOrSharedKey}
-              queryParams={queryParams}
-              httpError={error}
-            >
-              <StenoKeyboard controls={kControls} />
-            </WebSocketProvider>
-            {kControls.showShadows && <ContactShadows frames={1} position-y={-0.5} blur={1} opacity={0.75} />}
-            {/* <ContactShadows frames={1} position-y={-0.5} blur={3} color="orange" /> */}
-            <OrbitControls
-              onEnd={onOrbitMotionEnd}
-              zoomSpeed={0.25}
-              // The camera position is now persisted via the Jotai atom
-              minPolarAngle={0}
-              dampingFactor={0.05}
-              enableDamping={true}
-              maxPolarAngle={Math.PI / 2.1} // Prevents camera from going under the grid
-              enableRotate={!kControls.lockPosition}
-              enablePan={!kControls.lockPosition}
-              enableZoom={!kControls.lockPosition}
-            />
-            <Grid position={[0, -0.5, 0]} />
-          </ReactToCameraChange>
-        </Canvas>
-          {/* <status.In className='child'>
+      <div>
+        <ToastContainer />
+      </div>
+      <Canvas camera={{ position: Object.values(persistentCameraPosition), fov: 25 }}>
+        {kControls.performanceMonitor && <Perf position='bottom-right' />}
+        <ReactToCameraChange {...{ onCameraUpdate, trackCamera }}>
+          {/* eslint-disable-next-line react/no-unknown-property */}
+          <ambientLight intensity={0.5} />
+          {/* eslint-disable-next-line react/no-unknown-property */}
+          <directionalLight position={[10, 10, 5]} />
+          <WebSocketProvider
+            url={websocketUrl}
+            secretOrSharedKey={secretOrSharedKey}
+            queryParams={queryParams}
+            httpError={error}
+          >
+            <StenoKeyboard controls={kControls} />
+          </WebSocketProvider>
+          {kControls.showShadows && <ContactShadows frames={1} position-y={-0.5} blur={1} opacity={0.75} />}
+          {/* <ContactShadows frames={1} position-y={-0.5} blur={3} color="orange" /> */}
+          <OrbitControls
+            onEnd={onOrbitMotionEnd}
+            zoomSpeed={0.25}
+            // The camera position is now persisted via the Jotai atom
+            minPolarAngle={0}
+            dampingFactor={0.05}
+            enableDamping={true}
+            maxPolarAngle={Math.PI / 2.1} // Prevents camera from going under the grid
+            enableRotate={!kControls.lockPosition}
+            enablePan={!kControls.lockPosition}
+            enableZoom={!kControls.lockPosition}
+          />
+          <Grid position={[0, -0.5, 0]} />
+        </ReactToCameraChange>
+      </Canvas>
+      {/* <status.In className='child'>
             {
                 isError &&
                   <JSONPretty id="json-pretty" data={error}></JSONPretty>

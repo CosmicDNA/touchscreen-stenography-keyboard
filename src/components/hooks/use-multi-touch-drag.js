@@ -20,7 +20,7 @@ const useMultiTouchDrag = (handler) => {
      * @param {TouchEvent} evt
      */
     const handleStart = (evt) => {
-      evt.preventDefault() // Prevent default browser actions (like scrolling, zooming)
+      // evt.preventDefault() // Prevent default browser actions (like scrolling, zooming)
 
       for (const touch of evt.changedTouches) {
         trackedTouches.current.set(touch.identifier, touch)
@@ -33,7 +33,7 @@ const useMultiTouchDrag = (handler) => {
      * @param {TouchEvent} evt
      */
     const handleMove = (evt) => {
-      evt.preventDefault() // Prevent default browser actions (like scrolling, zooming)
+      // evt.preventDefault() // Prevent default browser actions (like scrolling, zooming)
 
       for (const touch of evt.changedTouches) {
         if (trackedTouches.current.has(touch.identifier)) {
@@ -55,7 +55,7 @@ const useMultiTouchDrag = (handler) => {
        * @param {TouchEvent} evt - The touch event.
        */
       (evt) => {
-        evt.preventDefault() // Prevent default browser actions (like scrolling, zooming)
+        // evt.preventDefault() // Prevent default browser actions (like scrolling, zooming)
 
         for (const touch of evt.changedTouches) {
           if (trackedTouches.current.has(touch.identifier)) {

@@ -4,8 +4,9 @@ import { useEffect } from 'react'
  * A hook to request fullscreen on the first user interaction (click).
  * This is necessary because browsers require a user gesture to enter fullscreen mode.
  */
-const useFullScreen = () => {
+const useFullScreen = (skip) => {
   useEffect(() => {
+    if (skip) { return }
     const goFullscreen = async () => {
       if (!document.fullscreenElement) {
         try {
@@ -20,7 +21,7 @@ const useFullScreen = () => {
     document.addEventListener('click', goFullscreen, { once: true })
 
     return () => document.removeEventListener('click', goFullscreen)
-  }, []) // Empty dependency array ensures this effect runs only once on mount.
+  }, [skip]) // Empty dependency array ensures this effect runs only once on mount.
 }
 
 export default useFullScreen
