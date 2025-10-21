@@ -33,7 +33,7 @@ const fallbackRadius = (radius) => {
   return radius < MIN_RADIUS_PX ? DEFAULT_RADIUS_PX : radius
 }
 
-const KeyPressDetectionFloor = ({ size = 0.6, pressedKeys, updatePressedKeys, ...props }) => {
+const KeyPressDetectionFloor = ({ pressedKeys, updatePressedKeys, ...props }) => {
   const groupRef = useRef()
   const { camera, size: canvasSize } = useThree()
   // eslint-disable-next-line no-unused-vars
@@ -125,7 +125,6 @@ const KeyPressDetectionFloor = ({ size = 0.6, pressedKeys, updatePressedKeys, ..
 }
 
 KeyPressDetectionFloor.propTypes = {
-  size: PropTypes.number,
   pressedKeys: PropTypes.instanceOf(Map),
   updatePressedKeys: PropTypes.func
 }
