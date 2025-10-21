@@ -4,8 +4,8 @@ import { getCircularPoints, eqSet } from './utils/tools'
 import { Vector2, Raycaster } from 'three'
 import useMultiTouchDrag from './hooks/use-multi-touch-drag'
 import { useThree } from '@react-three/fiber'
-import { useTunnelContext } from './hooks/useTunnel'
-import JSONPretty from 'react-json-pretty'
+// import { useTunnelContext } from './hooks/useTunnel'
+// import JSONPretty from 'react-json-pretty'
 
 const fingerResolution = 6
 
@@ -29,7 +29,7 @@ const fallbackRadius = (radius) => {
   // Fallback for devices reporting an unrealistic touch radius.
   // If the reported radius is less than 5px, use a default of 24px.
   const MIN_RADIUS_PX = 5
-  const DEFAULT_RADIUS_PX = 24
+  const DEFAULT_RADIUS_PX = 48
   return radius < MIN_RADIUS_PX ? DEFAULT_RADIUS_PX : radius
 }
 
@@ -43,7 +43,7 @@ const KeyPressDetectionFloor = ({ pressedKeys, updatePressedKeys, ...props }) =>
   const clearFingerPressedKeys = (fingerId) => updatePressedKeys((map) => map.delete(fingerId))
 
   /**
-   * @param {{type: 'onDragStart' | 'onDragMove' | 'onDragEnd', touch: TouchEvent}} ev
+   * @param {{type: String, touch: TouchEvent}} ev
    */
   const handleDrag = ({ touch, type }) => {
     const processDrag = () => {
@@ -56,7 +56,7 @@ const KeyPressDetectionFloor = ({ pressedKeys, updatePressedKeys, ...props }) =>
 
       const { clientX, clientY, radiusX, radiusY, rotationAngle, identifier } = touch
 
-      // setData((d) => [...d, { rotationAngle, radiusX, radiusY }])
+      setData((d) => [...d, { rotationAngle, radiusX, radiusY }])
 
       // Convert touch center to Normalized Device Coordinates (NDC)
       const coords = new Vector2(
@@ -95,31 +95,32 @@ const KeyPressDetectionFloor = ({ pressedKeys, updatePressedKeys, ...props }) =>
     }
 
     switch (type) {
-      case 'onDragEnd':
+      case 'touchend':
+      case 'touchcancel':
         clearFingerPressedKeys(touch.identifier)
         break
-      case 'onDragStart':
-      case 'onDragMove':
+      case 'touchstart':
+      case 'touchmove':
         processDrag()
         break
     }
   }
   useMultiTouchDrag(handleDrag)
 
-  const { status } = useTunnelContext()
+  // const { status } = useTunnelContext()
 
   return (
     <group
       ref={groupRef}
       {...props}
     >
-      {<status.In>
+      {/* {<status.In>
         <>
           {data.map((d, i) => {
             return (<JSONPretty key={i} data={d}/>)
           })}
         </>
-      </status.In>}
+      </status.In>} */}
     </group>
   )
 }

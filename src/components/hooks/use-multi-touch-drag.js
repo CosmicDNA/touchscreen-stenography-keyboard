@@ -4,7 +4,7 @@ import { useThree } from '@react-three/fiber'
 /**
  * A hook to handle multi-touch drag gestures on the R3F canvas.
  * @param {Function} handler - The function to call on drag events.
- *   It receives an object with { type: 'onDragStart' | 'onDragMove' | 'onDragEnd', fingerId: number, touch: Touch }.
+ *   It receives an object with { type: 'onDragStart' | 'onDragMove' | 'onDragEnd', nativeType: string, touch: Touch }.
  */
 const useMultiTouchDrag = (handler) => {
   const { gl } = useThree()
@@ -19,12 +19,12 @@ const useMultiTouchDrag = (handler) => {
      *
      * @param {TouchEvent} evt
      */
-    const handleStart = ({ changedTouches, preventDefault }) => {
-      preventDefault() // Prevent default browser actions (like scrolling, zooming)
+    const handleStart = (evt) => {
+      evt.preventDefault() // Prevent default browser actions (like scrolling, zooming)
 
-      for (const touch of changedTouches) {
+      for (const touch of evt.changedTouches) {
         trackedTouches.current.set(touch.identifier, touch)
-        handler({ type: 'onDragStart', touch })
+        handler({ type: evt.type, touch })
       }
     }
 
@@ -32,60 +32,64 @@ const useMultiTouchDrag = (handler) => {
      *
      * @param {TouchEvent} evt
      */
-    const handleMove = ({ changedTouches, preventDefault }) => {
-      preventDefault() // Prevent default browser actions (like scrolling, zooming)
+    const handleMove = (evt) => {
+      evt.preventDefault() // Prevent default browser actions (like scrolling, zooming)
 
-      for (const touch of changedTouches) {
+      for (const touch of evt.changedTouches) {
         if (trackedTouches.current.has(touch.identifier)) {
           trackedTouches.current.set(touch.identifier, touch) // Update touch data
-          handler({ type: 'onDragMove', touch })
+          handler({ type: evt.type, touch })
         }
       }
     }
 
     /**
      *
-     * @param {TouchEvent} evt
+     * @param {Boolean} end
+     * @returns {function(TouchEvent): void}
      */
-    const handleEnd = ({ changedTouches, preventDefault }) => {
-      preventDefault() // Prevent default browser actions (like scrolling, zooming)
+    const handleDelete = (end) =>
+      /**
+       * Inner function that adds the outer parameter to its own parameter.
+       *
+       * @param {TouchEvent} evt - The touch event.
+       */
+      (evt) => {
+        evt.preventDefault() // Prevent default browser actions (like scrolling, zooming)
 
-      for (const touch of changedTouches) {
-        if (trackedTouches.current.has(touch.identifier)) {
-          handler({ type: 'onDragEnd', touch })
-          trackedTouches.current.delete(touch.identifier) // Remove from tracking
-        } else {
-          console.log("can't figure out which touch to end")
+        for (const touch of evt.changedTouches) {
+          if (trackedTouches.current.has(touch.identifier)) {
+            handler({ type: evt.type, touch })
+            trackedTouches.current.delete(touch.identifier) // Remove from tracking
+          } else {
+            if (end) console.log("can't figure out which touch to end")
+          }
         }
       }
-    }
+
+    const listeners = [
+      { type: 'touchstart', handler: handleStart },
+      { type: 'touchmove', handler: handleMove },
+      { type: 'touchend', handler: handleDelete(true) },
+      { type: 'touchcancel', handler: handleDelete(false) }
+    ]
 
     /**
      *
-     * @param {TouchEvent} evt
+     * @param {'addEventListener' | 'removeEventListener'} method
      */
-    const handleCancel = ({ changedTouches, preventDefault }) => {
-      preventDefault() // Prevent default browser actions (like scrolling, zooming)
-
-      for (const touch of changedTouches) {
-        if (trackedTouches.current.has(touch.identifier)) {
-          trackedTouches.current.delete(touch.identifier) // Remove from tracking
-        }
-      }
+    const processListeners = (method) => {
+      listeners.forEach(({ type, handler }) => {
+        element[method](type, handler)
+      })
     }
 
     // Add native event listeners
-    element.addEventListener('touchstart', handleStart)
-    element.addEventListener('touchend', handleEnd)
-    element.addEventListener('touchcancel', handleCancel) // Treat cancel the same as end
-    element.addEventListener('touchmove', handleMove)
+    processListeners('addEventListener')
 
     // Cleanup function to remove event listeners
     return () => {
-      element.removeEventListener('touchstart', handleStart)
-      element.removeEventListener('touchend', handleEnd)
-      element.removeEventListener('touchcancel', handleCancel)
-      element.removeEventListener('touchmove', handleMove)
+      processListeners('removeEventListener')
     }
   }, [handler, gl.domElement])
 }
