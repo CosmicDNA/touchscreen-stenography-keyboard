@@ -18,7 +18,7 @@ import useTheme from './components/hooks/useTheme'
 import useWebSocketAuth from './components/hooks/useWebSocketAuth'
 import usePersistedControls from './components/hooks/use-persisted-controls.js'
 import useFullScreen from './components/hooks/useFullScreen.js'
-import { ToastContainer, toast } from 'react-toastify'
+import { ToastContainer } from 'react-toastify'
 
 /**
  *
@@ -114,23 +114,6 @@ const Tunneled = () => {
   const [persistentCameraPosition, setPersistentCameraPosition] = useAtom(cameraAtom)
   const [trackCamera, setTrackCamera] = useState(false)
 
-  useEffect(() => {
-    if (isTouchDevice) {
-      return // Don't show the warning on touch devices
-    }
-
-    const handleFirstClick = () => {
-      toast('Intended for touchscreen devices. For the best experience, please use a device with touch capabilities.')
-      window.removeEventListener('mousedown', handleFirstClick)
-    }
-
-    window.addEventListener('mousedown', handleFirstClick)
-
-    return () => {
-      window.removeEventListener('mousedown', handleFirstClick)
-    }
-  }, []) // Run only once on component mount
-
   const onOrbitMotionEnd = (event) => {
     setTrackCamera(true)
   }
@@ -168,7 +151,7 @@ const Tunneled = () => {
             queryParams={queryParams}
             httpError={error}
           >
-            <StenoKeyboard controls={kControls} />
+            <StenoKeyboard controls={kControls} isTouchDevice={isTouchDevice}/>
           </WebSocketProvider>
           {kControls.showShadows && <ContactShadows frames={1} position-y={-0.5} blur={1} opacity={0.75} />}
           {/* <ContactShadows frames={1} position-y={-0.5} blur={3} color="orange" /> */}

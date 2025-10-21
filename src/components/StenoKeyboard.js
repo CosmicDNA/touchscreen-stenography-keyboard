@@ -13,6 +13,7 @@ import usePrevious from './hooks/usePrevious'
 import { getAddedAndRemovedItems, dep } from './utils/tools'
 import useWakeLock from './hooks/useWakeLock'
 import KeyPressDetectionFloor from './KeyPressDetectionFloor'
+import { toast } from 'react-toastify'
 
 const enter = 0.2
 const rowSpacing = 1.3
@@ -79,7 +80,7 @@ const config = [
 
 const rowItems = config.filter(o => o.type === 'Row')
 const emptySet = new Set()
-const StenoKeyboard = ({ controls, ...props }) => {
+const StenoKeyboard = ({ controls, isTouchDevice, ...props }) => {
   const ref = useRef()
   // eslint-disable-next-line no-unused-vars
   const [soundEnabled, setSoundEnabled] = useState(false)
@@ -210,7 +211,7 @@ const StenoKeyboard = ({ controls, ...props }) => {
       {
         config.map((item, key) => {
           // Pass all necessary props to each key/keyGroup
-          const keyProps = { ...item, key, allKeys, onKeyPress, onKeyRelease, materials: keyMaterials, show3DText: controls.show3DText, updatePressedKeys }
+          const keyProps = { ...item, key, allKeys, onKeyPress, onKeyRelease, materials: keyMaterials, show3DText: controls.show3DText, updatePressedKeys, onClick: !isTouchDevice ? () => toast('This app is designed for touchscreen devices!', { type: 'error' }) : undefined }
           let rowIndex
           switch (item.type) {
             case 'Key':
@@ -224,14 +225,14 @@ const StenoKeyboard = ({ controls, ...props }) => {
           }
         })
       }
-      {/* <Floor {...{ updatePressedKeys, pressedKeys, keyId: 'floor' }} position-z={-0.5} position-y={0} /> */}
-      <KeyPressDetectionFloor {...{ updatePressedKeys, pressedKeys }} position={[0, 0, -0.5]} />
+      <KeyPressDetectionFloor {...{ updatePressedKeys, pressedKeys }} position={[0, 0, -0.5]} isTouchDevice={isTouchDevice}/>
     </group>
   )
 }
 
 StenoKeyboard.propTypes = {
-  controls: PropTypes.object.isRequired
+  controls: PropTypes.object.isRequired,
+  isTouchDevice: PropTypes.bool.isRequired
 }
 
 export default StenoKeyboard
