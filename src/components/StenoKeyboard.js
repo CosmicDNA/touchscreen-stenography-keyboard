@@ -12,7 +12,7 @@ import { useWebSocketContext, ReadyState } from './hooks/useWebSocket'
 import usePrevious from './hooks/usePrevious'
 import { getAddedAndRemovedItems, dep } from './utils/tools'
 import useWakeLock from './hooks/useWakeLock'
-import HexagonFloor from './HexagonFloor'
+import KeyPressDetectionFloor from './KeyPressDetectionFloor'
 
 const enter = 0.2
 const rowSpacing = 1.3
@@ -225,7 +225,7 @@ const StenoKeyboard = ({ controls, ...props }) => {
         })
       }
       {/* <Floor {...{ updatePressedKeys, pressedKeys, keyId: 'floor' }} position-z={-0.5} position-y={0} /> */}
-      <HexagonFloor {...{ updatePressedKeys, pressedKeys }} position={[0, 0, -0.5]} />
+      <KeyPressDetectionFloor {...{ updatePressedKeys, pressedKeys }} position={[0, 0, -0.5]} />
     </group>
   )
 }

@@ -1,5 +1,4 @@
-import { useEffect } from 'react'
-import Hammer from 'hammerjs'
+import { useEffect, useRef } from 'react'
 import { useThree } from '@react-three/fiber'
 
 /**
@@ -8,24 +7,58 @@ import { useThree } from '@react-three/fiber'
  */
 const useMultiTouchDrag = (handler) => {
   const { gl } = useThree()
+  // Refs to manage the state of touches and available finger IDs.
+  const trackedPointers = useRef(new Map())
+  const fingerIdPool = useRef(Array.from({ length: 10 }, (_, i) => i)) // Pool of IDs 0-9
 
   useEffect(() => {
     const element = gl.domElement
     if (!element) return
 
-    // Instantiate Hammer.js on the element.
-    const hammerManager = new Hammer.Manager(element)
-    // Create a pan recognizer that tracks all pointers.
-    const tap = new Hammer.Tap()
-    const pan = new Hammer.Pan({ direction: Hammer.DIRECTION_ALL, pointers: 0 })
-    hammerManager.add([pan, tap])
+    const handlePointerDown = (event) => {
+      // Prevent default browser actions (like text selection or page scrolling on mobile)
+      // event.preventDefault()
+      element.setPointerCapture(event.pointerId)
 
-    // Attach the handler to Hammer's pan events.
-    hammerManager.on('panstart panmove panend pancancel tap', handler)
+      if (fingerIdPool.current.length > 0) {
+        const fingerId = fingerIdPool.current.shift() // Get lowest available ID
+        trackedPointers.current.set(event.pointerId, { fingerId, pointer: event })
+        handler({ type: 'onDragStart', fingerId, pointer: event })
+      }
+    }
 
-    // Cleanup function to destroy the Hammer instance when the component unmounts or target changes.
+    const handlePointerMove = (event) => {
+      const tracked = trackedPointers.current.get(event.pointerId)
+      if (tracked) {
+        tracked.pointer = event // Update pointer data
+        handler({ type: 'onDragMove', fingerId: tracked.fingerId, pointer: event })
+      }
+    }
+
+    const handlePointerUp = (event) => {
+      element.releasePointerCapture(event.pointerId)
+      const tracked = trackedPointers.current.get(event.pointerId)
+      if (tracked) {
+        const { fingerId } = tracked
+        handler({ type: 'onDragEnd', fingerId, pointer: event })
+        trackedPointers.current.delete(event.pointerId)
+        fingerIdPool.current.push(fingerId) // Return ID to the pool
+        fingerIdPool.current.sort((a, b) => a - b) // Keep pool sorted
+      }
+    }
+
+    // Add native event listeners
+    element.addEventListener('pointerdown', handlePointerDown)
+    element.addEventListener('pointermove', handlePointerMove)
+    element.addEventListener('pointerup', handlePointerUp)
+    element.addEventListener('pointercancel', handlePointerUp) // Treat cancel like up
+
+    // Cleanup function to remove event listeners
     return () => {
-      hammerManager.destroy()
+      element.removeEventListener('pointerdown', handlePointerDown)
+      element.removeEventListener('pointermove', handlePointerMove)
+      element.removeEventListener('pointerup', handlePointerUp)
+      element.removeEventListener('pointercancel', handlePointerUp)
     }
   }, [handler, gl.domElement])
 }
