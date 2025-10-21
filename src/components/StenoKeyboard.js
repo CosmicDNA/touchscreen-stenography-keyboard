@@ -74,7 +74,7 @@ const config = [
   { type: 'Key', ...keys.HD, position: position[3], lateral: 1.1, armLength: armLengths[1] },
   { type: 'Key', ...keys.HZ, position: position[4], round, armLength: armLengths[2] },
   { type: 'Row', keys: [keys.TH, keys.PH, keys.HH, keys.dummy, keys.HF, keys.HP, keys.HL, keys.HT], position: position[5], lateral: 1.1, armLength: armLengths[1] },
-  { type: 'Row', keys: [keys.KH, keys.WH, keys.RH, keys.dummy, keys.HR, keys.HG, keys.HB, keys.HS, keys.AH, keys.OH, keys.HE, keys.HU], position: position[6], round, armLength: armLengths[2] }
+  { type: 'Row', keys: [keys.KH, keys.WH, keys.RH, keys.dummy, keys.HR, keys.HB, keys.HG, keys.HS, keys.AH, keys.OH, keys.HE, keys.HU], position: position[6], round, armLength: armLengths[2] }
 ]
 
 const rowItems = config.filter(o => o.type === 'Row')
