@@ -3,76 +3,91 @@ import { useThree } from '@react-three/fiber'
 
 /**
  * A hook to handle multi-touch drag gestures on the R3F canvas.
- * @param {Function} handler - The function to call on drag events. It receives the Hammer.js event object.
+ * @param {Function} handler - The function to call on drag events.
+ *   It receives an object with { type: 'onDragStart' | 'onDragMove' | 'onDragEnd', fingerId: number, touch: Touch }.
  */
 const useMultiTouchDrag = (handler) => {
   const { gl } = useThree()
-  // Refs to manage the state of touches and available finger IDs.
-  const trackedPointers = useRef(new Map())
-  const fingerIdPool = useRef(Array.from({ length: 10 }, (_, i) => i)) // Pool of IDs 0-9
+  // Ref to store currently tracked touches. Maps touch.identifier to the Touch object.
+  const trackedTouches = useRef(new Map())
 
   useEffect(() => {
     const element = gl.domElement
     if (!element) return
 
-    const handlePointerDown = (event) => {
-      // Prevent default browser actions (like text selection or page scrolling on mobile)
-      // event.preventDefault()
-      element.setPointerCapture(event.pointerId)
+    /**
+     *
+     * @param {TouchEvent} evt
+     */
+    const handleStart = ({ changedTouches, preventDefault }) => {
+      preventDefault() // Prevent default browser actions (like scrolling, zooming)
 
-      if (fingerIdPool.current.length > 0) {
-        const fingerId = fingerIdPool.current.shift() // Get lowest available ID
-        trackedPointers.current.set(event.pointerId, { fingerId, pointer: event })
-        handler({ type: 'onDragStart', fingerId, pointer: event })
+      for (const touch of changedTouches) {
+        trackedTouches.current.set(touch.identifier, touch)
+        handler({ type: 'onDragStart', touch })
       }
     }
 
-    const handlePointerMove = (event) => {
-      const tracked = trackedPointers.current.get(event.pointerId)
-      if (tracked) {
-        tracked.pointer = event // Update pointer data
-        handler({ type: 'onDragMove', fingerId: tracked.fingerId, pointer: event })
+    /**
+     *
+     * @param {TouchEvent} evt
+     */
+    const handleMove = ({ changedTouches, preventDefault }) => {
+      preventDefault() // Prevent default browser actions (like scrolling, zooming)
+
+      for (const touch of changedTouches) {
+        if (trackedTouches.current.has(touch.identifier)) {
+          trackedTouches.current.set(touch.identifier, touch) // Update touch data
+          handler({ type: 'onDragMove', touch })
+        }
       }
     }
 
-    const handlePointerUp = (event) => {
-      element.releasePointerCapture(event.pointerId)
-      const tracked = trackedPointers.current.get(event.pointerId)
-      if (tracked) {
-        const { fingerId } = tracked
-        handler({ type: 'onDragEnd', fingerId, pointer: event })
-        trackedPointers.current.delete(event.pointerId)
-        fingerIdPool.current.push(fingerId) // Return ID to the pool
-        fingerIdPool.current.sort((a, b) => a - b) // Keep pool sorted
+    /**
+     *
+     * @param {TouchEvent} evt
+     */
+    const handleEnd = ({ changedTouches, preventDefault }) => {
+      preventDefault() // Prevent default browser actions (like scrolling, zooming)
+
+      for (const touch of changedTouches) {
+        if (trackedTouches.current.has(touch.identifier)) {
+          handler({ type: 'onDragEnd', touch })
+          trackedTouches.current.delete(touch.identifier) // Remove from tracking
+        } else {
+          console.log("can't figure out which touch to end")
+        }
+      }
+    }
+
+    /**
+     *
+     * @param {TouchEvent} evt
+     */
+    const handleCancel = ({ changedTouches, preventDefault }) => {
+      preventDefault() // Prevent default browser actions (like scrolling, zooming)
+
+      for (const touch of changedTouches) {
+        if (trackedTouches.current.has(touch.identifier)) {
+          trackedTouches.current.delete(touch.identifier) // Remove from tracking
+        }
       }
     }
 
     // Add native event listeners
-    element.addEventListener('pointerdown', handlePointerDown)
-    element.addEventListener('pointermove', handlePointerMove)
-    element.addEventListener('pointerup', handlePointerUp)
-    element.addEventListener('pointercancel', handlePointerUp) // Treat cancel like up
+    element.addEventListener('touchstart', handleStart)
+    element.addEventListener('touchend', handleEnd)
+    element.addEventListener('touchcancel', handleCancel) // Treat cancel the same as end
+    element.addEventListener('touchmove', handleMove)
 
     // Cleanup function to remove event listeners
     return () => {
-      element.removeEventListener('pointerdown', handlePointerDown)
-      element.removeEventListener('pointermove', handlePointerMove)
-      element.removeEventListener('pointerup', handlePointerUp)
-      element.removeEventListener('pointercancel', handlePointerUp)
+      element.removeEventListener('touchstart', handleStart)
+      element.removeEventListener('touchend', handleEnd)
+      element.removeEventListener('touchcancel', handleCancel)
+      element.removeEventListener('touchmove', handleMove)
     }
   }, [handler, gl.domElement])
 }
 
 export default useMultiTouchDrag
-
-/*
-// Usage example in a React Three Fiber component:
-import useMultiTouchDrag from './hooks/use-multi-touch-drag'
-
-function MyDraggableComponent(props) {
-  useMultiTouchDrag((hammerEvent) => {
-    console.log('Active pointers:', hammerEvent.pointers.length);
-  });
-  return <group {...props} />;
-}
-*/
