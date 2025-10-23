@@ -128,10 +128,10 @@ This is the fastest way to get a public URL, but the URL will change each time y
 
 2.  **Start the tunnel**: Run the following command in your terminal. This assumes Plover is running on the default port `8086`.
     ```shell
-    cloudflared tunnel --url ws://localhost:8086
+    cloudflared tunnel --url localhost:8086
     ```
 
-3.  **Use the public URL**: `cloudflared` will give you a public URL (e.g., `https://random-words.try.cloudflare.com`). In the web keyboard's configuration, enter this hostname (e.g., `random-words.try.cloudflare.com`) and check the **TLS** box.
+3.  **Use the public URL**: `cloudflared` will give you a public URL (e.g., `https://random-words.trycloudflare.com`). In the web keyboard's configuration, enter this hostname (e.g., `random-words.trycloudflare.com`) and check the **TLS** box.
 
 #### Method 2: Named Tunnel (for Permanent Use)
 
@@ -151,7 +151,7 @@ This method provides a stable, permanent public URL and is the recommended appro
 
 4.  **Run the Tunnel**: Start the tunnel. It will now listen for requests at `plover.yourdomain.com` and forward them to your local Plover instance.
     ```shell
-    cloudflared tunnel run --url ws://localhost:8086 plover-tunnel
+    cloudflared tunnel run --url localhost:8086 plover-tunnel
     ```
 
 5.  **Configure the Web Keyboard**: In the app's settings, enter your permanent hostname (`plover.yourdomain.com`) as the `WebSocket URL` and check the **TLS** box.
