@@ -4,6 +4,8 @@ import React, { createContext, useContext, useEffect, useMemo, useCallback, memo
 import { useTunnelContext } from './useTunnel'
 import { getEncryptedMessage, getDecryptedMessage, newNonce } from '../utils/encryptionWrapper'
 import ColoredCircle from '../ColoredCircle'
+import { toast } from 'react-toastify'
+
 const { CONNECTING, OPEN, CLOSING, CLOSED, UNINSTANTIATED } = ReadyState
 
 const readyStateToColor = (state) => {
@@ -12,6 +14,15 @@ const readyStateToColor = (state) => {
   if (state === CLOSING) return 'orange'
   return 'red' // CLOSED or UNINSTANTIATED
 }
+
+/**
+ *
+ * @param {ReadyState} state
+ * @param {String} url
+ * @param {Boolean} skip
+ * @param {CloseEvent} closeEvent
+ * @param {import('@reduxjs/toolkit/query').FetchBaseQueryError | import('@reduxjs/toolkit').SerializedError | undefined} httpError
+ * @returns {{message: String, type: import('react-toastify').TypeOptions}} */
 const getConnectionMessage = (state, url, skip, closeEvent, httpError) => {
   const timestamp = new Date().toLocaleTimeString()
   const baseMessage = `[${timestamp}] `
@@ -19,33 +30,28 @@ const getConnectionMessage = (state, url, skip, closeEvent, httpError) => {
   if (httpError) {
     const status = httpError.status ? `Status: ${httpError.status}\n` : ''
     const details = httpError.data?.error || httpError.error || 'An unknown error occurred while fetching the public key.'
-    return `${baseMessage}Error connecting to ${url}\n${status}Details: ${details}`
+    return { message: `${baseMessage}Error connecting to ${url}\n${status}Details: ${details}`, type: 'error' }
   }
 
-  if (skip) return `${baseMessage}Awaiting box key...`
+  if (skip) return { message: `${baseMessage}Awaiting box key...`, type: 'info' }
 
   switch (state) {
     case CONNECTING: {
-      return `${baseMessage}Connecting to websocket ${url}...`
+      return { message: `${baseMessage}Connecting to websocket ${url}...`, type: 'info' }
     } case OPEN: {
-      return `${baseMessage}Websocket connection to ${url} successfully opened!`
+      return { message: `${baseMessage}Websocket connection to ${url} successfully opened!`, type: 'success' }
     } case CLOSING: {
-      return `${baseMessage}Closing websocket connection to ${url}...`
+      return { message: `${baseMessage}Closing websocket connection to ${url}...`, type: 'warning' }
     } case CLOSED: {
       const code = closeEvent?.code ? `\nCode: ${closeEvent.code}` : ''
       const reason = closeEvent?.reason ? `\nReason: ${closeEvent.reason}` : ''
-      return `${baseMessage}Websocket connection to ${url} is closed.${code}${reason}`
+      return { message: `${baseMessage}Websocket connection to ${url} is closed.${code}${reason}`, type: 'error' }
     } case UNINSTANTIATED: {
-      return `${baseMessage}Websocket connection to ${url} is uninstantiated.`
+      return { message: `${baseMessage}Websocket connection to ${url} is uninstantiated.`, type: 'info' }
     }
   }
 }
-// eslint-disable-next-line no-unused-vars
-const getAndLogConnectionMessage = (state, url, skip, closeEvent) => {
-  const message = getConnectionMessage(state, url, skip, closeEvent)
-  console.log(message)
-  return message
-}
+
 const WebSocketContext = createContext()
 const { Provider } = WebSocketContext
 
@@ -53,7 +59,16 @@ const { Provider } = WebSocketContext
  * @returns {{readyState: ReadyState, lastJsonMessage, sendJsonMessage}}
  */
 const useWebSocketContext = () => useContext(WebSocketContext)
-const WebSocketProvider = memo(function WebSocketProvider ({ children, url, secretOrSharedKey, queryParams, httpError }) {
+
+/**
+ * @param {Object} props
+ * @param {React.ReactNode} props.children
+ * @param {string} props.url
+ * @param {Uint8Array} props.secretOrSharedKey
+ * @param {Object} props.queryParams
+ * @param {Object} props.httpError
+ */
+const RawWebSocketProvider = ({ children, url, secretOrSharedKey, queryParams, httpError }) => {
   // eslint-disable-next-line no-unused-vars
   const [closeEvent, setCloseEvent] = useState(null)
   const skip = !secretOrSharedKey
@@ -87,12 +102,14 @@ const WebSocketProvider = memo(function WebSocketProvider ({ children, url, secr
   }, [secretOrSharedKey, sendMessage])
 
   useEffect(() => {
+    const { message, type } = getConnectionMessage(readyState, url, skip, closeEvent, httpError)
+    toast(message, { type })
     return () => {
       if (readyState === ReadyState.OPEN) {
         sendJsonMessage('close')
       }
     }
-  }, [readyState, sendJsonMessage])
+  }, [closeEvent, httpError, readyState, sendJsonMessage, skip, url])
 
   return (
     <>
@@ -101,7 +118,6 @@ const WebSocketProvider = memo(function WebSocketProvider ({ children, url, secr
           <ColoredCircle
             color={readyStateToColor(readyState)}
             glow={readyState !== OPEN}
-            tooltip={getConnectionMessage(readyState, url, skip, closeEvent, httpError)}
           />
         </>
       </status.In>}
@@ -114,9 +130,11 @@ const WebSocketProvider = memo(function WebSocketProvider ({ children, url, secr
       </Provider>
     </>
   )
-})
+}
 
-WebSocketProvider.propTypes = {
+const WebSocketProvider = memo(RawWebSocketProvider)
+
+RawWebSocketProvider.propTypes = {
   children: PropTypes.any,
   secretOrSharedKey: PropTypes.instanceOf(Uint8Array),
   url: PropTypes.string,
