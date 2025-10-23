@@ -155,14 +155,19 @@ const RawWebSocketProvider = ({ children, url, secretOrSharedKey, queryParams, h
   }, [secretOrSharedKey, sendMessage])
 
   useEffect(() => {
+    // Effect for showing toast notifications on state change
     const { message, type } = getTimestampedConnectionMessage(readyState, url, skip, closeEvent, httpError)
     toast(message, { type })
+  }, [readyState, url, skip, closeEvent, httpError])
+
+  useEffect(() => {
+    // Effect for cleaning up the connection
     return () => {
       if (readyState === ReadyState.OPEN) {
         sendJsonMessage('close')
       }
     }
-  }, [readyState, url, skip, closeEvent, httpError, sendJsonMessage])
+  }, [readyState, sendJsonMessage])
 
   return (
     <>
