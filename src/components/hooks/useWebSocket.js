@@ -17,9 +17,9 @@ const mappingReadyStateToColor = {
 }
 
 const Url = ({ url }) => (
-  <span style={{ color: 'lightBlue', textDecoration: 'underline' }}>
+  <a href={url} target="_blank" rel="noopener noreferrer" style={{ color: 'lightblue' }}>
     {url}
-  </span>
+  </a>
 )
 Url.propTypes = {
   url: PropTypes.string
