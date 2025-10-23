@@ -136,7 +136,7 @@ const Tunneled = () => {
         <status.Out />
       </div>
       <div>
-        <ToastContainer />
+        <ToastContainer theme={theme}/>
       </div>
       <Canvas camera={{ position: Object.values(persistentCameraPosition), fov: 25 }}>
         {kControls.performanceMonitor && <Perf position='bottom-right' />}
