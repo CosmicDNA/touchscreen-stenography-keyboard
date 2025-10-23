@@ -8,47 +8,100 @@ import { toast } from 'react-toastify'
 
 const { CONNECTING, OPEN, CLOSING, CLOSED, UNINSTANTIATED } = ReadyState
 
-const readyStateToColor = (state) => {
-  if (state === OPEN) return 'lime'
-  if (state === CONNECTING) return 'yellow'
-  if (state === CLOSING) return 'orange'
-  return 'red' // CLOSED or UNINSTANTIATED
+const mappingReadyStateToColor = {
+  [OPEN]: 'lime',
+  [CONNECTING]: 'yellow',
+  [CLOSING]: 'orange',
+  [CLOSED]: 'red',
+  [UNINSTANTIATED]: 'red'
 }
 
-/**
- *
- * @param {ReadyState} state
- * @param {String} url
- * @param {Boolean} skip
- * @param {CloseEvent} closeEvent
- * @param {import('@reduxjs/toolkit/query').FetchBaseQueryError | import('@reduxjs/toolkit').SerializedError | undefined} httpError
- * @returns {{message: String, type: import('react-toastify').TypeOptions}} */
-const getConnectionMessage = (state, url, skip, closeEvent, httpError) => {
-  const timestamp = new Date().toLocaleTimeString()
-  const baseMessage = `[${timestamp}] `
+const Url = ({ url }) => (
+  <span style={{ color: 'lightBlue', textDecoration: 'underline' }}>
+    {url}
+  </span>
+)
+Url.propTypes = {
+  url: PropTypes.string
+}
 
-  if (httpError) {
-    const status = httpError.status ? `Status: ${httpError.status}\n` : ''
-    const details = httpError.data?.error || httpError.error || 'An unknown error occurred while fetching the public key.'
-    return { message: `${baseMessage}Error connecting to ${url}\n${status}Details: ${details}`, type: 'error' }
+const Timestamp = ({ time }) => (
+  <span style={{ color: 'blue' }}>
+    {`[${time}] `}
+  </span>
+)
+Timestamp.propTypes = {
+  time: PropTypes.string
+}
+
+const Timestamped = ({ timestamp, children }) => {
+  return (
+    <span style={{ whiteSpace: 'pre-wrap' }}>
+      <Timestamp time={timestamp} />
+      {children}
+    </span>
+  )
+}
+
+Timestamped.propTypes = {
+  children: PropTypes.any,
+  timestamp: PropTypes.any
+}
+
+const Details = ({ children }) => {
+  return (
+    <span style={{ color: 'lightGray' }}>
+      {children}
+    </span>
+  )
+}
+
+Details.propTypes = {
+  children: PropTypes.any
+}
+
+const getTimestampedConnectionMessage = (state, url, skip, closeEvent, httpError) => {
+  /**
+  *
+  * @param {ReadyState} state
+  * @param {String} url
+  * @param {Boolean} skip
+  * @param {CloseEvent} closeEvent
+  * @param {import('@reduxjs/toolkit/query').FetchBaseQueryError | import('@reduxjs/toolkit').SerializedError | undefined} httpError
+  * @returns {{message: String | React.ReactNode, type: import('react-toastify').TypeOptions}} */
+  const getConnectionMessage = (state, url, skip, closeEvent, httpError) => {
+    if (skip) return { message: 'Awaiting box key...', type: 'info' }
+
+    const urlElement = <Url url={url} />
+
+    if (httpError) {
+      const status = httpError.status ? `Status: ${httpError.status}\n` : ''
+      const details = httpError.data?.error || httpError.error || 'An unknown error occurred while fetching the public key.'
+      return { message: <>Error connecting to {urlElement}.{'\n'}<Details>{status}Details: {details}</Details></>, type: 'error' }
+    }
+
+    switch (state) {
+      case CONNECTING: {
+        return { message: <>Connecting to websocket {urlElement}...</>, type: 'info' }
+      } case OPEN: {
+        return { message: <>Websocket connection to {urlElement} successfully opened!</>, type: 'success' }
+      } case CLOSING: {
+        return { message: <>Closing websocket connection to {urlElement}...</>, type: 'warning' }
+      } case CLOSED: {
+        const code = closeEvent?.code ? `\nCode: ${closeEvent.code}` : ''
+        const reason = closeEvent?.reason ? `\nReason: ${closeEvent.reason}` : ''
+        return { message: <>Websocket connection to {urlElement} is closed.{'\n'}<Details>{code}{reason}</Details></>, type: 'error' }
+      } case UNINSTANTIATED: {
+        return { message: <>Websocket connection to {urlElement} is uninstantiated.</>, type: 'info' }
+      }
+    }
   }
 
-  if (skip) return { message: `${baseMessage}Awaiting box key...`, type: 'info' }
+  const { message, type } = getConnectionMessage(state, url, skip, closeEvent, httpError)
 
-  switch (state) {
-    case CONNECTING: {
-      return { message: `${baseMessage}Connecting to websocket ${url}...`, type: 'info' }
-    } case OPEN: {
-      return { message: `${baseMessage}Websocket connection to ${url} successfully opened!`, type: 'success' }
-    } case CLOSING: {
-      return { message: `${baseMessage}Closing websocket connection to ${url}...`, type: 'warning' }
-    } case CLOSED: {
-      const code = closeEvent?.code ? `\nCode: ${closeEvent.code}` : ''
-      const reason = closeEvent?.reason ? `\nReason: ${closeEvent.reason}` : ''
-      return { message: `${baseMessage}Websocket connection to ${url} is closed.${code}${reason}`, type: 'error' }
-    } case UNINSTANTIATED: {
-      return { message: `${baseMessage}Websocket connection to ${url} is uninstantiated.`, type: 'info' }
-    }
+  return {
+    message: <Timestamped timestamp={new Date().toLocaleTimeString()}>{message}</Timestamped>,
+    type
   }
 }
 
@@ -102,21 +155,21 @@ const RawWebSocketProvider = ({ children, url, secretOrSharedKey, queryParams, h
   }, [secretOrSharedKey, sendMessage])
 
   useEffect(() => {
-    const { message, type } = getConnectionMessage(readyState, url, skip, closeEvent, httpError)
+    const { message, type } = getTimestampedConnectionMessage(readyState, url, skip, closeEvent, httpError)
     toast(message, { type })
     return () => {
       if (readyState === ReadyState.OPEN) {
         sendJsonMessage('close')
       }
     }
-  }, [closeEvent, httpError, readyState, sendJsonMessage, skip, url])
+  }, [readyState, url, skip, closeEvent, httpError, sendJsonMessage])
 
   return (
     <>
       {<status.In>
         <>
           <ColoredCircle
-            color={readyStateToColor(readyState)}
+            color={mappingReadyStateToColor[readyState]}
             glow={readyState !== OPEN}
           />
         </>
