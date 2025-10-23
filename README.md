@@ -12,6 +12,9 @@ This code repository is hosted at https://github.com/CosmicDNA/touchscreen-steno
 
 The aim of this project is to render with React Three Fiber a usefull stenography touchscreen keyboard. So that users can safely send keystrokes to whichever computer running Plover they want.
 
+This is a cross-platform touchscreen stenography keyboard built in React, making it a web-based solution that can run on any device with a touchscreen and a browser (Android, iOS, Windows tablets, etc.).
+
+The idea is to provide a secure, highly accessible, zero-cost practice tool that people can use anywhere. It outputs steno strokes that can be picked up by Plover (via the WebSocket connection).
 
 ## Deployed Application
 
