@@ -3,7 +3,6 @@ import React, { useState, useRef, useEffect, useMemo } from 'react'
 import KeyGroup from './KeyGroup'
 import Key from './Key'
 import { Vector3, MeshLambertMaterial, Color } from 'three'
-import { useFrame } from '@react-three/fiber'
 // import keySets from './steno-script'
 import { useSound } from './hooks/use-sound'
 import keypressAudioFile from '../sounds/keypress.flac'
@@ -15,10 +14,10 @@ import useWakeLock from './hooks/useWakeLock'
 import KeyPressDetectionFloor from './KeyPressDetectionFloor'
 import { toast } from 'react-toastify'
 import { LookupStateEnum, convertLookupStrokeToKeysSequence } from './utils/lookup'
+import useStrokeEvents from './hooks/use-stroke-events'
 
 const enter = 0.2
 const rowSpacing = 1.3
-// const animate = false
 
 const referencePosition = new Vector3(0.5, -2.4, 0)
 const position = [
@@ -85,7 +84,7 @@ const StenoKeyboard = ({ controls, isTouchDevice, ...props }) => {
   const ref = useRef()
   // eslint-disable-next-line no-unused-vars
   const [soundEnabled, setSoundEnabled] = useState(false)
-  const [lookupStrokes, setLookupStrokes] = useState(null)
+  const [straightForwardStrokes, setStraightForwardStrokes] = useState([])
   const [largestKeySet, setLargestKeySet] = useState(new Set())
   const [lookupState, setLookupState] = useState(LookupStateEnum.IDLE)
 
@@ -111,11 +110,8 @@ const StenoKeyboard = ({ controls, isTouchDevice, ...props }) => {
           setLookupState(LookupStateEnum.LOOKUP_READY)
           // console.log('Successfully looked up:', lastJsonMessage.lookup)
           // The strategy is to get the most straight forward list of strokes
-          const straightForwardStrokes = lastJsonMessage.lookup[0]
-          // console.log('Straight forward strokes:', straightForwardStrokes)
-          const keysSequence = convertLookupStrokeToKeysSequence(straightForwardStrokes)
-          // console.log('Keys sequence:', keysSequence)
-          setLookupStrokes(keysSequence)
+          const rawStrokes = lastJsonMessage.lookup[0] // This is an array of {steno, text} objects
+          setStraightForwardStrokes(rawStrokes)
         } else {
           console.error('Could not lookup for phrase!')
           setLookupState(LookupStateEnum.LOOKUP_ERROR)
@@ -181,29 +177,23 @@ const StenoKeyboard = ({ controls, isTouchDevice, ...props }) => {
     })
   }
 
-  // Animate the keys
-  useFrame(({ clock }) => {
-    if (lookupState === LookupStateEnum.LOOKUP_READY) {
-      const keySetsWithRest = [[], [], [], [], ...lookupStrokes]
-      // const keySetsWithRest = [[], [], [], [], ...keySets]
-      const elapsedTime = clock.getElapsedTime()
-      const speed = 1 // Adjust the typing speed
-      const ratio = 0.6 // chord/blank ratio
+  const automaticKeyPress = (keySequence) => {
+    updatePressedKeys(map => map.set('auto', keySequence))
+  }
 
-      const referenceTime = elapsedTime * speed
-
-      // Calculate the current word index based on elapsed time
-      const wordIndex = Math.floor(referenceTime) // Change word every second
-
-      // Get the current key set for the word
-      const currentKeySet = keySetsWithRest[wordIndex % keySetsWithRest.length]
-
-      const delta = referenceTime - wordIndex
-
-      // Combine the current key set and the empty set
-      const combinedKeySet = delta < ratio ? currentKeySet : []
-
-      updatePressedKeys(map => map.set('auto', combinedKeySet))
+  useStrokeEvents(straightForwardStrokes, {
+    enabled: lookupState === LookupStateEnum.LOOKUP_READY,
+    nextObjectCallback: (strokeObject) => {
+      const { text } = strokeObject
+      console.log({ text })
+    },
+    nextStrokeCallback: (stroke, referenceTime) => {
+      // console.log({ name: '^', referenceTime, stroke })
+      automaticKeyPress(convertLookupStrokeToKeysSequence(stroke))
+    },
+    nextStrokeCallbackDT: (referenceTime) => {
+      // console.log({ name: 'v', referenceTime })
+      automaticKeyPress([])
     }
   })
 
@@ -275,7 +265,7 @@ const StenoKeyboard = ({ controls, isTouchDevice, ...props }) => {
           }
         })
       }
-      <KeyPressDetectionFloor {...{ updatePressedKeys, pressedKeys }} position={[0, 0, -0.5]} isTouchDevice={isTouchDevice}/>
+      <KeyPressDetectionFloor {...{ updatePressedKeys, pressedKeys }} position={[0, 0, -0.5]} isTouchDevice={isTouchDevice} />
     </group>
   )
 }

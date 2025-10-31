@@ -61,7 +61,7 @@ const convertLookupStrokeToKeysSequence = (lookupStroke) => {
     const rightKeys = right.split('').map(c => `-${c}`)
     return [...leftKeys, ...vowelKeys, ...rightKeys]
   }
-  return lookupStroke.flat().map(parseStroke)
+  return parseStroke(lookupStroke)
 }
 
 export {
