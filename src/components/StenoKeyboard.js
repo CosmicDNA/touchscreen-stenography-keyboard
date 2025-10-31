@@ -4,7 +4,7 @@ import KeyGroup from './KeyGroup'
 import Key from './Key'
 import { Vector3, MeshLambertMaterial, Color } from 'three'
 import { useFrame } from '@react-three/fiber'
-import keySets from './steno-script'
+// import keySets from './steno-script'
 import { useSound } from './hooks/use-sound'
 import keypressAudioFile from '../sounds/keypress.flac'
 import keyreleaseAudioFile from '../sounds/keyrelease.flac'
@@ -14,10 +14,11 @@ import { getAddedAndRemovedItems, dep } from './utils/tools'
 import useWakeLock from './hooks/useWakeLock'
 import KeyPressDetectionFloor from './KeyPressDetectionFloor'
 import { toast } from 'react-toastify'
+import { LookupStateEnum, convertLookupStrokeToKeysSequence } from './utils/lookup'
 
 const enter = 0.2
 const rowSpacing = 1.3
-const animate = false
+// const animate = false
 
 const referencePosition = new Vector3(0.5, -2.4, 0)
 const position = [
@@ -84,7 +85,9 @@ const StenoKeyboard = ({ controls, isTouchDevice, ...props }) => {
   const ref = useRef()
   // eslint-disable-next-line no-unused-vars
   const [soundEnabled, setSoundEnabled] = useState(false)
+  const [lookupStrokes, setLookupStrokes] = useState(null)
   const [largestKeySet, setLargestKeySet] = useState(new Set())
+  const [lookupState, setLookupState] = useState(LookupStateEnum.IDLE)
 
   // Instance materials once
   const keyMaterials = useMemo(() => {
@@ -98,9 +101,45 @@ const StenoKeyboard = ({ controls, isTouchDevice, ...props }) => {
 
   useEffect(() => {
     if (lastJsonMessage) {
-      console.log(lastJsonMessage.paper)
+      // console.log(lastJsonMessage)
+      if (lastJsonMessage.on_stroked) {
+        console.log(lastJsonMessage.on_stroked.paper)
+      }
+      // Only process the lookup result if we are expecting one.
+      if (lastJsonMessage.lookup) {
+        if (lastJsonMessage.lookup.length) {
+          setLookupState(LookupStateEnum.LOOKUP_READY)
+          // console.log('Successfully looked up:', lastJsonMessage.lookup)
+          // The strategy is to get the most straight forward list of strokes
+          const straightForwardStrokes = lastJsonMessage.lookup[0]
+          // console.log('Straight forward strokes:', straightForwardStrokes)
+          const keysSequence = convertLookupStrokeToKeysSequence(straightForwardStrokes)
+          // console.log('Keys sequence:', keysSequence)
+          setLookupStrokes(keysSequence)
+        } else {
+          console.error('Could not lookup for phrase!')
+          setLookupState(LookupStateEnum.LOOKUP_ERROR)
+        }
+      }
     }
   }, [lastJsonMessage])
+
+  // const lookupState = useRef(LookupStateEnum.IDLE)
+  useEffect(() => {
+    // Only attempt to send a lookup if the connection is open and we haven't sent one already.
+    if (readyState === ReadyState.OPEN && lookupState === LookupStateEnum.IDLE && window.location.search.length) {
+      const urlParams = new URLSearchParams(window.location.search)
+      const phraseToLookup = urlParams.get('lookup')
+
+      if (phraseToLookup) {
+        // console.log('sending lookup:', phraseToLookup)
+        sendJsonMessage({ lookup: phraseToLookup })
+        setLookupState(LookupStateEnum.LOOKING_UP)
+        // Optional: remove the query parameter from the URL to avoid re-sending on refresh
+        // window.history.replaceState({}, document.title, window.location.pathname)
+      }
+    }
+  }, [lookupState, readyState, sendJsonMessage])
 
   const skip = !soundEnabled
   const [playKeyPress] = useSound(keypressAudioFile, { skip })
@@ -124,6 +163,16 @@ const StenoKeyboard = ({ controls, isTouchDevice, ...props }) => {
     // console.log(`Key ${keyId} was released.`)
   }
 
+  /**
+   * Safely updates the `pressedKeys` state map.
+   * This function takes a callback that receives a mutable copy of the current `pressedKeys` map.
+   * The callback can then perform mutations (like `set` or `delete`) on this map.
+   *
+   * The map stores which keys are being pressed by which finger/source.
+   * The key is a finger's `identifier` (number) or 'auto' (string) for automated presses.
+   * The value is a `Set` or `Array` of `keyId` strings.
+   * @param {(map: Map<number | string, Set<string> | string[]>) => void} callback The function that mutates the map.
+   */
   const updatePressedKeys = (callback) => {
     setPressedKeys(prevPressedKeys => {
       const newMap = new Map(prevPressedKeys)
@@ -134,8 +183,9 @@ const StenoKeyboard = ({ controls, isTouchDevice, ...props }) => {
 
   // Animate the keys
   useFrame(({ clock }) => {
-    if (animate) {
-      const keySetsWithRest = [[], [], [], [], ...keySets]
+    if (lookupState === LookupStateEnum.LOOKUP_READY) {
+      const keySetsWithRest = [[], [], [], [], ...lookupStrokes]
+      // const keySetsWithRest = [[], [], [], [], ...keySets]
       const elapsedTime = clock.getElapsedTime()
       const speed = 1 // Adjust the typing speed
       const ratio = 0.6 // chord/blank ratio
@@ -162,9 +212,9 @@ const StenoKeyboard = ({ controls, isTouchDevice, ...props }) => {
   const [previousAllKeys, setPreviousAllKeys] = usePrevious(allKeys, emptySet)
   const [addedItems, removedItems] = getAddedAndRemovedItems(allKeys, previousAllKeys)
 
-  const registerStroke = (message) => {
+  const registerStroke = (stroke) => {
     if (readyState === ReadyState.OPEN) {
-      sendJsonMessage(message)
+      sendJsonMessage({ stroke })
     }
   }
 
@@ -172,7 +222,7 @@ const StenoKeyboard = ({ controls, isTouchDevice, ...props }) => {
     if (addedItems.size) {
       // console.log('Added items:', addedItems)
       if (controls.sendStroke === 'onKeyPress') {
-        registerStroke({ stroke: [...addedItems] })
+        registerStroke([...addedItems])
       }
     }
 
@@ -188,7 +238,7 @@ const StenoKeyboard = ({ controls, isTouchDevice, ...props }) => {
     if (!allKeys.size) {
       if (largestKeySet.size && controls.sendStroke === 'onKeyRelease') {
         const stroke = [...largestKeySet]
-        registerStroke({ stroke })
+        registerStroke(stroke)
         setLargestKeySet(new Set())
       }
     } else {

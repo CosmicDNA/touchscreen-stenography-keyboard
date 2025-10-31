@@ -132,11 +132,11 @@ const RawWebSocketProvider = ({ children, url, secretOrSharedKey, queryParams, h
       interval: 30000,
       returnMessage: 'pong'
     },
-    onMessage: (event) => {
-      if (event.data === 'pong') {
-        console.log('Heartbeat pong received!')
-      }
-    },
+    // onMessage: (event) => {
+    //   if (event.data === 'pong') {
+    //     console.log('Heartbeat pong received!')
+    //   }
+    // },
     shouldReconnect: (closeEvent) => {
       console.log('WebSocket closed:', closeEvent)
       setCloseEvent(closeEvent)
