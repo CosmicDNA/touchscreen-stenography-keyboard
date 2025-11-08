@@ -1,7 +1,7 @@
 import PropTypes from 'prop-types'
 import React, { useState, useMemo, useEffect } from 'react'
 import { Canvas, useFrame } from '@react-three/fiber'
-import { OrbitControls, ContactShadows } from '@react-three/drei'
+import { OrbitControls } from '@react-three/drei'
 import { Perf } from 'r3f-perf'
 import StenoKeyboard from './components/StenoKeyboard'
 import { WebSocketProvider } from './components/hooks/useWebSocket'
@@ -96,9 +96,11 @@ const Tunneled = () => {
 
   useFullScreen(!isTouchDevice)
 
+  const floorColor = theme === 'dark' ? 'black' : '#f0f0f0'
+
   useEffect(() => {
-    document.body.style.backgroundColor = theme === 'dark' ? 'black' : '#f0f0f0'
-  }, [theme])
+    document.body.style.backgroundColor = floorColor
+  }, [floorColor])
 
   const publicKeyQuery = useGetPublicKeyQuery(baseUrl, { skip: !wsControls.host })
   const {
@@ -130,6 +132,8 @@ const Tunneled = () => {
 
   const { parent, child } = styles
 
+  const gridY = -0.5
+
   return (
     <div className={parent}>
       <div className={child}>
@@ -138,13 +142,18 @@ const Tunneled = () => {
       <div>
         <ToastContainer theme={theme}/>
       </div>
-      <Canvas camera={{ position: Object.values(persistentCameraPosition), fov: 25 }}>
+      <Canvas shadows camera={{ position: Object.values(persistentCameraPosition), fov: 25 }}>
         {kControls.performanceMonitor && <Perf position='bottom-right' />}
         <ReactToCameraChange {...{ onCameraUpdate, trackCamera }}>
-          {/* eslint-disable-next-line react/no-unknown-property */}
           <ambientLight intensity={0.5} />
-          {/* eslint-disable-next-line react/no-unknown-property */}
-          <directionalLight position={[10, 10, 5]} />
+          <directionalLight
+            castShadow={kControls.showShadows}
+            intensity={0.5}
+            position={[0, 5, -10]}
+            shadow-mapSize-width={512}
+            shadow-mapSize-height={512}
+            shadow-camera-far={50}
+          />
           <WebSocketProvider
             url={websocketUrl}
             secretOrSharedKey={secretOrSharedKey}
@@ -153,8 +162,6 @@ const Tunneled = () => {
           >
             <StenoKeyboard controls={kControls} isTouchDevice={isTouchDevice}/>
           </WebSocketProvider>
-          {kControls.showShadows && <ContactShadows frames={1} position-y={-0.5} blur={1} opacity={0.75} />}
-          {/* <ContactShadows frames={1} position-y={-0.5} blur={3} color="orange" /> */}
           <OrbitControls
             onEnd={onOrbitMotionEnd}
             zoomSpeed={0.25}
@@ -167,7 +174,14 @@ const Tunneled = () => {
             enablePan={!kControls.lockPosition}
             enableZoom={!kControls.lockPosition}
           />
-          <Grid position={[0, -0.5, 0]} />
+          <mesh
+            receiveShadow rotation-x={-Math.PI / 2} position-y={gridY - 0.02}>
+            <planeGeometry
+              args={[100, 100]}
+            />
+            <meshStandardMaterial color={floorColor} />
+          </mesh>
+          <Grid position={[0, gridY, 0]} />
         </ReactToCameraChange>
       </Canvas>
       {/* <status.In className='child'>

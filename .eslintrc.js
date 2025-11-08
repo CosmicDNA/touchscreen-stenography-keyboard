@@ -16,6 +16,7 @@ module.exports = {
     'react' // 'react-hooks' is included by the extends
   ],
   rules: {
+    'react/no-unknown-property': ['off', { ignore: ['JSX'] }]
   },
   settings: {
     react: {

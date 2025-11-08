@@ -43,24 +43,28 @@ const AnyKey = ({ geometry, offsetX = 0, offsetY = 0, scale = 1, lateral = 7 / 1
       name='key group'
     >
       <group
-        // eslint-disable-next-line react/no-unknown-property
+
         rotation-x={pressed ? Math.PI / 32 / armLength : 0}
-        // eslint-disable-next-line react/no-unknown-property
+
         position-y={armLength}
       >
         <mesh
-          // eslint-disable-next-line react/no-unknown-property
+
           position-y={-lateral - armLength}
-          // eslint-disable-next-line react/no-unknown-property
+
           userData={{ keyId }}
-          // eslint-disable-next-line react/no-unknown-property
+
+          castShadow
+
+          receiveShadow
+
           geometry={geometry}
         >
           {materials.map((material, i) =>
             <primitive key={i}
-              // eslint-disable-next-line react/no-unknown-property
+
               object={material}
-              // eslint-disable-next-line react/no-unknown-property
+
               attach={`material-${i}`} />
           )}
         </mesh>

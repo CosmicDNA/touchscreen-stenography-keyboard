@@ -245,8 +245,8 @@ const StenoKeyboard = ({ controls, isTouchDevice, ...props }) => {
   return (
     <group
       {...props}
-      ref={ref} // eslint-disable-next-line react/no-unknown-property
-      rotation-x={-Math.PI / 2} // eslint-disable-next-line react/no-unknown-property
+      ref={ref}
+      rotation-x={-Math.PI / 2}
     >
       {
         config.map((item, key) => {
