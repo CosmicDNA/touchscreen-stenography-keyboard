@@ -3,7 +3,8 @@ import { useFrame } from '@react-three/fiber'
 import { useRegularKeyGeometry } from './hooks/useRegularKeyGeometry'
 import { RegularKey } from './RegularKey'
 // Assuming the path to your JSON layout file
-import fatAssEnter60Layout from '../components/utils/keyboardLayouts/fat-ass-enter-60.json'
+// import layout from '../components/utils/keyboardLayouts/default-60.json'
+import layout from '../components/utils/keyboardLayouts/fat-ass-enter-60.json'
 
 /**
  * Renders a 3D regular keyboard based on a KLE JSON layout.
@@ -11,7 +12,7 @@ import fatAssEnter60Layout from '../components/utils/keyboardLayouts/fat-ass-ent
 const RegularKeyboard = () => {
   const groupRef = useRef()
   // Use the custom hook to get the calculated geometries for each key
-  const keyGeometries = useRegularKeyGeometry(fatAssEnter60Layout)
+  const keyGeometries = useRegularKeyGeometry(layout)
 
   // Optional: Add some animation or rotation to the keyboard
   useFrame(() => {
