@@ -22,30 +22,32 @@ export const useRegularKeyGeometry = (layoutJson) => {
     }
 
     const geometries = []
-    let currentYOffset = 0 // Tracks the Y offset for the current row's baseline
-    let maxKeyboardWidth = 0 // To help center the entire keyboard
+    let currentYBaseline = 0 // Y position for the current row's baseline (top edge of the row) in KLE units
 
     layoutJson.forEach((row, rowIndex) => {
-      let currentX = 0 // X position for the current key in the row (left edge)
+      let currentXCursor = 0 // Reset X cursor for each new row. This is crucial.
       let lastKeyProps = {} // Stores properties from the last object encountered in the row
-      let maxKeyHeightInRow = 1 // Track max height in current row for next row's Y offset
 
       row.forEach((item, itemIndex) => {
         if (typeof item === 'object') {
           // This item defines properties for the next key(s)
           lastKeyProps = { ...lastKeyProps, ...item }
         } else if (typeof item === 'string') {
-          // This item is a keycap label, apply lastKeyProps to it
+          // Apply x/y offsets from lastKeyProps to the current cursor position
+          // These offsets are *relative to the current cursor*, not absolute.
+          currentXCursor += (lastKeyProps.x || 0) + KEY_SPACING
+          const currentYCursor = currentYBaseline + (lastKeyProps.y || 0) * UNIT_SIZE
+
           const label = item
-          const keyWidth = lastKeyProps.w || 1
-          const keyHeight = lastKeyProps.h || 1
-          const xOffset = lastKeyProps.x || 0 // X offset from currentX
-          const yOffset = lastKeyProps.y || 0 // Y offset from currentY
+          const keyWidth = (lastKeyProps.w || 1) - KEY_SPACING
+          const keyHeight = (lastKeyProps.h || 1) - KEY_SPACING
           const alignment = lastKeyProps.a || 4 // Text alignment (KLE 'a' property)
 
+          // Calculate the top and bottom edges of the key relative to the current row's baseline
           // Calculate the center position for the first part of the key
-          const posX1 = currentX + xOffset * UNIT_SIZE + (keyWidth / 2) * UNIT_SIZE
-          const posY1 = currentYOffset + yOffset * UNIT_SIZE + (keyHeight / 2) * UNIT_SIZE
+
+          const posX1 = currentXCursor * UNIT_SIZE + (keyWidth / 2) * UNIT_SIZE
+          const posY1 = currentYCursor + (keyHeight / 2) * UNIT_SIZE
 
           geometries.push({
             id: `key-${rowIndex}-${itemIndex}-part1`,
@@ -57,15 +59,16 @@ export const useRegularKeyGeometry = (layoutJson) => {
 
           // Handle split keys (e.g., Enter key with w2, h2, x2, y2)
           if (lastKeyProps.w2 && lastKeyProps.h2) {
-            const keyWidth2 = lastKeyProps.w2 || 1
-            const keyHeight2 = lastKeyProps.h2 || 1
+            const keyWidth2 = (lastKeyProps.w2 || 1) - KEY_SPACING
+            const keyHeight2 = (lastKeyProps.h2 || 1) - KEY_SPACING
             const xOffset2 = lastKeyProps.x2 || 0 // X offset for second part, relative to first part's origin
-            const yOffset2 = lastKeyProps.y2 || 0 // Y offset for second part, relative to first part's origin
+            const yOffset2 = lastKeyProps.y2 || 0 // Y offset for second part, relative to first part's origin (relative to currentYCursor)
 
             // Calculate the center position for the second part of the key
-            // It's relative to the *start* of the current key's position (currentX, currentYOffset)
-            const posX2 = currentX + xOffset * UNIT_SIZE + xOffset2 * UNIT_SIZE + (keyWidth2 / 2) * UNIT_SIZE
-            const posY2 = currentYOffset + yOffset * UNIT_SIZE + yOffset2 * UNIT_SIZE + (keyHeight2 / 2) * UNIT_SIZE
+            // It's relative to the *start* of the current key's position (currentXCursor, currentYCursor)
+
+            const posX2 = currentXCursor * UNIT_SIZE + xOffset2 * UNIT_SIZE + (keyWidth2 / 2) * UNIT_SIZE
+            const posY2 = currentYCursor + yOffset2 * UNIT_SIZE + (keyHeight2 / 2) * UNIT_SIZE
 
             geometries.push({
               id: `key-${rowIndex}-${itemIndex}-part2`,
@@ -74,28 +77,41 @@ export const useRegularKeyGeometry = (layoutJson) => {
               size: [keyWidth2 * UNIT_SIZE, keyHeight2 * UNIT_SIZE, KEY_DEPTH],
               alignment
             })
-            maxKeyHeightInRow = Math.max(maxKeyHeightInRow, keyHeight2) // Consider height of second part
           }
 
-          maxKeyHeightInRow = Math.max(maxKeyHeightInRow, keyHeight) // Track max height in current row
           // Advance currentX for the next key in the row
-          // This advancement is based on the primary width (w) of the key
-          currentX += (keyWidth + KEY_SPACING) * UNIT_SIZE
+          // This advancement is based on the primary width (w) of the key, plus spacing
+          currentXCursor += keyWidth
           lastKeyProps = {} // Reset properties after consuming them for a key
         }
       })
-      // Update maxKeyboardWidth for centering calculation
-      maxKeyboardWidth = Math.max(maxKeyboardWidth, currentX)
-      // Advance currentYOffset for the next row
-      currentYOffset += (maxKeyHeightInRow * UNIT_SIZE + KEY_SPACING)
+      // Advance the baseline for the next row by a standard 1u height + spacing.
+      currentYBaseline += (UNIT_SIZE)
     })
 
-    // Center the entire keyboard horizontally
-    const centeredGeometries = geometries.map((geo) => ({
-      ...geo,
-      position: [geo.position[0] - maxKeyboardWidth / 2, geo.position[1], geo.position[2]]
-    }))
+    // --- Global Centering ---
+    if (geometries.length === 0) {
+      setKeyGeometries([])
+      return
+    }
 
+    let minX = Infinity; let maxX = -Infinity
+    let minY = Infinity; let maxY = -Infinity
+
+    geometries.forEach(geo => {
+      minX = Math.min(minX, geo.position[0] - geo.size[0] / 2)
+      maxX = Math.max(maxX, geo.position[0] + geo.size[0] / 2)
+      minY = Math.min(minY, geo.position[1] - geo.size[1] / 2)
+      maxY = Math.max(maxY, geo.position[1] + geo.size[1] / 2)
+    })
+
+    const offsetX = (minX + maxX) / 2
+    const offsetY = (minY + maxY) / 2
+
+    const centeredGeometries = geometries.map(geo => ({
+      ...geo,
+      position: [geo.position[0] - offsetX, geo.position[1] - offsetY, geo.position[2]]
+    }))
     setKeyGeometries(centeredGeometries)
   }, [layoutJson])
 
