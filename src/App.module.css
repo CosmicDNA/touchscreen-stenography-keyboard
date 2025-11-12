@@ -4,11 +4,11 @@
 }
 
 .child {
-  -webkit-background-clip: text;
-  background-clip: text;
   color: green;
   position: absolute; /* Position child absolutely within the parent */
   top: 0; /* Adjust top position as needed */
   left: 0; /* Adjust left position as needed */
-  /* Other styles for the child */
+  z-index: 10; /* Ensure it renders on top of the canvas */
+  pointer-events: none; /* Allow clicks to pass through to the canvas */
+  padding: 1rem; /* Add some spacing from the edge */
 }

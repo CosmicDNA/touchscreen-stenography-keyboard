@@ -170,23 +170,19 @@ const RawWebSocketProvider = ({ children, url, secretOrSharedKey, queryParams, h
   }, [readyState, sendJsonMessage])
 
   return (
-    <>
-      {<status.In>
-        <>
-          <ColoredCircle
-            color={mappingReadyStateToColor[readyState]}
-            glow={readyState !== OPEN}
-          />
-        </>
-      </status.In>}
-      <Provider value={{
-        readyState,
-        lastJsonMessage,
-        sendJsonMessage
-      }}>
-        {children}
-      </Provider>
-    </>
+    <Provider value={{
+      readyState,
+      lastJsonMessage,
+      sendJsonMessage
+    }}>
+      <status.In>
+        <ColoredCircle
+          color={mappingReadyStateToColor[readyState]}
+          glow={readyState !== OPEN}
+        />
+      </status.In>
+      {children}
+    </Provider>
   )
 }
 

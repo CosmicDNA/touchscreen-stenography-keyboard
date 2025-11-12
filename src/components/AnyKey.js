@@ -43,28 +43,19 @@ const AnyKey = ({ geometry, offsetX = 0, offsetY = 0, scale = 1, lateral = 7 / 1
       name='key group'
     >
       <group
-
         rotation-x={pressed ? Math.PI / 32 / armLength : 0}
-
         position-y={armLength}
       >
         <mesh
-
           position-y={-lateral - armLength}
-
           userData={{ keyId }}
-
           castShadow
-
           receiveShadow
-
           geometry={geometry}
         >
           {materials.map((material, i) =>
             <primitive key={i}
-
               object={material}
-
               attach={`material-${i}`} />
           )}
         </mesh>

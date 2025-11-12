@@ -3,7 +3,8 @@ import React, { useState, useMemo, useEffect } from 'react'
 import { Canvas, useFrame } from '@react-three/fiber'
 import { OrbitControls } from '@react-three/drei'
 import { Perf } from 'r3f-perf'
-import StenoKeyboard from './components/StenoKeyboard'
+// import StenoKeyboard from './components/StenoKeyboard'
+import RegularKeyboard from './components/RegularKeyboard'
 import { WebSocketProvider } from './components/hooks/useWebSocket'
 import { TunnelProvider, useTunnelContext } from './components/hooks/useTunnel.js'
 import Grid from './components/Grid'
@@ -160,7 +161,8 @@ const Tunneled = () => {
             queryParams={queryParams}
             httpError={error}
           >
-            <StenoKeyboard controls={kControls} isTouchDevice={isTouchDevice}/>
+            {/* <StenoKeyboard controls={kControls} isTouchDevice={isTouchDevice}/> */}
+            <RegularKeyboard />
           </WebSocketProvider>
           <OrbitControls
             onEnd={onOrbitMotionEnd}
