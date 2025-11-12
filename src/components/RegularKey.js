@@ -1,5 +1,6 @@
 import PropTypes from 'prop-types'
-import React from 'react'
+import React, { useEffect } from 'react'
+import useMount from './hooks/useMount'
 import { Box, Text } from '@react-three/drei'
 
 /**
@@ -11,27 +12,41 @@ import { Box, Text } from '@react-three/drei'
  * @param {Array<number>} props.position - [x, y, z] center position of the key.
  * @param {Array<number>} props.size - [width, height, depth] dimensions of the key.
  * @param {string} [props.color='#333333'] - Base color of the key.
- * @param {string} [props.hoverColor='#555555'] - Color when the key is hovered.
  * @param {string} [props.textColor='#FFFFFF'] - Color of the key label.
  * @param {number} [props.alignment=4] - KLE 'a' property for text alignment (0-8).
  * @param {function} [props.onClick] - Callback for click events.
- * @param {function} [props.onPointerOver] - Callback for pointer over events.
- * @param {function} [props.onPointerOut] - Callback for pointer out events.
+ * @param {Set<string>} [props.allKeys] - A set of all currently pressed key IDs.
  */
-export function RegularKey ({
+const RegularKey = ({
   id,
   label,
   position, // [x, y, z] center of the key
   size, // [width, height, depth]
   color = '#666666', // Changed to a slightly lighter grey
-  hoverColor = '#555555',
   textColor = '#FFFFFF',
   alignment = 4, // KLE alignment: 4 is middle center
-  onClick,
-  onPointerOver,
-  onPointerOut
-}) {
-  const [hovered, setHovered] = React.useState(false)
+  allKeys = new Set(),
+  onKeyPress,
+  onKeyRelease
+}) => {
+  const { isMounted } = useMount()
+
+  // A key is pressed if its unique ID is in the `allKeys` set.
+  const pressed = allKeys.has(id)
+
+  // Watch for changes in the 'pressed' variable
+  useEffect(() => {
+    if (isMounted) {
+      if (pressed) {
+        // Trigger onKeyPress event here when 'pressed' becomes true
+        onKeyPress(id)
+      } else {
+        // Trigger onKeyRelease event here when 'pressed' becomes false
+        onKeyRelease(id)
+      }
+    }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [pressed])
 
   // Determine text alignment based on KLE 'a' property
   // These map directly to @react-three/drei/Text anchorX/Y and textAlign
@@ -55,20 +70,11 @@ export function RegularKey ({
   return (
     <group position={position}>
       <Box
+        position-z={pressed ? -0.2 : 0} // Depress the key when pressed
+        userData={{ keyId: id }} // This is the crucial fix
         args={[size[0], size[1], size[2]]} // width, height, depth
-        onPointerOver={(event) => {
-          event.stopPropagation()
-          setHovered(true)
-          onPointerOver && onPointerOver(event)
-        }}
-        onPointerOut={(event) => {
-          event.stopPropagation()
-          setHovered(false)
-          onPointerOut && onPointerOut(event)
-        }}
-        onClick={onClick}
       >
-        <meshStandardMaterial color={hovered ? hoverColor : color} />
+        <meshStandardMaterial color={pressed ? 'orange' : (color)} />
       </Box>
       {label && (
         <Text
@@ -96,24 +102,12 @@ RegularKey.propTypes = {
   position: PropTypes.arrayOf(PropTypes.number).isRequired,
   size: PropTypes.arrayOf(PropTypes.number).isRequired,
   color: PropTypes.string,
-  hoverColor: PropTypes.string,
   textColor: PropTypes.string,
   alignment: PropTypes.number,
-  onClick: PropTypes.func,
-  onPointerOver: PropTypes.func,
-  onPointerOut: PropTypes.func
+  userData: PropTypes.object,
+  allKeys: PropTypes.instanceOf(Set),
+  onKeyPress: PropTypes.func.isRequired,
+  onKeyRelease: PropTypes.func.isRequired
 }
 
-RegularKey.propTypes = {
-  alignment: PropTypes.number,
-  color: PropTypes.string,
-  hoverColor: PropTypes.string,
-  id: PropTypes.any,
-  label: PropTypes.any,
-  onClick: PropTypes.any,
-  onPointerOut: PropTypes.func,
-  onPointerOver: PropTypes.func,
-  position: PropTypes.any,
-  size: PropTypes.any,
-  textColor: PropTypes.string
-}
+export { RegularKey }

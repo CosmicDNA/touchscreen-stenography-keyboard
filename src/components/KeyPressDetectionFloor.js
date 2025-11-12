@@ -47,11 +47,14 @@ const KeyPressDetectionFloor = ({ pressedKeys, updatePressedKeys, ...props }) =>
    */
   const handleDrag = ({ touch, type }) => {
     const processDrag = () => {
-      const keyMeshes = groupRef.current?.parent?.children
-        .filter(c => c.name === 'key group')
-        .map(g => g.children[0])
-        .map(g => g.children[0])
-
+      // Find all meshes that have a `keyId` in their `userData`.
+      // This is a more robust way to find interactable keys.
+      const keyMeshes = []
+      groupRef.current?.parent?.traverse((child) => {
+        if (child.isMesh && child.userData.keyId) {
+          keyMeshes.push(child)
+        }
+      })
       if (!keyMeshes) return
 
       const { clientX, clientY, radiusX, radiusY, rotationAngle, identifier } = touch
