@@ -117,7 +117,7 @@ export const useRegularKeyGeometry = (layoutJson) => {
 
         // Position the key's group based on the layout cursor
         const posX = currentXCursor
-        const posY = currentYCursor
+        const posY = currentYCursor + (props.h > 1 ? props.h - 1 : 0)
 
         return {
           id: `key-${yCursor}-${itemIndex}`,
