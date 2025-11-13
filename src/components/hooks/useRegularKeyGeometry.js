@@ -77,10 +77,10 @@ export const useRegularKeyGeometry = (layoutJson) => {
         const alignment = props.a || 4
 
         const points1 = [
-          [0, 0], // bottom left
-          [w - KEY_SPACING, 0], // bottom right
+          [0, h - KEY_SPACING], // top left
           [w - KEY_SPACING, h - KEY_SPACING], // top right
-          [0, h - KEY_SPACING] // top left
+          [w - KEY_SPACING, 0], // bottom right
+          [0, 0] // bottom left
         ]
 
         let points
@@ -97,7 +97,7 @@ export const useRegularKeyGeometry = (layoutJson) => {
             [x2, 0], // bottom left
             [x2, h2 - 2 * KEY_SPACING] // top left
           ]
-          const processedPoints1 = points1.slice(2).reverse()
+          const processedPoints1 = points1.slice(0, 2)
 
           points = slicedPoints2
             .concat([[processedPoints1[0][0], slicedPoints2[2][1]]])
@@ -129,7 +129,7 @@ export const useRegularKeyGeometry = (layoutJson) => {
 
       yCursor += 1 // Increment y-cursor for the next row
       return rowGeometries
-    })
+    }).flat()
   }, [layoutJson])
 
   return keyGeometries

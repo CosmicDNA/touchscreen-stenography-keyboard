@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react'
+import React, { useState, useEffect, useLayoutEffect, useRef } from 'react'
 import { useRegularKeyGeometry } from './hooks/useRegularKeyGeometry'
 import { RegularKey } from './RegularKey'
 // import layout from '../components/utils/keyboardLayouts/fat-ass-enter-60.json'
@@ -10,6 +10,7 @@ import keyreleaseAudioFile from '../sounds/keyrelease.flac'
 import { useWebSocketContext, ReadyState } from './hooks/useWebSocket'
 import { dep } from './utils/tools'
 import KeyPressDetectionFloor from './KeyPressDetectionFloor'
+import { Box3, Vector3 } from 'three'
 import { toast } from 'react-toastify'
 
 /**
@@ -17,7 +18,8 @@ import { toast } from 'react-toastify'
  */
 const RegularKeyboard = () => {
   // Use the custom hook to get the calculated geometries for each key
-  const keyGeometries = useRegularKeyGeometry(layout)
+  const groupRef = useRef()
+  const geometries = useRegularKeyGeometry(layout)
   const [pressedKeys, setPressedKeys] = useState(new Map())
   const [largestKeySet, setLargestKeySet] = useState(new Set())
   const [soundEnabled, setSoundEnabled] = useState(false)
@@ -25,9 +27,16 @@ const RegularKeyboard = () => {
   const skipSound = !soundEnabled
   const [playKeyPress] = useSound(keypressAudioFile, { skip: skipSound })
   const [playKeyRelease] = useSound(keyreleaseAudioFile, { volume: 0.2, skip: skipSound })
+  const [size, setSize] = useState([0, 0, 0])
 
-  const geometriesFlat = keyGeometries.flat()
-  const keyboardWidth = keyGeometries[0].reduce((sum, key) => sum + key.size[0], 0)
+  useLayoutEffect(() => {
+    if (groupRef.current) {
+      const box = new Box3().setFromObject(groupRef.current)
+      const sizeV = new Vector3()
+      box.getSize(sizeV)
+      setSize([sizeV.x, sizeV.y, sizeV.z])
+    }
+  }, [])
 
   const updatePressedKeys = (callback) => {
     setPressedKeys(prevPressedKeys => {
@@ -42,7 +51,7 @@ const RegularKeyboard = () => {
   const registerStroke = (stroke) => {
     if (readyState === ReadyState.OPEN) {
       // We send the labels of the keys, not their internal IDs
-      const keyIdToLabelMap = new Map(geometriesFlat.map(k => [k.id, k.label]))
+      const keyIdToLabelMap = new Map(geometries.map(k => [k.id, k.label]))
       const strokeLabels = stroke.map(keyId => keyIdToLabelMap.get(keyId)).filter(Boolean)
       if (strokeLabels.length > 0) {
         console.log('Sending stroke:', strokeLabels)
@@ -85,8 +94,8 @@ const RegularKeyboard = () => {
   const clickHandler = !isTouchDevice ? () => toast('This app is designed for touchscreen devices!', { type: 'error' }) : undefined
 
   return (
-    <group position={[-keyboardWidth / 2, 0, 0]} rotation-x={-Math.PI / 2}>
-      {geometriesFlat.map((keyGeo) => (
+    <group ref={groupRef} rotation-x={-Math.PI / 2} position={[-size[0] / 2, 0, 0]}>
+      {geometries.map((keyGeo) => (
         <RegularKey
           key={keyGeo.id}
           {...keyGeo}
