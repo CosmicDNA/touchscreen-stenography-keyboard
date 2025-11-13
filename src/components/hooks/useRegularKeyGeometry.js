@@ -21,25 +21,32 @@ const extrudeSettings = {
  * where each object represents a key and has its own dimension properties.
  * @param {Array<string|object>} arr The row array from KLE JSON.
  * @returns {Array<{label: string, props: object}>}
+ * @returns {{keys: Array<{label: string, props: object}>, rowProps: object}}
  */
 function convertToObjects (arr) {
-  const result = []
+  const keys = []
+  const rowProps = {}
   let currentProps = {}
   let xCursor = 0
-  arr.forEach(item => {
+
+  // Separate row-level properties from key data
+  if (arr.length > 0 && typeof arr[0] === 'object' && ('y' in arr[0])) {
+    Object.assign(rowProps, arr[0])
+  }
+
+  arr.forEach((item, index) => {
     const current = item
     if (typeof current === 'object') {
       currentProps = { ...currentProps, ...current }
     } else if (typeof current === 'string') {
-      // Apply x offset before placing the key
       xCursor += (currentProps.x || 0)
-      result.push({ label: current, props: { ...currentProps, x: xCursor } })
+      keys.push({ label: current, props: { ...currentProps, x: xCursor } })
       xCursor += (currentProps.w || 1)
       // Reset props that don't carry over to the next key automatically (like w, h, x, y)
       currentProps = { a: currentProps.a }
     }
   })
-  return result
+  return { keys, rowProps }
 }
 
 /**
@@ -49,12 +56,16 @@ function convertToObjects (arr) {
  */
 export const useRegularKeyGeometry = (layoutJson) => {
   const keyGeometries = useMemo(() => {
-    return layoutJson.map((row, rowIndex) => {
-      const rowGeometries = convertToObjects(row).map((item, itemIndex) => {
+    let yCursor = 0
+    return layoutJson.map((row) => {
+      const { keys, rowProps } = convertToObjects(row)
+      yCursor += (rowProps.y || 0)
+
+      const rowGeometries = keys.map((item, itemIndex) => {
         const { label, props } = item
 
         const currentXCursor = props.x
-        const currentYCursor = rowIndex
+        const currentYCursor = yCursor
 
         // Visual dimensions are shrunk to create the gap
         const w = (props.w || 1) - KEY_SPACING
@@ -71,6 +82,8 @@ export const useRegularKeyGeometry = (layoutJson) => {
           [w - KEY_SPACING, h - KEY_SPACING], // top right
           [0, h - KEY_SPACING] // top left
         ]
+
+        console.log({ name: 'Hi', w2 })
 
         let points
         if (w2) {
@@ -91,6 +104,8 @@ export const useRegularKeyGeometry = (layoutJson) => {
           points = slicedPoints2
             .concat([[processedPoints1[0][0], slicedPoints2[2][1]]])
             .concat(processedPoints1)
+
+          console.log({ points, points1, slicedPoints2, processedPoints1 })
         } else {
           points = points1
         }
@@ -105,7 +120,7 @@ export const useRegularKeyGeometry = (layoutJson) => {
         const posY = currentYCursor
 
         return {
-          id: `key-${rowIndex}-${itemIndex}`,
+          id: `key-${yCursor}-${itemIndex}`,
           label,
           position: [posX, -posY - y2],
           size: [w, h, KEY_DEPTH], // For text positioning
@@ -114,6 +129,7 @@ export const useRegularKeyGeometry = (layoutJson) => {
         }
       })
 
+      yCursor += 1 // Increment y-cursor for the next row
       return rowGeometries
     })
   }, [layoutJson])
