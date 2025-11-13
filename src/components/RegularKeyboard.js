@@ -1,8 +1,6 @@
-import React, { useRef, useState, useEffect } from 'react'
+import React, { useState, useEffect } from 'react'
 import { useRegularKeyGeometry } from './hooks/useRegularKeyGeometry'
 import { RegularKey } from './RegularKey'
-// Assuming the path to your JSON layout file
-// import layout from '../components/utils/keyboardLayouts/default-60.json'
 import layout from '../components/utils/keyboardLayouts/fat-ass-enter-60.json'
 import { useSound } from './hooks/use-sound'
 import keypressAudioFile from '../sounds/keypress.flac'
@@ -16,7 +14,6 @@ import { toast } from 'react-toastify'
  * Renders a 3D regular keyboard based on a KLE JSON layout.
  */
 const RegularKeyboard = () => {
-  const groupRef = useRef()
   // Use the custom hook to get the calculated geometries for each key
   const keyGeometries = useRegularKeyGeometry(layout)
   const [pressedKeys, setPressedKeys] = useState(new Map())
@@ -26,6 +23,9 @@ const RegularKeyboard = () => {
   const skipSound = !soundEnabled
   const [playKeyPress] = useSound(keypressAudioFile, { skip: skipSound })
   const [playKeyRelease] = useSound(keyreleaseAudioFile, { volume: 0.2, skip: skipSound })
+
+  const geometriesFlat = keyGeometries.flat()
+  const keyboardWidth = keyGeometries[0].reduce((sum, key) => sum + key.size[0], 0)
 
   const updatePressedKeys = (callback) => {
     setPressedKeys(prevPressedKeys => {
@@ -40,7 +40,7 @@ const RegularKeyboard = () => {
   const registerStroke = (stroke) => {
     if (readyState === ReadyState.OPEN) {
       // We send the labels of the keys, not their internal IDs
-      const keyIdToLabelMap = new Map(keyGeometries.map(k => [k.id, k.label]))
+      const keyIdToLabelMap = new Map(geometriesFlat.map(k => [k.id, k.label]))
       const strokeLabels = stroke.map(keyId => keyIdToLabelMap.get(keyId)).filter(Boolean)
       if (strokeLabels.length > 0) {
         console.log('Sending stroke:', strokeLabels)
@@ -83,8 +83,8 @@ const RegularKeyboard = () => {
   const clickHandler = !isTouchDevice ? () => toast('This app is designed for touchscreen devices!', { type: 'error' }) : undefined
 
   return (
-    <group ref={groupRef} position={[0, 0, 0]} rotation-x={-Math.PI / 2}> {/* Add rotation to lay flat */}
-      {keyGeometries.map((keyGeo) => (
+    <group position={[-keyboardWidth / 2, 0, 0]} rotation-x={-Math.PI / 2}>
+      {geometriesFlat.map((keyGeo) => (
         <RegularKey
           key={keyGeo.id}
           {...keyGeo}

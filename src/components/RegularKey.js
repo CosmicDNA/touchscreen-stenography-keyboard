@@ -1,7 +1,7 @@
 import PropTypes from 'prop-types'
 import React, { useEffect } from 'react'
 import useMount from './hooks/useMount'
-import { Box, Text } from '@react-three/drei'
+import { Text } from '@react-three/drei'
 
 /**
  * A 3D keycap component for a regular keyboard layout.
@@ -11,6 +11,7 @@ import { Box, Text } from '@react-three/drei'
  * @param {string} props.label - The text label for the key. Can contain '\n' for multi-line.
  * @param {Array<number>} props.position - [x, y, z] center position of the key.
  * @param {Array<number>} props.size - [width, height, depth] dimensions of the key.
+ * @param {THREE.ExtrudeGeometry} props.geometry - The extruded geometry for the keycap.
  * @param {string} [props.color='#333333'] - Base color of the key.
  * @param {string} [props.textColor='#FFFFFF'] - Color of the key label.
  * @param {number} [props.alignment=4] - KLE 'a' property for text alignment (0-8).
@@ -20,14 +21,17 @@ import { Box, Text } from '@react-three/drei'
 const RegularKey = ({
   id,
   label,
-  position, // [x, y, z] center of the key
+  geometry,
+  position,
   size, // [width, height, depth]
   color = '#666666', // Changed to a slightly lighter grey
   textColor = '#FFFFFF',
   alignment = 4, // KLE alignment: 4 is middle center
   allKeys = new Set(),
   onKeyPress,
-  onKeyRelease
+  onKeyRelease,
+  onClick,
+  ...props
 }) => {
   const { isMounted } = useMount()
 
@@ -68,17 +72,17 @@ const RegularKey = ({
   }
 
   return (
-    <group position={position}>
-      <Box
-        position-z={pressed ? -0.2 : 0} // Depress the key when pressed
-        userData={{ keyId: id }} // This is the crucial fix
-        args={[size[0], size[1], size[2]]} // width, height, depth
+    <group {...props} position={[...position, pressed ? -0.4 : 0]} >
+      <mesh
+        userData={{ keyId: id }}
+        geometry={geometry}
+        onClick={onClick}
       >
-        <meshStandardMaterial color={pressed ? 'orange' : (color)} />
-      </Box>
+        <meshStandardMaterial color={pressed ? 'orange' : color} />
+      </mesh>
       {label && (
         <Text
-          position={[0, 0, size[2] / 2 + 0.01]} // Position text slightly above the key surface
+          position={[size[0] / 2, size[1] / 2, size[2] / 2 + 0.09]} // Shift text to center
           fontSize={0.3} // Adjust font size as needed
           color={textColor}
           anchorX={anchorX}
@@ -101,13 +105,15 @@ RegularKey.propTypes = {
   label: PropTypes.string,
   position: PropTypes.arrayOf(PropTypes.number).isRequired,
   size: PropTypes.arrayOf(PropTypes.number).isRequired,
+  geometry: PropTypes.object.isRequired,
   color: PropTypes.string,
   textColor: PropTypes.string,
   alignment: PropTypes.number,
   userData: PropTypes.object,
   allKeys: PropTypes.instanceOf(Set),
   onKeyPress: PropTypes.func.isRequired,
-  onKeyRelease: PropTypes.func.isRequired
+  onKeyRelease: PropTypes.func.isRequired,
+  onClick: PropTypes.func
 }
 
 export { RegularKey }

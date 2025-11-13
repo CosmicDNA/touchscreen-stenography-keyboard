@@ -26,10 +26,10 @@ import useKeyGeometry from './hooks/useKeyGeometry' // Import Material
  * Key component.
  * @param {KeyProps} props - The props object.
  */
-const Key = ({ offsetX = 0, offsetY = 0, scale = 1, roundResolution = 32, width = 7 / 10, lateral = 7 / 10, depth = 1 / 20, keyId, round, grow, allKeys, armLength, ...props }) => {
+const Key = ({ offsetX = 0, offsetY = 0, scale = 1, width = 7 / 10, lateral = 7 / 10, depth = 1 / 20, keyId, round, grow, allKeys, armLength, ...props }) => {
   const { materials } = props
 
-  const geometry = useKeyGeometry({ width, lateral, depth, round, grow, roundResolution })
+  const geometry = useKeyGeometry({ width, lateral, depth, round, grow })
 
   return (
     <AnyKey
@@ -57,7 +57,6 @@ Key.propTypes = {
   lateral: PropTypes.number,
   armLength: PropTypes.number,
   round: PropTypes.bool,
-  roundResolution: PropTypes.number,
   width: PropTypes.number,
   onKeyPress: PropTypes.func.isRequired,
   onKeyRelease: PropTypes.func.isRequired,
