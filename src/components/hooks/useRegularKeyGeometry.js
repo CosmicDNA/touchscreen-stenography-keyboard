@@ -83,8 +83,6 @@ export const useRegularKeyGeometry = (layoutJson) => {
           [0, h - KEY_SPACING] // top left
         ]
 
-        console.log({ name: 'Hi', w2 })
-
         let points
         if (w2) {
           // const points2 = [
