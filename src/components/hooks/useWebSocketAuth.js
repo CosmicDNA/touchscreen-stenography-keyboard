@@ -1,7 +1,5 @@
 import { useMemo } from 'react'
-import { getBox, encryptionProcess, newNonce } from '../utils/encryptionWrapper'
-
-const MIDDLEWARE_AUTHENTICATION_REQUEST = 'MAR' // Message Authentication Request
+import { getBox, getClientPublicKeyHex } from '../utils/encryptionWrapper'
 
 /**
  * A hook to handle WebSocket authentication logic.
@@ -15,13 +13,15 @@ const useWebSocketAuth = (publicKey) => {
     () => {
       if (!publicKey) return null
       return getBox(publicKey)
-    }, [publicKey]
+    },
+    [publicKey]
   )
 
   const queryParams = useMemo(() => {
     if (!secretOrSharedKey) return null
-    // A new nonce must be generated for every encryption.
-    return encryptionProcess(secretOrSharedKey, MIDDLEWARE_AUTHENTICATION_REQUEST, newNonce())
+    return {
+      publicKey: getClientPublicKeyHex()
+    }
   }, [secretOrSharedKey])
 
   return { secretOrSharedKey, queryParams }

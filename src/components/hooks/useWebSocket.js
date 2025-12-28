@@ -124,13 +124,13 @@ const useWebSocketContext = () => useContext(WebSocketContext)
 const RawWebSocketProvider = ({ children, url, secretOrSharedKey, queryParams, httpError }) => {
   // eslint-disable-next-line no-unused-vars
   const [closeEvent, setCloseEvent] = useState(null)
-  const skip = !secretOrSharedKey
+  const skip = !url // Only skip if there is no URL.
   const { readyState, sendMessage, lastMessage } = useWebSocket(url, {
     queryParams,
     heartbeat: {
-      message: 'ping',
+      message: JSON.stringify({ type: 'ping' }),
       interval: 30000,
-      returnMessage: 'pong'
+      returnMessage: JSON.stringify({ type: 'pong' })
     },
     // onMessage: (event) => {
     //   if (event.data === 'pong') {
@@ -146,19 +146,39 @@ const RawWebSocketProvider = ({ children, url, secretOrSharedKey, queryParams, h
   const { status } = useTunnelContext()
 
   const lastJsonMessage = useMemo(() => {
-    if (!lastMessage) return null
-    return getDecryptedMessage(secretOrSharedKey, lastMessage.data)
+    if (!lastMessage?.data) return null
+
+    if (secretOrSharedKey) {
+      return getDecryptedMessage(secretOrSharedKey, lastMessage.data)
+    }
+
+    try {
+      return JSON.parse(lastMessage.data)
+    } catch (e) {
+      // Not a JSON message, return raw data
+      return lastMessage.data
+    }
   }, [lastMessage, secretOrSharedKey])
 
   const sendJsonMessage = useCallback(message => {
-    return sendMessage(getEncryptedMessage(secretOrSharedKey, message, newNonce()))
+    if (secretOrSharedKey) {
+      return sendMessage(getEncryptedMessage(secretOrSharedKey, message, newNonce()))
+    }
+    return sendMessage(JSON.stringify(message))
   }, [secretOrSharedKey, sendMessage])
 
   useEffect(() => {
+    if (lastJsonMessage) {
+      console.log('Received WebSocket message:', lastJsonMessage)
+    }
+  }, [lastJsonMessage])
+
+  useEffect(() => {
     // Effect for showing toast notifications on state change
-    const { message, type } = getTimestampedConnectionMessage(readyState, url, skip, closeEvent, httpError)
+    const isAwaitingKey = !secretOrSharedKey && !httpError
+    const { message, type } = getTimestampedConnectionMessage(readyState, url, isAwaitingKey, closeEvent, httpError)
     toast(message, { type })
-  }, [readyState, url, skip, closeEvent, httpError])
+  }, [readyState, url, secretOrSharedKey, httpError, closeEvent])
 
   useEffect(() => {
     // Effect for cleaning up the connection

@@ -10,15 +10,14 @@ import Grid from './components/Grid'
 import { Vector3 } from 'three'
 import { atomWithStorage } from 'jotai/utils'
 import { useAtom } from 'jotai'
-import { useGetPublicKeyQuery } from './features/protocol/api/apiSlice'
 // import JSONPretty from 'react-json-pretty'
 import 'react-json-pretty/themes/monikai.css'
 import styles from './App.module.css' // This import is now used
 import useTheme from './components/hooks/useTheme'
-import useWebSocketAuth from './components/hooks/useWebSocketAuth'
 import usePersistedControls from './components/hooks/use-persisted-controls.js'
 import useFullScreen from './components/hooks/useFullScreen.js'
-import { ToastContainer } from 'react-toastify'
+import { ToastContainer, toast } from 'react-toastify'
+import { Scanner } from '@yudiel/react-qr-scanner'
 
 /**
  *
@@ -54,11 +53,6 @@ const sendStroke = {
   onKeyRelease: 'onKeyRelease'
 }
 
-const wsSchema = {
-  host: 'localhost:8086',
-  TLS: false
-}
-
 const kSchema = {
   sendStroke: { value: sendStroke.onKeyRelease, options: Object.keys(sendStroke) },
   lockPosition: false,
@@ -75,20 +69,18 @@ const cameraAtom = atomWithStorage(
   { getOnInit: true }
 )
 
+const websocketUrlAtom = atomWithStorage(
+  'websocketUrl',
+  null,
+  undefined,
+  { getOnInit: true }
+)
+
 const Tunneled = () => {
   const { status } = useTunnelContext()
-  const wsControls = usePersistedControls('Plover Web-socket Plugin', wsSchema)
+  const [showScanner, setShowScanner] = useState(false)
   const kControls = usePersistedControls('Keyboard', kSchema)
-
-  const isTLS = wsControls.TLS
-  const urlPredicate = `://${wsControls.host}`
-  const baseUrl = `${isTLS ? 'https' : 'http'}${urlPredicate}`
-  const websocketUrl = useMemo(() => {
-    // Only provide a URL if the host is set and we are not in a loading state
-    // specific to the websocket controls.
-    if (!wsControls.host) return null
-    return `${isTLS ? 'wss' : 'ws'}${urlPredicate}/websocket`
-  }, [wsControls.host, isTLS, urlPredicate])
+  const [websocketUrl, setWebsocketUrl] = useAtom(websocketUrlAtom)
 
   const theme = useTheme()
 
@@ -98,20 +90,22 @@ const Tunneled = () => {
 
   const floorColor = theme === 'dark' ? 'black' : '#f0f0f0'
 
+  const getBaseAndParams = (_url) => {
+    const url = new URL(_url)
+    const { searchParams, origin, pathname } = url
+    const searchParamsEntries = Object.fromEntries(searchParams.entries())
+
+    const base = origin + pathname
+    return [base, searchParamsEntries]
+  }
+
+  const joinUrl = 'ws://localhost:8787/session/a1b5ba2f-f8d1-4850-ab82-a27e500f6f98/join?token=0ae938cecf43e22ffdec64b5903f86bc1d14132d94db74e55e3ed8f1c8f70758'
+
   useEffect(() => {
     document.body.style.backgroundColor = floorColor
-  }, [floorColor])
-
-  const publicKeyQuery = useGetPublicKeyQuery(baseUrl, { skip: !wsControls.host })
-  const {
-    data: publicKey,
-    // eslint-disable-next-line no-unused-vars
-    isError,
-    // eslint-disable-next-line no-unused-vars
-    error
-  } = publicKeyQuery
-
-  const { secretOrSharedKey, queryParams } = useWebSocketAuth(publicKey)
+    const [base, searchParamsEntries] = getBaseAndParams(joinUrl)
+    setWebsocketUrl({ base, searchParamsEntries })
+  }, [floorColor, joinUrl, setWebsocketUrl])
 
   const [persistentCameraPosition, setPersistentCameraPosition] = useAtom(cameraAtom)
   const [trackCamera, setTrackCamera] = useState(false)
@@ -134,10 +128,40 @@ const Tunneled = () => {
 
   const gridY = -0.5
 
+  const handleScan = (result) => {
+    if (result) {
+      try {
+        const [base, searchParamsEntries] = getBaseAndParams(result.text)
+        const _websocketUrl = { base, searchParamsEntries }
+        setWebsocketUrl(_websocketUrl)
+        toast.success(`WebSocket URL set to ${base}`)
+        setShowScanner(false)
+      } catch (e) {
+        console.error('Scanned QR code is not a valid URL', e)
+        toast.error('Scanned QR code is not a valid URL')
+      }
+    }
+  }
+
+  const publicKey = '7be5f90631a380e8d290ac9268c1be3b3542e493dd7ad428dc1ca1d12afa6f03'
+
+  const queryParams = { publicKey, ...websocketUrl.searchParamsEntries }
+  console.log({ queryParams })
+
   return (
     <div className={parent}>
+      {showScanner && (
+        <div style={{ position: 'absolute', top: 0, left: 0, width: '100vw', height: '100vh', zIndex: 100, background: 'black' }}>
+          <Scanner
+            onResult={handleScan}
+            constraints={{ facingMode: 'environment' }}
+          />
+          <button style={{ position: 'absolute', top: '20px', right: '20px' }} onClick={() => setShowScanner(false)}>Cancel</button>
+        </div>
+      )}
       <div className={child}>
         <status.Out />
+        <button className={styles.button} onClick={() => setShowScanner(true)}>Scan QR</button>
       </div>
       <div>
         <ToastContainer theme={theme}/>
@@ -155,10 +179,8 @@ const Tunneled = () => {
             shadow-camera-far={50}
           />
           <WebSocketProvider
-            url={websocketUrl}
-            secretOrSharedKey={secretOrSharedKey}
+            url={websocketUrl.base}
             queryParams={queryParams}
-            httpError={error}
           >
             <StenoKeyboard controls={kControls} isTouchDevice={isTouchDevice}/>
           </WebSocketProvider>

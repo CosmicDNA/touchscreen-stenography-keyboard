@@ -1,6 +1,11 @@
 import { urlSafeEncrypt, decrypt, box, generateKeyPair, hexEncode, hexDecode, newNonce, encrypt } from './encryption'
+import { getKey, setKey } from './keyStorage'
 
-const pairA = generateKeyPair()
+let pairA = getKey()
+if (!pairA) {
+  pairA = generateKeyPair()
+  setKey(pairA)
+}
 
 /**
  *
@@ -42,4 +47,8 @@ const getBox = (publicKey) => {
   return box.before(decodedPublicKey, pairA.secretKey)
 }
 
-export { encryptionProcess, getDecryptedMessage, getBox, getEncryptedMessage, newNonce }
+const getClientPublicKeyHex = () => {
+  return hexEncode(pairA.publicKey)
+}
+
+export { encryptionProcess, getDecryptedMessage, getBox, getEncryptedMessage, newNonce, getClientPublicKeyHex }

@@ -99,7 +99,7 @@ const StenoKeyboard = ({ controls, isTouchDevice, ...props }) => {
   const { lastJsonMessage, sendJsonMessage, readyState } = useWebSocketContext()
 
   useEffect(() => {
-    if (lastJsonMessage) {
+    if (lastJsonMessage && typeof lastJsonMessage === 'object' && lastJsonMessage !== null) {
       // console.log(lastJsonMessage)
       if (lastJsonMessage.on_stroked) {
         console.log(lastJsonMessage.on_stroked.paper)
