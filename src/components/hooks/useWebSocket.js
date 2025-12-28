@@ -170,6 +170,13 @@ const RawWebSocketProvider = ({ children, url, secretOrSharedKey, queryParams, h
   useEffect(() => {
     if (lastJsonMessage) {
       console.log('Received WebSocket message:', lastJsonMessage)
+      if (
+        lastJsonMessage?.from?.type === 'pc' && lastJsonMessage?.from?.id === 0 &&
+        lastJsonMessage?.payload?.message === 'Here is my the public key for you to privately communicate with me...'
+      ) {
+        const pcPublicKey = lastJsonMessage?.payload?.public_key
+        console.log({ pcPublicKey })
+      }
     }
   }, [lastJsonMessage])
 

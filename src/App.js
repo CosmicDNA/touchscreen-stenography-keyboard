@@ -18,6 +18,21 @@ import usePersistedControls from './components/hooks/use-persisted-controls.js'
 import useFullScreen from './components/hooks/useFullScreen.js'
 import { ToastContainer, toast } from 'react-toastify'
 import { Scanner } from '@yudiel/react-qr-scanner'
+import { getClientPublicKeyHex } from './components/utils/encryptionWrapper.js'
+
+const publicKey = getClientPublicKeyHex()
+
+/**
+ * @param {String} _url
+ */
+const getBaseAndParams = (_url) => {
+  const url = new URL(_url)
+  const { searchParams, origin, pathname } = url
+  const searchParamsEntries = Object.fromEntries(searchParams.entries())
+
+  const base = origin + pathname
+  return { base, searchParamsEntries }
+}
 
 /**
  *
@@ -90,21 +105,11 @@ const Tunneled = () => {
 
   const floorColor = theme === 'dark' ? 'black' : '#f0f0f0'
 
-  const getBaseAndParams = (_url) => {
-    const url = new URL(_url)
-    const { searchParams, origin, pathname } = url
-    const searchParamsEntries = Object.fromEntries(searchParams.entries())
-
-    const base = origin + pathname
-    return [base, searchParamsEntries]
-  }
-
-  const joinUrl = 'ws://localhost:8787/session/a1b5ba2f-f8d1-4850-ab82-a27e500f6f98/join?token=0ae938cecf43e22ffdec64b5903f86bc1d14132d94db74e55e3ed8f1c8f70758'
+  const joinUrl = 'ws://localhost:8787/session/e6469c7e-29bd-4368-894f-4d4122ebd425/join?token=a0660b838197a241f4c4d20003c04c1800529460dc0fbdab2f4be36b9f8cf416'
 
   useEffect(() => {
     document.body.style.backgroundColor = floorColor
-    const [base, searchParamsEntries] = getBaseAndParams(joinUrl)
-    setWebsocketUrl({ base, searchParamsEntries })
+    setWebsocketUrl(getBaseAndParams(joinUrl))
   }, [floorColor, joinUrl, setWebsocketUrl])
 
   const [persistentCameraPosition, setPersistentCameraPosition] = useAtom(cameraAtom)
@@ -131,22 +136,16 @@ const Tunneled = () => {
   const handleScan = (result) => {
     if (result) {
       try {
-        const [base, searchParamsEntries] = getBaseAndParams(result.text)
-        const _websocketUrl = { base, searchParamsEntries }
-        setWebsocketUrl(_websocketUrl)
-        toast.success(`WebSocket URL set to ${base}`)
+        setWebsocketUrl(getBaseAndParams(joinUrl))
+        toast.success(`WebSocket URL set to ${joinUrl}`)
         setShowScanner(false)
       } catch (e) {
         console.error('Scanned QR code is not a valid URL', e)
-        toast.error('Scanned QR code is not a valid URL')
       }
     }
   }
 
-  const publicKey = '7be5f90631a380e8d290ac9268c1be3b3542e493dd7ad428dc1ca1d12afa6f03'
-
   const queryParams = { publicKey, ...websocketUrl.searchParamsEntries }
-  console.log({ queryParams })
 
   return (
     <div className={parent}>
