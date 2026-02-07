@@ -228,6 +228,7 @@ const StenoKeyboard = ({ controls, isTouchDevice, ...props }) => {
     if (!allKeys.size) {
       if (largestKeySet.size && controls.sendStroke === 'onKeyRelease') {
         const stroke = [...largestKeySet]
+        console.log(stroke)
         registerStroke(stroke)
         setLargestKeySet(new Set())
       }

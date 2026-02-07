@@ -163,11 +163,16 @@ const RawWebSocketProvider = ({ children, url, queryParams }) => {
     }
   }, [lastMessage, secretOrSharedKey])
 
-  const sendJsonMessage = useCallback(message => {
+  // {"to":{"type":"pc"},"payload":{"stroke":"KAT"}}
+  const sendJsonMessage = useCallback(payload => {
     if (secretOrSharedKey) {
-      return sendMessage(getEncryptedMessage(secretOrSharedKey, message, newNonce()))
+      const message = {
+        to: { type: 'pc' },
+        payload: getEncryptedMessage(secretOrSharedKey, payload, newNonce())
+      }
+      return sendMessage(JSON.stringify(message))
     }
-    return sendMessage(JSON.stringify(message))
+    return sendMessage(JSON.stringify(payload))
   }, [secretOrSharedKey, sendMessage])
 
   useEffect(() => {
