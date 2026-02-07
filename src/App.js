@@ -9,7 +9,7 @@ import { TunnelProvider, useTunnelContext } from './components/hooks/useTunnel.j
 import Grid from './components/Grid'
 import { Vector3 } from 'three'
 import { atomWithStorage } from 'jotai/utils'
-import { useAtom } from 'jotai'
+import { atom, useAtom } from 'jotai'
 // import JSONPretty from 'react-json-pretty'
 import 'react-json-pretty/themes/monikai.css'
 import styles from './App.module.css' // This import is now used
@@ -86,11 +86,10 @@ const cameraAtom = atomWithStorage(
   { getOnInit: true }
 )
 
-const websocketUrlAtom = atomWithStorage(
+const websocketUrlAtom = atom(
   'websocketUrl',
   null,
-  undefined,
-  { getOnInit: true }
+  undefined
 )
 
 const Tunneled = () => {
@@ -149,7 +148,7 @@ const Tunneled = () => {
     }
   }
 
-  const queryParams = { publicKey, ...websocketUrl?.searchParamsEntries }
+  const queryParams = useMemo(() => ({ publicKey, ...websocketUrl?.searchParamsEntries }), [websocketUrl])
   // const queryParams = { ...websocketUrl?.searchParamsEntries }
   // console.log({ queryParams })
 

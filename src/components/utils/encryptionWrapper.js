@@ -23,6 +23,12 @@ const encryptionProcess = (secretOrSharedKey, json, nonce = undefined) => {
   }
 }
 
+/**
+ *
+ * @param {*} secretOrSharedKey
+ * @param {*} encryptedMessage
+ * @returns
+ */
 const getDecryptedMessage = (secretOrSharedKey, encryptedMessage) => {
   return decrypt(secretOrSharedKey, encryptedMessage, null)
 }

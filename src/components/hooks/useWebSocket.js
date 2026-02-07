@@ -2,7 +2,7 @@ import PropTypes from 'prop-types'
 import useWebSocket, { ReadyState } from 'react-use-websocket'
 import React, { createContext, useContext, useEffect, useMemo, useCallback, memo, useState, useRef } from 'react'
 import { useTunnelContext } from './useTunnel'
-import { getEncryptedMessage, getDecryptedMessage, newNonce } from '../utils/encryptionWrapper'
+import { getEncryptedMessage, getDecryptedMessage, newNonce, getBox } from '../utils/encryptionWrapper'
 import ColoredCircle from '../ColoredCircle'
 import { toast } from 'react-toastify'
 
@@ -110,13 +110,19 @@ const useWebSocketContext = () => useContext(WebSocketContext)
  * @param {Object} props
  * @param {React.ReactNode} props.children
  * @param {string} props.url
- * @param {Uint8Array} props.secretOrSharedKey
  * @param {Object} props.queryParams
  */
-const RawWebSocketProvider = ({ children, url, secretOrSharedKey, queryParams }) => {
+const RawWebSocketProvider = ({ children, url, queryParams }) => {
   // eslint-disable-next-line no-unused-vars
   const [closeEvent, setCloseEvent] = useState(null)
+  const [pcPublicKey, setPcPublicKey] = useState(null)
+  const secretOrSharedKey = useMemo(() => (pcPublicKey ? getBox(pcPublicKey) : null), [pcPublicKey])
   const skip = !url // Only skip if there is no URL.
+
+  useEffect(() => {
+    console.log('WebSocketProvider URL or queryParams changed:', { url, queryParams })
+  }, [queryParams, url])
+
   const { readyState, sendMessage, lastMessage } = useWebSocket(url, {
     queryParams,
     heartbeat: {
@@ -141,7 +147,12 @@ const RawWebSocketProvider = ({ children, url, secretOrSharedKey, queryParams })
     if (!lastMessage?.data) return null
 
     if (secretOrSharedKey) {
-      return getDecryptedMessage(secretOrSharedKey, lastMessage.data)
+      try {
+        return getDecryptedMessage(secretOrSharedKey, lastMessage.data)
+      } catch (e) {
+        // Fallback to plaintext parsing
+        return lastMessage.data
+      }
     }
 
     try {
@@ -166,8 +177,8 @@ const RawWebSocketProvider = ({ children, url, secretOrSharedKey, queryParams })
         lastJsonMessage?.from?.type === 'pc' && lastJsonMessage?.from?.id === 0 &&
         lastJsonMessage?.payload?.message === 'Here is my the public key for you to privately communicate with me...'
       ) {
-        const pcPublicKey = lastJsonMessage?.payload?.public_key
-        console.log({ pcPublicKey })
+        const publicKey = lastJsonMessage?.payload?.public_key
+        setPcPublicKey(publicKey)
       }
     }
   }, [lastJsonMessage])
@@ -221,7 +232,6 @@ const WebSocketProvider = memo(RawWebSocketProvider)
 
 RawWebSocketProvider.propTypes = {
   children: PropTypes.any,
-  secretOrSharedKey: PropTypes.instanceOf(Uint8Array),
   url: PropTypes.string,
   queryParams: PropTypes.object
 }
