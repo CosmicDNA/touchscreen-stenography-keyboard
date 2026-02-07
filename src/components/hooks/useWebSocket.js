@@ -151,7 +151,6 @@ const RawWebSocketProvider = ({ children, url, queryParams }) => {
         return getDecryptedMessage(secretOrSharedKey, lastMessage.data)
       } catch (e) {
         // Fallback to plaintext parsing
-        return lastMessage.data
       }
     }
 
@@ -177,16 +176,30 @@ const RawWebSocketProvider = ({ children, url, queryParams }) => {
 
   useEffect(() => {
     if (lastJsonMessage) {
-      console.log('Received WebSocket message:', lastJsonMessage)
-      if (
-        lastJsonMessage?.from?.type === 'pc' && lastJsonMessage?.from?.id === 0 &&
-        lastJsonMessage?.payload?.message === 'Here is my the public key for you to privately communicate with me...'
-      ) {
-        const publicKey = lastJsonMessage?.payload?.public_key
-        setPcPublicKey(publicKey)
+      console.debug('Received WebSocket message:', lastJsonMessage)
+      const from = lastJsonMessage?.from
+      const payload = lastJsonMessage?.payload
+      const regularProcessing = () => {
+        if (secretOrSharedKey) {
+          const decrypted = getDecryptedMessage(secretOrSharedKey, payload)
+          console.info('Decrypted message from tablet:', decrypted)
+        } else {
+          console.info('Raw message from tablet:', payload)
+        }
+      }
+      if (from?.type === 'pc' && from?.id === 0) {
+        const message = payload?.message
+        switch (message) {
+          case 'Here is my the public key for you to privately communicate with me...':
+            setPcPublicKey(payload?.public_key)
+            break
+          default:
+            regularProcessing()
+            break
+        }
       }
     }
-  }, [lastJsonMessage])
+  }, [lastJsonMessage, secretOrSharedKey])
 
   useEffect(() => {
     // Effect for showing toast notifications on state change

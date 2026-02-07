@@ -120,6 +120,23 @@ const StenoKeyboard = ({ controls, isTouchDevice, ...props }) => {
     }
   }, [lastJsonMessage])
 
+  // // const lookupState = useRef(LookupStateEnum.IDLE)
+  // useEffect(() => {
+  //   // Only attempt to send a lookup if the connection is open and we haven't sent one already.
+  //   if (readyState === ReadyState.OPEN && lookupState === LookupStateEnum.IDLE && soundEnabled) {
+  //     // const urlParams = new URLSearchParams(window.location.search)
+  //     const phraseToLookup = 'Hello to you.'
+
+  //     if (phraseToLookup) {
+  //       // console.log('sending lookup:', phraseToLookup)
+  //       sendJsonMessage({ lookup: phraseToLookup })
+  //       setLookupState(LookupStateEnum.LOOKING_UP)
+  //       // Optional: remove the query parameter from the URL to avoid re-sending on refresh
+  //       // window.history.replaceState({}, document.title, window.location.pathname)
+  //     }
+  //   }
+  // }, [lookupState, readyState, sendJsonMessage, soundEnabled])
+
   // const lookupState = useRef(LookupStateEnum.IDLE)
   useEffect(() => {
     // Only attempt to send a lookup if the connection is open and we haven't sent one already.
