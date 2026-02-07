@@ -170,7 +170,7 @@ const RawWebSocketProvider = ({ children, url, queryParams }) => {
         to: { type: 'pc' },
         payload: getEncryptedMessage(secretOrSharedKey, payload, newNonce())
       }
-      return sendMessage(JSON.stringify(message))
+      payload = message
     }
     return sendMessage(JSON.stringify(payload))
   }, [secretOrSharedKey, sendMessage])
