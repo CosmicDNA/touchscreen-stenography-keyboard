@@ -96,7 +96,7 @@ const StenoKeyboard = ({ controls, isTouchDevice, ...props }) => {
   }, [])
   const [pressedKeys, setPressedKeys] = useState(new Map())
   useWakeLock()
-  const { lastJsonMessage, sendJsonMessage, readyState } = useWebSocketContext()
+  const { lastJsonMessage, sendJsonMessage, readyState, secretOrSharedKey } = useWebSocketContext()
 
   useEffect(() => {
     if (lastJsonMessage && typeof lastJsonMessage === 'object' && lastJsonMessage !== null) {
@@ -120,27 +120,10 @@ const StenoKeyboard = ({ controls, isTouchDevice, ...props }) => {
     }
   }, [lastJsonMessage])
 
-  // // const lookupState = useRef(LookupStateEnum.IDLE)
-  // useEffect(() => {
-  //   // Only attempt to send a lookup if the connection is open and we haven't sent one already.
-  //   if (readyState === ReadyState.OPEN && lookupState === LookupStateEnum.IDLE && soundEnabled) {
-  //     // const urlParams = new URLSearchParams(window.location.search)
-  //     const phraseToLookup = 'Hello to you.'
-
-  //     if (phraseToLookup) {
-  //       // console.log('sending lookup:', phraseToLookup)
-  //       sendJsonMessage({ lookup: phraseToLookup })
-  //       setLookupState(LookupStateEnum.LOOKING_UP)
-  //       // Optional: remove the query parameter from the URL to avoid re-sending on refresh
-  //       // window.history.replaceState({}, document.title, window.location.pathname)
-  //     }
-  //   }
-  // }, [lookupState, readyState, sendJsonMessage, soundEnabled])
-
   // const lookupState = useRef(LookupStateEnum.IDLE)
   useEffect(() => {
     // Only attempt to send a lookup if the connection is open and we haven't sent one already.
-    if (readyState === ReadyState.OPEN && lookupState === LookupStateEnum.IDLE && window.location.search.length) {
+    if (readyState === ReadyState.OPEN && secretOrSharedKey && lookupState === LookupStateEnum.IDLE && window.location.search.length) {
       const urlParams = new URLSearchParams(window.location.search)
       const phraseToLookup = urlParams.get('lookup')
 
@@ -152,7 +135,7 @@ const StenoKeyboard = ({ controls, isTouchDevice, ...props }) => {
         // window.history.replaceState({}, document.title, window.location.pathname)
       }
     }
-  }, [lookupState, readyState, sendJsonMessage])
+  }, [lookupState, readyState, sendJsonMessage, secretOrSharedKey])
 
   const skip = !soundEnabled
   const [playKeyPress] = useSound(keypressAudioFile, { skip })

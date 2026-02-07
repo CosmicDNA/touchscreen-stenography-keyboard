@@ -165,11 +165,14 @@ const RawWebSocketProvider = ({ children, url, queryParams }) => {
   // {"to":{"type":"pc"},"payload":{"stroke":"KAT"}}
   const sendJsonMessage = useCallback(payload => {
     if (secretOrSharedKey) {
+      console.debug('There is a secret or shared key, encrypting message before sending. Original payload:', payload)
       const message = {
         to: { type: 'pc' },
         payload: getEncryptedMessage(secretOrSharedKey, payload, newNonce())
       }
       payload = message
+    } else {
+      console.debug('There is NOT a secret or shared key, sending raw message. Original payload:', payload)
     }
     return sendMessage(JSON.stringify(payload))
   }, [secretOrSharedKey, sendMessage])
@@ -182,9 +185,9 @@ const RawWebSocketProvider = ({ children, url, queryParams }) => {
       const regularProcessing = () => {
         if (secretOrSharedKey) {
           const decrypted = getDecryptedMessage(secretOrSharedKey, payload)
-          console.info('Decrypted message from tablet:', decrypted)
+          console.info('Decrypted message from pc:', decrypted)
         } else {
-          console.info('Raw message from tablet:', payload)
+          console.info('Raw message from pc:', payload)
         }
       }
       if (from?.type === 'pc' && from?.id === 0) {
@@ -238,7 +241,8 @@ const RawWebSocketProvider = ({ children, url, queryParams }) => {
       <Provider value={{
         readyState,
         lastJsonMessage,
-        sendJsonMessage
+        sendJsonMessage,
+        secretOrSharedKey
       }}>
         {children}
       </Provider>
