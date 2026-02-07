@@ -1,6 +1,6 @@
 import PropTypes from 'prop-types'
 import useWebSocket, { ReadyState } from 'react-use-websocket'
-import React, { createContext, useContext, useEffect, useMemo, useCallback, memo, useState } from 'react'
+import React, { createContext, useContext, useEffect, useMemo, useCallback, memo, useState, useRef } from 'react'
 import { useTunnelContext } from './useTunnel'
 import { getEncryptedMessage, getDecryptedMessage, newNonce } from '../utils/encryptionWrapper'
 import ColoredCircle from '../ColoredCircle'
@@ -60,25 +60,18 @@ Details.propTypes = {
   children: PropTypes.any
 }
 
-const getTimestampedConnectionMessage = (state, url, skip, closeEvent, httpError) => {
+const getTimestampedConnectionMessage = (state, url, skip, closeEvent) => {
   /**
   *
   * @param {ReadyState} state
   * @param {String} url
   * @param {Boolean} skip
   * @param {CloseEvent} closeEvent
-  * @param {import('@reduxjs/toolkit/query').FetchBaseQueryError | import('@reduxjs/toolkit').SerializedError | undefined} httpError
   * @returns {{message: String | React.ReactNode, type: import('react-toastify').TypeOptions}} */
-  const getConnectionMessage = (state, url, skip, closeEvent, httpError) => {
+  const getConnectionMessage = (state, url, skip, closeEvent) => {
     if (skip) return { message: 'Awaiting box key...', type: 'info' }
 
     const urlElement = <Url url={url} />
-
-    if (httpError) {
-      const status = httpError.status ? `Status: ${httpError.status}\n` : ''
-      const details = httpError.data?.error || httpError.error || 'An unknown error occurred while fetching the public key.'
-      return { message: <>Error connecting to {urlElement}.{'\n'}<Details>{status}Details: {details}</Details></>, type: 'error' }
-    }
 
     switch (state) {
       case CONNECTING: {
@@ -97,7 +90,7 @@ const getTimestampedConnectionMessage = (state, url, skip, closeEvent, httpError
     }
   }
 
-  const { message, type } = getConnectionMessage(state, url, skip, closeEvent, httpError)
+  const { message, type } = getConnectionMessage(state, url, skip, closeEvent)
 
   return {
     message: <Timestamped timestamp={new Date().toLocaleTimeString()}>{message}</Timestamped>,
@@ -119,9 +112,8 @@ const useWebSocketContext = () => useContext(WebSocketContext)
  * @param {string} props.url
  * @param {Uint8Array} props.secretOrSharedKey
  * @param {Object} props.queryParams
- * @param {Object} props.httpError
  */
-const RawWebSocketProvider = ({ children, url, secretOrSharedKey, queryParams, httpError }) => {
+const RawWebSocketProvider = ({ children, url, secretOrSharedKey, queryParams }) => {
   // eslint-disable-next-line no-unused-vars
   const [closeEvent, setCloseEvent] = useState(null)
   const skip = !url // Only skip if there is no URL.
@@ -182,19 +174,27 @@ const RawWebSocketProvider = ({ children, url, secretOrSharedKey, queryParams, h
 
   useEffect(() => {
     // Effect for showing toast notifications on state change
-    const isAwaitingKey = !secretOrSharedKey && !httpError
-    const { message, type } = getTimestampedConnectionMessage(readyState, url, isAwaitingKey, closeEvent, httpError)
+    const isAwaitingKey = !secretOrSharedKey
+    const { message, type } = getTimestampedConnectionMessage(readyState, url, isAwaitingKey, closeEvent)
     toast(message, { type })
-  }, [readyState, url, secretOrSharedKey, httpError, closeEvent])
+  }, [readyState, url, secretOrSharedKey, closeEvent])
+
+  const sendJsonMessageRef = useRef(sendJsonMessage)
+  const readyStateRef = useRef(readyState)
+
+  useEffect(() => {
+    sendJsonMessageRef.current = sendJsonMessage
+    readyStateRef.current = readyState
+  }, [sendJsonMessage, readyState])
 
   useEffect(() => {
     // Effect for cleaning up the connection
     return () => {
-      if (readyState === ReadyState.OPEN) {
-        sendJsonMessage('close')
+      if (readyStateRef.current === ReadyState.OPEN) {
+        sendJsonMessageRef.current('close')
       }
     }
-  }, [readyState, sendJsonMessage])
+  }, [url])
 
   return (
     <>
@@ -223,8 +223,7 @@ RawWebSocketProvider.propTypes = {
   children: PropTypes.any,
   secretOrSharedKey: PropTypes.instanceOf(Uint8Array),
   url: PropTypes.string,
-  queryParams: PropTypes.object,
-  httpError: PropTypes.object
+  queryParams: PropTypes.object
 }
 
 export { useWebSocketContext, WebSocketProvider, ReadyState }

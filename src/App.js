@@ -16,7 +16,7 @@ import styles from './App.module.css' // This import is now used
 import useTheme from './components/hooks/useTheme'
 import usePersistedControls from './components/hooks/use-persisted-controls.js'
 import useFullScreen from './components/hooks/useFullScreen.js'
-import { ToastContainer, toast } from 'react-toastify'
+import { ToastContainer } from 'react-toastify'
 import { Scanner } from '@yudiel/react-qr-scanner'
 import { getClientPublicKeyHex } from './components/utils/encryptionWrapper.js'
 
@@ -26,11 +26,13 @@ const publicKey = getClientPublicKeyHex()
  * @param {String} _url
  */
 const getBaseAndParams = (_url) => {
+  // console.log(`URL is ${_url}`)
   const url = new URL(_url)
   const { searchParams, origin, pathname } = url
   const searchParamsEntries = Object.fromEntries(searchParams.entries())
 
   const base = origin + pathname
+  // console.log(`Base is ${base} and search params are`, searchParamsEntries)
   return { base, searchParamsEntries }
 }
 
@@ -105,12 +107,9 @@ const Tunneled = () => {
 
   const floorColor = theme === 'dark' ? 'black' : '#f0f0f0'
 
-  const joinUrl = 'ws://localhost:8787/session/e6469c7e-29bd-4368-894f-4d4122ebd425/join?token=a0660b838197a241f4c4d20003c04c1800529460dc0fbdab2f4be36b9f8cf416'
-
   useEffect(() => {
     document.body.style.backgroundColor = floorColor
-    setWebsocketUrl(getBaseAndParams(joinUrl))
-  }, [floorColor, joinUrl, setWebsocketUrl])
+  }, [floorColor])
 
   const [persistentCameraPosition, setPersistentCameraPosition] = useAtom(cameraAtom)
   const [trackCamera, setTrackCamera] = useState(false)
@@ -133,11 +132,16 @@ const Tunneled = () => {
 
   const gridY = -0.5
 
-  const handleScan = (result) => {
-    if (result) {
+  /**
+   * @param {import ('@yudiel/react-qr-scanner').IDetectedBarcode[]} results
+   */
+  const handleScan = (results) => {
+    const aScan = results.find(result => result?.rawValue)
+    if (aScan) {
       try {
-        setWebsocketUrl(getBaseAndParams(joinUrl))
-        toast.success(`WebSocket URL set to ${joinUrl}`)
+        setWebsocketUrl(getBaseAndParams(aScan.rawValue))
+        console.debug('Scanned QR code result', aScan)
+        console.info(`WebSocket URL set to ${aScan.rawValue}`)
         setShowScanner(false)
       } catch (e) {
         console.error('Scanned QR code is not a valid URL', e)
@@ -145,14 +149,16 @@ const Tunneled = () => {
     }
   }
 
-  const queryParams = { publicKey, ...websocketUrl.searchParamsEntries }
+  const queryParams = { publicKey, ...websocketUrl?.searchParamsEntries }
+  // const queryParams = { ...websocketUrl?.searchParamsEntries }
+  // console.log({ queryParams })
 
   return (
     <div className={parent}>
       {showScanner && (
         <div style={{ position: 'absolute', top: 0, left: 0, width: '100vw', height: '100vh', zIndex: 100, background: 'black' }}>
           <Scanner
-            onResult={handleScan}
+            onScan={handleScan}
             constraints={{ facingMode: 'environment' }}
           />
           <button style={{ position: 'absolute', top: '20px', right: '20px' }} onClick={() => setShowScanner(false)}>Cancel</button>
@@ -178,7 +184,7 @@ const Tunneled = () => {
             shadow-camera-far={50}
           />
           <WebSocketProvider
-            url={websocketUrl.base}
+            url={websocketUrl?.base}
             queryParams={queryParams}
           >
             <StenoKeyboard controls={kControls} isTouchDevice={isTouchDevice}/>
