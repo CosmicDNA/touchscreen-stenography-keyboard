@@ -4,19 +4,19 @@ import { Canvas, useFrame } from '@react-three/fiber'
 import { OrbitControls } from '@react-three/drei'
 import { Perf } from 'r3f-perf'
 import StenoKeyboard from './components/StenoKeyboard'
-import { WebSocketProvider } from './components/hooks/useWebSocket'
+import { WebSocketProvider, useWebSocketContext } from './components/hooks/useWebSocket'
 import { TunnelProvider, useTunnelContext } from './components/hooks/useTunnel.js'
 import Grid from './components/Grid'
 import { Vector3 } from 'three'
-import { atomWithStorage } from 'jotai/utils'
-import { atom, useAtom } from 'jotai'
+import { atomWithStorage, createJSONStorage } from 'jotai/utils'
+import { useAtom } from 'jotai'
 // import JSONPretty from 'react-json-pretty'
 import 'react-json-pretty/themes/monikai.css'
 import styles from './App.module.css' // This import is now used
 import useTheme from './components/hooks/useTheme'
 import usePersistedControls from './components/hooks/use-persisted-controls.js'
 import useFullScreen from './components/hooks/useFullScreen.js'
-import { ToastContainer } from 'react-toastify'
+import { ToastContainer, toast } from 'react-toastify'
 import { Scanner } from '@yudiel/react-qr-scanner'
 import { getClientPublicKeyHex } from './components/utils/encryptionWrapper.js'
 
@@ -86,17 +86,51 @@ const cameraAtom = atomWithStorage(
   { getOnInit: true }
 )
 
-const websocketUrlAtom = atom(
+const websocketUrlAtom = atomWithStorage(
   'websocketUrl',
   null,
-  undefined
+  createJSONStorage(() => sessionStorage)
 )
+
+const SessionHandler = () => {
+  const { lastJsonMessage } = useWebSocketContext()
+  const [websocketUrl, setWebsocketUrl] = useAtom(websocketUrlAtom)
+
+  useEffect(() => {
+    const newToken = lastJsonMessage?.newTabletToken
+    const currentToken = websocketUrl?.searchParamsEntries?.token
+
+    if (newToken && newToken !== currentToken) {
+      console.info('Received new session token, updating storage.')
+      toast.success('Session secured with new token')
+      setWebsocketUrl(prev => {
+        if (!prev) return prev
+        return {
+          ...prev,
+          searchParamsEntries: {
+            ...prev.searchParamsEntries,
+            token: newToken
+          }
+        }
+      })
+    }
+  }, [lastJsonMessage, setWebsocketUrl, websocketUrl])
+
+  return null
+}
 
 const Tunneled = () => {
   const { status } = useTunnelContext()
   const [showScanner, setShowScanner] = useState(false)
   const kControls = usePersistedControls('Keyboard', kSchema)
-  const [websocketUrl, setWebsocketUrl] = useAtom(websocketUrlAtom)
+  const [storedWebsocketUrl, setStoredWebsocketUrl] = useAtom(websocketUrlAtom)
+  const [activeWebsocketUrl, setActiveWebsocketUrl] = useState(storedWebsocketUrl)
+
+  useEffect(() => {
+    if (storedWebsocketUrl && !activeWebsocketUrl) {
+      setActiveWebsocketUrl(storedWebsocketUrl)
+    }
+  }, [storedWebsocketUrl, activeWebsocketUrl])
 
   const theme = useTheme()
 
@@ -138,7 +172,9 @@ const Tunneled = () => {
     const aScan = results.find(result => result?.rawValue)
     if (aScan) {
       try {
-        setWebsocketUrl(getBaseAndParams(aScan.rawValue))
+        const newUrlData = getBaseAndParams(aScan.rawValue)
+        setStoredWebsocketUrl(newUrlData)
+        setActiveWebsocketUrl(newUrlData)
         console.debug('Scanned QR code result', aScan)
         console.info(`WebSocket URL set to ${aScan.rawValue}`)
         setShowScanner(false)
@@ -148,7 +184,7 @@ const Tunneled = () => {
     }
   }
 
-  const queryParams = useMemo(() => ({ publicKey, ...websocketUrl?.searchParamsEntries }), [websocketUrl])
+  const queryParams = useMemo(() => ({ publicKey, ...activeWebsocketUrl?.searchParamsEntries }), [activeWebsocketUrl])
   // const queryParams = { ...websocketUrl?.searchParamsEntries }
   // console.log({ queryParams })
 
@@ -183,9 +219,10 @@ const Tunneled = () => {
             shadow-camera-far={50}
           />
           <WebSocketProvider
-            url={websocketUrl?.base}
+            url={activeWebsocketUrl?.base}
             queryParams={queryParams}
           >
+            <SessionHandler />
             <StenoKeyboard controls={kControls} isTouchDevice={isTouchDevice}/>
           </WebSocketProvider>
           <OrbitControls
