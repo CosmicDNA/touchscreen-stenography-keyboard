@@ -119,7 +119,7 @@ const RawWebSocketProvider = ({ children, url, queryParams }) => {
   const skip = !url // Only skip if there is no URL.
 
   useEffect(() => {
-    console.log('WebSocketProvider URL or queryParams changed:', { url, queryParams })
+    console.debug('WebSocketProvider URL or queryParams changed:', { url, queryParams })
   }, [queryParams, url])
 
   const { readyState, sendMessage, lastMessage } = useWebSocket(url, {
@@ -142,81 +142,26 @@ const RawWebSocketProvider = ({ children, url, queryParams }) => {
   }, !skip)
   const { status } = useTunnelContext()
 
-  // useEffect(() => {
-  //   if (lastJsonMessage) {
-  //     console.debug('Received WebSocket message:', lastJsonMessage)
-  //     const from = lastJsonMessage?.from
-  //     const payload = lastJsonMessage?.payload
-  //     const regularProcessing = () => {
-  //       if (secretOrSharedKey) {
-  //         const decrypted = getDecryptedMessage(secretOrSharedKey, payload)
-  //         console.info('Decrypted message from pc:', decrypted)
-  //       } else {
-  //         console.info('Raw message from pc:', payload)
-  //       }
-  //     }
-  //     if (from?.type === 'pc' && from?.id === 0) {
-  //       const message = payload?.message
-  //       switch (message) {
-  //         case 'Here is my the public key for you to privately communicate with me...':
-  //           setPcPublicKey(payload?.public_key)
-  //           break
-  //         default:
-  //           regularProcessing()
-  //           break
-  //       }
-  //     }
-  //   }
-  // }, [lastJsonMessage, secretOrSharedKey])
-
-  // const lastJsonMessage = useMemo(() => {
-  //   if (!lastMessage?.data) return null
-
-  //   console.log('HIII')
-  //   let data
-  //   try {
-  //     const parsed = JSON.parse(lastMessage.data)
-  //     console.log('Parsed JSON message:', parsed)
-  //     data = parsed
-  //   } catch (e) {
-  //     // Not a JSON message, return raw data
-  //     const rawData = lastMessage.data
-  //     console.log('Non-JSON message received, returning raw data:', rawData)
-  //     data = rawData
-  //   }
-
-  //   // console.log('Received WebSocket message data:', lastMessage.data)
-  //   // const data = JSON.parse(lastMessage.data)
-
-  //   if (secretOrSharedKey) {
-  //     try {
-  //       console.log({ payload: data.payload })
-  //       const decrypted = getDecryptedMessage(secretOrSharedKey, data.payload)
-  //       console.log('Decrypted message from pc:', decrypted)
-  //       return decrypted
-  //     } catch (e) {
-  //       const rawPayload = data.payload
-  //       console.log({ rawPayload })
-  //       return rawPayload
-  //     }
-  //   }
-  // }, [lastMessage, secretOrSharedKey])
+  const unencryptedMessage = useMemo(() => {
+    if (!lastMessage?.data) return null
+    try {
+      return JSON.parse(lastMessage.data)
+    } catch (e) {
+      return null
+    }
+  }, [lastMessage])
 
   const lastJsonMessage = useMemo(() => {
-    if (!lastMessage?.data) return null
-
-    const data = JSON.parse(lastMessage.data)
-
+    if (!unencryptedMessage) return null
     if (secretOrSharedKey) {
       try {
-        return getDecryptedMessage(secretOrSharedKey, data.payload)
+        return getDecryptedMessage(secretOrSharedKey, unencryptedMessage.payload)
       } catch (e) {
         // Fallback to plaintext parsing
       }
     }
-
-    return data
-  }, [lastMessage, secretOrSharedKey])
+    return unencryptedMessage
+  }, [unencryptedMessage, secretOrSharedKey])
 
   // {"to":{"type":"pc"},"payload":{"stroke":"KAT"}}
   const sendJsonMessage = useCallback(payload => {
