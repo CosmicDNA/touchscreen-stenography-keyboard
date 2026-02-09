@@ -15,6 +15,7 @@ import KeyPressDetectionFloor from './KeyPressDetectionFloor'
 import { toast } from 'react-toastify'
 import { LookupStateEnum, convertLookupStrokeToKeysSequence } from './utils/lookup'
 import useStrokeEvents from './hooks/use-stroke-events'
+import useUrlParam from './hooks/use-url-param'
 
 const enter = 0.2
 const rowSpacing = 1.3
@@ -120,22 +121,19 @@ const StenoKeyboard = ({ controls, isTouchDevice, ...props }) => {
     }
   }, [lastJsonMessage])
 
+  const phraseToLookup = useUrlParam('lookup')
+
   // const lookupState = useRef(LookupStateEnum.IDLE)
   useEffect(() => {
     // Only attempt to send a lookup if the connection is open and we haven't sent one already.
-    if (readyState === ReadyState.OPEN && secretOrSharedKey && lookupState === LookupStateEnum.IDLE && window.location.search.length) {
-      const urlParams = new URLSearchParams(window.location.search)
-      const phraseToLookup = urlParams.get('lookup')
-
-      if (phraseToLookup) {
-        // console.log('sending lookup:', phraseToLookup)
-        sendJsonMessage({ lookup: phraseToLookup })
-        setLookupState(LookupStateEnum.LOOKING_UP)
-        // Optional: remove the query parameter from the URL to avoid re-sending on refresh
-        // window.history.replaceState({}, document.title, window.location.pathname)
-      }
+    if (readyState === ReadyState.OPEN && secretOrSharedKey && lookupState === LookupStateEnum.IDLE && phraseToLookup) {
+      // console.log('sending lookup:', phraseToLookup)
+      sendJsonMessage({ lookup: phraseToLookup })
+      setLookupState(LookupStateEnum.LOOKING_UP)
+      // Optional: remove the query parameter from the URL to avoid re-sending on refresh
+      // window.history.replaceState({}, document.title, window.location.pathname)
     }
-  }, [lookupState, readyState, sendJsonMessage, secretOrSharedKey])
+  }, [lookupState, readyState, sendJsonMessage, secretOrSharedKey, phraseToLookup])
 
   const skip = !soundEnabled
   const [playKeyPress] = useSound(keypressAudioFile, { skip })

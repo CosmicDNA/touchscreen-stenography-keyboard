@@ -19,6 +19,7 @@ import useFullScreen from './components/hooks/useFullScreen.js'
 import { ToastContainer, toast } from 'react-toastify'
 import { Scanner } from '@yudiel/react-qr-scanner'
 import { getClientPublicKeyHex } from './components/utils/encryptionWrapper.js'
+import useUrlParam from './components/hooks/use-url-param.js'
 
 const publicKey = getClientPublicKeyHex()
 
@@ -151,6 +152,26 @@ const Tunneled = () => {
     setTrackCamera(true)
   }
 
+  const relay = useUrlParam('relay')
+
+  // const lookupState = useRef(LookupStateEnum.IDLE)
+  useEffect(() => {
+    if (relay) {
+      console.log('Relay URL parameter detected:', relay)
+
+      const newUrlData = getBaseAndParams(relay)
+      setStoredWebsocketUrl(newUrlData)
+      setActiveWebsocketUrl(newUrlData)
+      console.info(`WebSocket URL set to ${relay}`)
+
+      // Optional: remove the relay parameter from the URL to avoid re-sending on refresh
+      const url = new URL(window.location.href)
+      url.searchParams.delete('relay')
+      // Reconstruct the URL without the 'relay' parameter and update the browser history
+      window.history.replaceState({}, document.title, `${url.pathname}${url.search}${url.hash}`)
+    }
+  }, [relay, setStoredWebsocketUrl])
+
   const onCameraUpdate = ({ speed, position }) => {
     const speedModule = speed.length()
     if (speedModule < 1E-3) {
@@ -172,7 +193,10 @@ const Tunneled = () => {
     const aScan = results.find(result => result?.rawValue)
     if (aScan) {
       try {
-        const newUrlData = getBaseAndParams(aScan.rawValue)
+        const url = new URL(aScan.rawValue) // This will throw if it's not a valid URL
+        const urlParams = new URLSearchParams(url.search)
+        const relay = urlParams.get('relay')
+        const newUrlData = getBaseAndParams(relay)
         setStoredWebsocketUrl(newUrlData)
         setActiveWebsocketUrl(newUrlData)
         console.debug('Scanned QR code result', aScan)
