@@ -101,7 +101,7 @@ const StenoKeyboard = ({ controls, isTouchDevice, ...props }) => {
 
   useEffect(() => {
     if (lastJsonMessage && typeof lastJsonMessage === 'object' && lastJsonMessage !== null) {
-      console.log({ lastJsonMessage })
+      console.debug({ lastJsonMessage })
       if (lastJsonMessage.on_stroked) {
         console.log(lastJsonMessage.on_stroked.paper)
       }
