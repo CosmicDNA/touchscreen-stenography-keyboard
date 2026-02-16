@@ -16,6 +16,8 @@ This is a cross-platform touchscreen stenography keyboard built in React, making
 
 > [!TIP]
 > To use this keyboard on a separate device like a tablet, the computer running Plover must be accessible from the internet. See the [Advanced Usage: Connecting from the Web](#advanced-usage-connecting-from-the-web) section for detailed instructions on how to set this up.
+>
+> If you don't want to deal with the hassle of setting up network parameters, please refer to https://github.com/CosmicDNA/touch-steno-keyboard to instead connect as a client via a relay server.
 
 The idea is to provide a secure, highly accessible, zero-cost practice tool that people can use anywhere. It outputs steno strokes that can be picked up by Plover (via the WebSocket connection).
 
